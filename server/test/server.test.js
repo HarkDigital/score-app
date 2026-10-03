@@ -224,7 +224,8 @@ test('followers get the alerts they switched on, once each', async () => {
 
 const card = (eventId, overrides = {}) => ({
   league: 'nfl', leagueLabel: 'NFL', eventId, start: Date.parse('2026-10-04T20:25:00Z') / 1000, homeFirst: false,
-  away: { abbr: 'SF', name: '49ers', color: '#aa0000' }, home: { abbr: 'LAR', name: 'Rams', color: null },
+  away: { abbr: 'SF', name: '49ers', color: '#aa0000', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/sf.png' },
+  home: { abbr: 'LAR', name: 'Rams', color: null, logo: 'https://evil.example/x.png' },
   state: { away: '', home: '', state: 'pre', status: '', detail: '' },
   ...overrides,
 });
@@ -234,6 +235,8 @@ test('scheduled cards are validated and keep only the attributes', () => {
   assert.equal(entry.league, 'nfl');
   assert.equal(entry.eventId, '404');
   assert.deepEqual(Object.keys(entry.card).sort(), ['away', 'eventId', 'home', 'homeFirst', 'league', 'leagueLabel', 'start']);
+  assert.equal(entry.card.away.logo, 'https://a.espncdn.com/i/teamlogos/nfl/500/sf.png');
+  assert.equal(entry.card.home.logo, null, 'only ESPN logos are passed on');
   assert.equal(parseScheduled({ token: TOKEN, env: 'production', card: card('404', { away: { abbr: 'SF', name: '49ers', color: 'red' } }) }), null);
   assert.equal(parseScheduled({ token: TOKEN, env: 'production', card: card('x') }), null);
   assert.equal(parseScheduled({ token: 'short', env: 'production', card: card('404') }), null);

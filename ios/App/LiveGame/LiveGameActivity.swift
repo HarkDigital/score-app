@@ -3,9 +3,9 @@ import SwiftUI
 import WidgetKit
 
 // The Lock Screen card and Dynamic Island for one game, in Phade's look:
-// near-black, mint accent, the red live dot, team-color badges with the
-// abbreviation (Phade's TeamLogo fallback; a Live Activity can't load the web
-// logos), tabular numbers. Tapping opens the game page in the app.
+// near-black, mint accent, the red live dot, team logos (from the files
+// logos the app saved, falling back to Phade's team-color badges), tabular
+// numbers. Tapping opens the game page in the app.
 
 @main
 struct LiveGameBundle: WidgetBundle {
@@ -262,14 +262,26 @@ struct CompactSide: View {
 
 // MARK: - Phade pieces
 
-/// Phade's TeamLogo fallback: the team's color with its abbreviation.
+/// The team's logo, saved by the app (TeamLogos); without one, Phade's
+/// TeamLogo fallback: the team's color with its abbreviation.
 struct TeamBadge: View {
     let team: GameAttributes.Team
     var size: CGFloat = 36
 
     var body: some View {
+        if let logo = TeamLogos.image(for: team.logo) {
+            Image(uiImage: logo)
+                .resizable()
+                .scaledToFit()
+                .frame(width: size, height: size)
+        } else {
+            fallback
+        }
+    }
+
+    private var fallback: some View {
         let hex = Phade.rgb(team.color)
-        Circle()
+        return Circle()
             .fill(hex.map { Color(red: $0.r, green: $0.g, blue: $0.b) } ?? Phade.gray700)
             .frame(width: size, height: size)
             .overlay(

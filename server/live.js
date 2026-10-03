@@ -184,9 +184,12 @@ export function parseActivity(body) {
 const HEX = /^#[0-9a-f]{6}$/i;
 const text = (v, max) => typeof v === 'string' && v.length > 0 && v.length <= max;
 
+// ESPN's logo CDN only; anything else is dropped (the card shows the badge).
+const LOGO = /^https:\/\/a\.espncdn\.com\/[\w./-]{1,240}$/;
+
 function parseCardTeam(t) {
   if (!t || !text(t.abbr, 12) || !text(t.name, 60) || (t.color != null && !HEX.test(t.color))) return null;
-  return { abbr: t.abbr, name: t.name, color: t.color ?? null };
+  return { abbr: t.abbr, name: t.name, color: t.color ?? null, logo: LOGO.test(t.logo ?? '') ? t.logo : null };
 }
 
 // POST /v1/scheduled: {token (push-to-start), env, card (details.js lockScreenCard)}.
