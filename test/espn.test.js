@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
   LEAGUES, scoreboardUrl, parseScoreboard, groupGames, refreshDelay,
-  statusLabel, formatStart, dayLabel, weekLabel, weekInfo, adjacentWeek, teamColor, fallbackUrl,
+  statusLabel, formatStart, dayLabel, weekLabel, weekInfo, adjacentWeek, teamColor, fallbackUrl, parseOdds,
 } from '../espn.js';
 
 const league = (id) => LEAGUES.find((l) => l.id === id);
@@ -194,4 +194,75 @@ test('day labels', () => {
   assert.equal(dayLabel(-1), 'Yesterday');
   assert.equal(dayLabel(1), 'Tomorrow');
   assert.match(dayLabel(5, new Date(2026, 9, 3)), /8/);
+});
+
+// Odds entries follow ESPN's shape: a game summary's pickcenter (same fields
+// as the scoreboard) and the core API's odds items.
+const home = { homeAway: 'home', team: { id: '254', abbreviation: 'UTAH' } };
+const away = { homeAway: 'away', team: { id: '204', abbreviation: 'ORST' } };
+const draftKings = {
+  provider: { id: '41', name: 'DraftKings', priority: 1 },
+  details: 'UTAH -3.5',
+  overUnder: 54.0,
+  spread: -3.5,
+  awayTeamOdds: { favorite: false, underdog: true, moneyLine: 145, spreadOdds: -110 },
+  homeTeamOdds: { favorite: true, underdog: false, moneyLine: -155, spreadOdds: -110 },
+};
+
+test('pre-game lines: spread, total and moneylines by team', () => {
+  assert.deepEqual(parseOdds([draftKings], home, away), {
+    provider: 'DraftKings',
+    spread: 'UTAH -3.5',
+    total: '54',
+    draw: '',
+    moneyline: { 254: '-155', 204: '+145' },
+  });
+});
+
+test('projection models are skipped and consensus is only a fallback', () => {
+  // A projection model's "odds" are win percentages (numberfire, real capture).
+  const numberfire = {
+    provider: { id: '1003', name: 'numberfire', priority: 0 },
+    details: 'UTAH -3.5', overUnder: 54, spread: -3.5,
+    awayTeamOdds: { moneyLine: 145, spreadOdds: 71.07 },
+    homeTeamOdds: { moneyLine: -155, spreadOdds: 28.93 },
+  };
+  const consensus = { provider: { id: '1004', name: 'consensus', priority: 0 }, details: 'EVEN', spread: 0 };
+  assert.equal(parseOdds([numberfire, consensus, draftKings], home, away).provider, 'DraftKings');
+  assert.deepEqual(parseOdds([numberfire, consensus], home, away), {
+    provider: 'consensus', spread: 'EVEN', total: '', draw: '', moneyline: {},
+  });
+  assert.equal(parseOdds([numberfire], home, away), null);
+});
+
+test('the spread is worded from the home side when ESPN names no team', () => {
+  const line = (spread, details = '-3.5') => parseOdds([{ provider: { name: 'DraftKings' }, details, spread }], home, away).spread;
+  assert.equal(line(-3.5), 'UTAH -3.5');
+  assert.equal(line(6), 'ORST -6');
+  assert.equal(line(0, ''), 'PK');
+});
+
+test('prices are American odds, from numbers or display strings', () => {
+  const odds = parseOdds([{
+    provider: { name: 'DraftKings' },
+    homeTeamOdds: { current: { moneyLine: { american: 'EVEN' } } },
+    awayTeamOdds: { moneyLine: 52.07 }, // not a price
+    drawOdds: { moneyLine: 250 },
+  }], home, away);
+  assert.deepEqual(odds.moneyline, { 254: 'EVEN' });
+  assert.equal(odds.draw, '+250');
+  assert.equal(parseOdds([null], home, away), null);
+  assert.equal(parseOdds(undefined, home, away), null);
+  assert.equal(parseOdds([{ provider: { name: 'DraftKings' } }], home, away), null);
+});
+
+test('lines show only before kickoff', () => {
+  const board = (state) => parseScoreboard({ events: [{ id: '1', competitions: [{
+    status: { type: { state } }, competitors: [home, away], odds: [draftKings],
+  }] }] }, league('ncaaf')).games[0].odds;
+  assert.equal(board('pre').spread, 'UTAH -3.5');
+  assert.equal(board('in'), null);
+  assert.equal(board('post'), null);
+  // The sample feed's games carry no odds at all.
+  assert.ok(nfl.games.every((g) => g.odds === null));
 });

@@ -354,7 +354,9 @@ function gameCard(game, now) {
   else if (live) status = `<span class="badge badge-live"><span class="live-dot" aria-hidden="true"></span>Live</span><span class="clock">${esc(game.statusText)}</span>`;
   else if (done) status = `<span class="badge">${esc(game.statusText || 'Final')}</span>`;
   else status = `<span class="clock">${esc(statusLabel(game, now))}</span>`;
-  const rows = game.teams.map((team) => teamRow(team, league, done, decided));
+  // No line on a game that won't be played as scheduled.
+  const odds = TROUBLE.test(game.statusName) ? null : game.odds;
+  const rows = game.teams.map((team) => teamRow(team, league, done, decided, odds?.moneyline[team.id]));
   const foot = [game.detail, game.note].filter(Boolean).join(' · ');
   return `
     <article class="card game${live ? ' live' : ''}">
@@ -366,11 +368,27 @@ function gameCard(game, now) {
       <div class="teams">
         ${rows.length === 2 ? `${rows[0]}<div class="divider">${league.homeFirst ? 'vs' : '@'}</div>${rows[1]}` : rows.join('')}
       </div>
+      ${odds ? oddsRow(odds, league) : ''}
       ${foot ? `<div class="game-foot">${esc(foot)}</div>` : ''}
     </article>`;
 }
 
-function teamRow(team, league, done, decided) {
+// Spread, total and (soccer) the draw, with the book they come from.
+function oddsRow(odds, league) {
+  const items = [
+    [league.homeFirst ? 'Line' : 'Spread', odds.spread],
+    ['Total', odds.total],
+    ['Draw', odds.draw],
+  ].filter(([, value]) => value);
+  if (!items.length) return '';
+  return `
+    <div class="game-odds">
+      ${items.map(([label, value]) => `<span class="odd"><span class="odd-label">${label}</span>${esc(value)}</span>`).join('')}
+      ${odds.provider ? `<span class="book">${esc(odds.provider)}</span>` : ''}
+    </div>`;
+}
+
+function teamRow(team, league, done, decided, moneyline) {
   const mine = isFollowed(followed, league.id, team.id);
   return `
     <div class="team${decided && !team.winner ? ' lost' : ''}">
@@ -378,7 +396,7 @@ function teamRow(team, league, done, decided) {
       <span class="name">${team.rank ? `<span class="rank">${team.rank}</span>` : ''}${esc(team.name)}${mine ? `<span class="star" title="Following">${ICONS.starSmall}</span>` : ''}</span>
       ${team.possession ? '<span class="poss" title="Possession" aria-label="Possession"></span>' : ''}
       <span class="record">${esc(team.record)}</span>
-      <span class="score">${esc(team.score)}</span>
+      <span class="score">${moneyline ? `<span class="ml" title="Moneyline">${esc(moneyline)}</span>` : esc(team.score)}</span>
       <span class="win-mark">${done && team.winner ? ICONS.winner : ''}</span>
     </div>`;
 }
