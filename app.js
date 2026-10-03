@@ -4,6 +4,7 @@ import {
 } from './espn.js';
 import {
   standingsUrl, filterStandingsGroup, teamListUrls, parseStandings, rankingsUrl, parseRankings, teamsFromStandings,
+  searchTeams, fold,
 } from './standings.js';
 import {
   loadFollowed, saveFollowed, isFollowed, toggleFollowed, followedLeagues, countFollowed, gamesForTeams,
@@ -17,7 +18,7 @@ import {
 } from './pages.js';
 import { initPullToRefresh } from './pull.js';
 import { initSwipeNav } from './swipe.js';
-import { inApp, setAlertTeams } from './native.js';
+import { inApp, setAlertTeams, haptic } from './native.js';
 
 const MINE = { id: 'mine', label: 'My Teams', mine: true };
 const LEAGUE_KEY = 'scores.league';
@@ -521,12 +522,36 @@ function selectFilter(id) {
   changeView({ filter });
 }
 
+// ---- Team lists ----
+
+// Every league's teams, for the team picker and the team search. ESPN's teams
+// list blocks browsers (no CORS header); standings list every team (college
+// football's in two: FBS and FCS). Kept for the session once loaded.
+const teamLists = new Map();   // league id → teams
+const teamLoads = new Map();   // league id → the load in flight
+
+function teamsFor(league) {
+  if (teamLists.has(league.id)) return Promise.resolve(teamLists.get(league.id));
+  if (!teamLoads.has(league.id)) {
+    const load = Promise.all(teamListUrls(league).map(async (url) => parseStandings(await getJson(url), league)))
+      .then((tables) => {
+        const teams = teamsFromStandings({ groups: tables.flatMap((t) => t.groups) });
+        teamLists.set(league.id, teams);
+        return teams;
+      })
+      .finally(() => teamLoads.delete(league.id));
+    teamLoads.set(league.id, load);
+  }
+  return teamLoads.get(league.id);
+}
+
 // ---- Team picker ----
 
-const picker = { open: false, league: null, teams: new Map(), failed: new Set(), query: '', changed: false, opener: null };
+const picker = { open: false, league: null, failed: new Set(), query: '', changed: false, opener: null };
 
 function openPicker() {
   if (picker.open) return;
+  closeSearch(false);
   Object.assign(picker, { open: true, changed: false, query: '', opener: document.activeElement });
   picker.league = view.league.mine ? leagueById(followed[0]?.league) ?? picker.league ?? LEAGUES[0] : view.league;
   els.sheet.innerHTML = `
@@ -573,12 +598,10 @@ function renderPickerTabs() {
   if (selected) tabs.scrollLeft = selected.offsetLeft - (tabs.clientWidth - selected.offsetWidth) / 2;
 }
 
-const fold = (text) => text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-
 function renderPickerList() {
   const list = els.sheet.querySelector('#picker-list');
   els.sheet.querySelector('#picker-search').placeholder = `Search ${picker.league.label} teams`;
-  const teams = picker.teams.get(picker.league.id);
+  const teams = teamLists.get(picker.league.id);
   if (!teams) {
     list.innerHTML = picker.failed.has(picker.league.id)
       ? `<li class="list-note">Couldn't load ${esc(picker.league.label)} teams.<br><br><button class="pill-btn" data-action="retry-teams">Try again</button></li>`
@@ -603,13 +626,10 @@ function renderPickerList() {
 }
 
 async function loadTeams(league) {
-  if (picker.teams.has(league.id)) return;
+  if (teamLists.has(league.id)) return;
   picker.failed.delete(league.id);
   try {
-    // ESPN's teams list blocks browsers (no CORS header); standings list every
-    // team (college football's in two: FBS and FCS).
-    const tables = await Promise.all(teamListUrls(league).map(async (url) => parseStandings(await getJson(url), league)));
-    picker.teams.set(league.id, teamsFromStandings({ groups: tables.flatMap((t) => t.groups) }));
+    await teamsFor(league);
   } catch {
     picker.failed.add(league.id);
   }
@@ -617,7 +637,7 @@ async function loadTeams(league) {
 }
 
 function toggleTeam(button) {
-  const team = picker.teams.get(picker.league.id)?.find((t) => t.id === button.dataset.team);
+  const team = teamLists.get(picker.league.id)?.find((t) => t.id === button.dataset.team);
   if (!team) return;
   followed = toggleFollowed(followed, picker.league.id, team);
   saveFollowed(storage, followed);
@@ -627,6 +647,109 @@ function toggleTeam(button) {
   button.setAttribute('aria-pressed', String(on));
   button.querySelector('.follow-mark').innerHTML = on ? ICONS.check : ICONS.plus;
   renderPickerTabs();
+}
+
+// ---- Team search ----
+
+// The magnifier in the header: every league's teams at once, and a tap opens
+// the team's page. Before anything is typed it lists your teams.
+const search = { open: false, query: '', pending: new Set(), failed: new Set(), opener: null };
+
+function openSearch() {
+  if (search.open) return;
+  closePicker();
+  Object.assign(search, { open: true, query: '', opener: document.activeElement });
+  els.sheet.innerHTML = `
+    <div class="sheet-backdrop" data-action="close-search"></div>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+      <div class="sheet-grabber" aria-hidden="true"></div>
+      <div class="sheet-head">
+        <h2 id="sheet-title">Find a team</h2>
+        <button class="pill-btn" data-action="close-search">Done</button>
+      </div>
+      <input class="search" id="team-search" type="search" placeholder="Team, city or abbreviation" aria-label="Find a team"
+        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="go">
+      <ul class="team-list" id="search-list"></ul>
+    </div>`;
+  document.body.style.overflow = 'hidden';
+  const input = els.sheet.querySelector('#team-search');
+  input.addEventListener('input', () => {
+    search.query = input.value;
+    renderSearch();
+  });
+  // Go on the keyboard opens the top result.
+  input.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    els.sheet.querySelector('[data-search-team]')?.click();
+  });
+  // Scrolling the results puts the keyboard away, as in iOS's own lists.
+  els.sheet.querySelector('#search-list').addEventListener('touchmove', () => input.blur(), { passive: true });
+  // Within the tap itself, or iOS won't bring up the keyboard.
+  input.focus();
+  renderSearch();
+  for (const league of LEAGUES) loadSearchTeams(league);
+}
+
+function closeSearch(restoreFocus = true) {
+  if (!search.open) return;
+  search.open = false;
+  els.sheet.innerHTML = '';
+  document.body.style.overflow = '';
+  if (restoreFocus) search.opener?.focus?.();
+}
+
+async function loadSearchTeams(league) {
+  if (teamLists.has(league.id)) return;
+  search.pending.add(league.id);
+  search.failed.delete(league.id);
+  try {
+    await teamsFor(league);
+  } catch {
+    search.failed.add(league.id);
+  }
+  search.pending.delete(league.id);
+  if (search.open) renderSearch();
+}
+
+function renderSearch() {
+  const list = els.sheet.querySelector('#search-list');
+  if (!list) return;
+  const query = search.query.trim();
+  if (!query) {
+    const mine = followed.map((t) => ({ league: leagueById(t.league), team: t })).filter((r) => r.league);
+    list.innerHTML = mine.length
+      ? `<li class="list-label">Your teams</li>${mine.map(searchRow).join('')}`
+      : '<li class="list-note">Search every league by team name, city or abbreviation.</li>';
+    return;
+  }
+  const loaded = LEAGUES.filter((l) => teamLists.has(l.id)).map((league) => ({ league, teams: teamLists.get(league.id) }));
+  const results = searchTeams(loaded, query);
+  const loading = LEAGUES.filter((l) => search.pending.has(l.id)).map((l) => l.label);
+  const failed = LEAGUES.filter((l) => search.failed.has(l.id)).map((l) => l.label);
+  const notes = [
+    !results.length && !loading.length ? `No teams match “${query}”.` : '',
+    loading.length ? `Still loading ${loading.join(', ')}…` : '',
+    failed.length ? `Couldn't load ${failed.join(', ')}.` : '',
+  ].filter(Boolean);
+  list.innerHTML = results.map(searchRow).join('') + notes.map((n) => `<li class="list-note">${esc(n)}</li>`).join('');
+}
+
+function searchRow({ league, team }) {
+  const mine = isFollowed(followed, league.id, team.id);
+  return `
+    <li><button class="team-option" data-search-team="${esc(league.id)}|${esc(team.id)}">
+      ${logoHtml(team)}
+      <span class="name">${esc(team.name)}${mine ? `<span class="star" title="Following">${ICONS.starSmall}</span>` : ''}</span>
+      <span class="league-chip">${esc(league.label)}</span>
+    </button></li>`;
+}
+
+function openSearchResult(value) {
+  const [leagueId, teamId] = value.split('|');
+  closeSearch(false);
+  const href = teamHref(leagueId, teamId);
+  if (href !== location.hash) navigate(href);
 }
 
 // ---- Events ----
@@ -664,15 +787,18 @@ document.addEventListener('click', (event) => {
   else if (d.action === 'today') changeView({ dayOffset: 0, week: null });
   else if (d.action === 'edit-teams') openPicker();
   else if (d.action === 'close-picker') closePicker();
+  else if (d.action === 'open-search') openSearch();
+  else if (d.action === 'close-search') closeSearch();
+  else if (d.searchTeam) openSearchResult(d.searchTeam);
   else if (d.action === 'retry') load();
   else if (d.action === 'retry-teams') loadTeams(picker.league);
 });
 
 const refreshNow = () => (pageOpen() ? refreshPage() : load());
 els.refresh.addEventListener('click', refreshNow);
-initPullToRefresh({ refresh: refreshNow, enabled: () => !picker.open });
+initPullToRefresh({ refresh: refreshNow, enabled: () => !picker.open && !search.open });
 initSwipeNav({
-  enabled: () => inApp() && !picker.open,
+  enabled: () => inApp() && !picker.open && !search.open,
   content: () => document.getElementById(pageOpen() ? 'page' : 'main'),
   canBack: () => pageOpen(),
   canForward: () => furthest > depth,
@@ -681,12 +807,25 @@ initSwipeNav({
 });
 
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape') closePicker();
+  if (event.key !== 'Escape') return;
+  closePicker();
+  closeSearch();
 });
 
 document.addEventListener('change', (event) => {
-  if (event.target.matches('select[data-filter]')) selectFilter(event.target.value);
+  if (!event.target.matches('select[data-filter]')) return;
+  haptic('selection');
+  selectFilter(event.target.value);
 });
+
+// In the iPhone app every button press taps the haptic engine: a selection
+// tick for tabs, view switches, days and polls, a light tap for the rest.
+// Captured first, so it buzzes even for buttons whose handlers stop the click.
+const SELECTION = '[role="tab"], .day, [data-poll]';
+document.addEventListener('click', (event) => {
+  const button = event.target.closest('button');
+  if (button && !button.disabled) haptic(button.matches(SELECTION) ? 'selection' : 'light');
+}, true);
 
 // Don't poll in the background; catch up as soon as the app is looked at again.
 document.addEventListener('visibilitychange', () => {

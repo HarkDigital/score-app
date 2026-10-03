@@ -32,9 +32,14 @@
         <img src="icons/icon.svg" alt="" width="30" height="30">
         <span class="brand-name">Scores</span>
       </div>
-      <button id="refresh" class="icon-btn" aria-label="Refresh">
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v4h-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
+      <div class="top-actions">
+        <button id="search" class="icon-btn" aria-label="Find a team" data-action="open-search">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M10.5 4a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM20 20l-4.8-4.8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button id="refresh" class="icon-btn" aria-label="Refresh">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v4h-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
     </div>
     <nav id="tabs" class="tabs" role="tablist" aria-label="League"></nav>
     <div class="accent-line" aria-hidden="true"></div>

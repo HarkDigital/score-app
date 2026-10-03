@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { leagueById } from '../espn.js';
 import {
   standingsUrl, filterStandingsGroup, teamListUrls, rankingsUrl, parseStandings, parseRankings, teamsFromStandings,
+  searchTeams, fold,
 } from '../standings.js';
 import { leagueFilter } from '../espn.js';
 
@@ -129,4 +130,31 @@ test('poll movement: new entries and the first poll of a season', () => {
 test('feeds without tables parse to nothing rather than failing', () => {
   assert.deepEqual(parseStandings({ fullViewLink: { href: 'x' } }, leagueById('mlb')), { groups: [] });
   assert.deepEqual(parseStandings(null, leagueById('nhl')), { groups: [] });
+});
+
+test('team search: abbreviations, then word starts, then anywhere, across leagues', () => {
+  const team = (id, name, shortName, abbr) => ({ id, name, shortName, abbr });
+  const lists = [
+    { league: { id: 'nfl' }, teams: [team('21', 'Philadelphia Eagles', 'Eagles', 'PHI'), team('8', 'Detroit Lions', 'Lions', 'DET')] },
+    { league: { id: 'nba' }, teams: [team('20', 'Philadelphia 76ers', '76ers', 'PHI')] },
+    { league: { id: 'ncaaf' }, teams: [team('2', 'Auburn Tigers', 'Auburn', 'AUB'), team('245', 'Texas A&M Aggies', 'Texas A&M', 'TA&M'),
+      team('2006', 'Akron Zips', 'Akron', 'AKR'), team('99', 'LSU Tigers', 'LSU', 'LSU')] },
+    { league: { id: 'nhl' }, teams: [team('10', 'Montréal Canadiens', 'Canadiens', 'MTL'), team('19', 'St. Louis Blues', 'Blues', 'STL')] },
+  ];
+  const ids = (q) => searchTeams(lists, q).map((r) => `${r.league.id}:${r.team.id}`);
+  // Same abbreviation in two leagues: both, in the leagues' order.
+  assert.deepEqual(ids('phi'), ['nfl:21', 'nba:20']);
+  // A word start beats the middle of a word ("tigers" vs "Detroit").
+  assert.deepEqual(ids('tigers'), ['ncaaf:2', 'ncaaf:99']);
+  assert.deepEqual(ids('troit'), ['nfl:8']);
+  // Accents, punctuation and an ampersand abbreviation.
+  assert.deepEqual(ids('montreal'), ['nhl:10']);
+  assert.deepEqual(ids('st louis'), ['nhl:19']);
+  assert.deepEqual(ids('ta&m'), ['ncaaf:245']);
+  assert.deepEqual(ids('philadelphia e'), ['nfl:21']);
+  assert.deepEqual(ids('  '), []);
+  assert.deepEqual(ids('zzz'), []);
+  assert.equal(searchTeams(lists, 'a', 2).length, 2);
+  assert.equal(fold('Québec'), 'quebec');
+  assert.equal(fold(undefined), '');
 });
