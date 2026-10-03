@@ -1,10 +1,11 @@
-// Swipe anywhere to go back or forward, in the iPhone app. WebKit's own
+// Swipe anywhere to go back or forward, in the apps. On iPhone, WebKit's own
 // swipes (turned on in the app's ViewController) only start at the screen's
-// edge, with a live preview of the page underneath; this covers the rest of
-// the screen, as iOS's own apps now do. The page follows the finger, and
-// letting go a third of the way across, or flicking, goes back (right) or
-// forward (left). The edges stay WebKit's, and anything that scrolls
-// sideways (league pills, box score tables) keeps its own swipes.
+// edge, with a live preview of the page underneath; on Android the edges are
+// the system's Back gesture. This covers the rest of the screen, as iOS's
+// own apps now do. The page follows the finger, and letting go a third of the
+// way across, or flicking, goes back (right) or forward (left). The edges
+// stay the system's, and anything that scrolls sideways (league pills, box
+// score tables) keeps its own swipes.
 
 import { inSideScroller } from './pull.js';
 

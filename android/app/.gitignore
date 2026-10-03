@@ -1,2 +1,5 @@
 /build/*
 !/build/.npmkeep
+
+# Firebase config for the Phade project (published sites shouldn't carry it)
+google-services.json

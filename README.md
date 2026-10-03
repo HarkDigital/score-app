@@ -84,7 +84,13 @@ The app needs iOS 16 or later. The Lock Screen card and alerts need the push ser
 
 "Phade Scores" for Android is the same thin shell as the iPhone app (the Capacitor project in `android/`, app ID `digital.hark.scores`): it opens the live site, so web changes reach it as soon as they're merged, and it reloads itself when the site has been updated. Back (the gesture or the button) steps back through the app's pages and leaves the app from the first one. Buttons give a short haptic buzz.
 
-Not on Android yet: the Lock Screen card and team alerts (they're iPhone features; Android would need its own notifications and Google's push service).
+It has the iPhone app's features too:
+- **Lock Screen card**: the game page's **Show on Lock Screen** switch puts the game up as a live notification, with both logos and the score, on the Lock Screen and in the notification shade (collapsed it reads like the iPhone's Dynamic Island: "OSU 31 - 14 IOWA" over the clock). Later games appear 15 minutes before the start. The push server keeps it current; tap it to open the game, swipe it away to stop it.
+- **Team alerts**: the same three switches per followed team (game starts, scores, final score).
+- **Swipes**: swipe anywhere to go back or forward, as on iPhone (the screen's edges are Android's own Back gesture).
+- **Haptics** on every button.
+
+Android asks for permission to send notifications the first time you turn on a card or an alert. The card and alerts come through Google's Firebase (the Phade project): a build needs `android/app/google-services.json` (from the Firebase console, kept out of git), and the push server needs its own Firebase key (see `server/README.md`). Without the config file the app still works, minus those two switches.
 
 **Make a build for testers:**
 

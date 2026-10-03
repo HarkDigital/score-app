@@ -4,4 +4,6 @@
     <string name="title_activity_main">Phade Scores</string>
     <string name="package_name">digital.hark.scores</string>
     <string name="custom_url_scheme">digital.hark.scores</string>
+    <!-- The push server for Lock Screen cards and team alerts (server/). -->
+    <string name="push_server" translatable="false">https://scores.phade.app</string>
 </resources>

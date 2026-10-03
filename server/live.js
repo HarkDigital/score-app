@@ -159,22 +159,93 @@ export function startPayload(card, game, league, nowSec) {
   return { aps };
 }
 
+// ---- Android (Firebase Cloud Messaging) ----
+
+// The Android app gets the same cards and alerts as data messages, which its
+// FirebaseMessagingService turns into notifications. Entries from the Android
+// app carry platform: 'android'; everything else is the iPhone app.
+export const isAndroid = (entry) => entry?.platform === 'android';
+
+// A card's update, or its final state. Score and state changes go at high
+// priority; a clock or down-and-distance change at normal, which Android may
+// hold while the phone dozes (as Apple does with priority 5).
+export function androidCardMessage(entry, state, plan) {
+  return {
+    data: { type: plan.end ? 'end' : 'update', league: entry.league, eventId: entry.eventId, state: JSON.stringify(state) },
+    priority: plan.priority === 10 ? 'HIGH' : 'NORMAL',
+    collapseKey: `${entry.league}:${entry.eventId}`,
+    ttl: plan.end ? '7200s' : '600s',
+  };
+}
+
+// A scheduled card going up: the whole card (start in seconds since 1970;
+// from the scoreboard, in case the time moved) and its first state.
+export function androidStartMessage(card, game, league) {
+  return {
+    data: {
+      type: 'start',
+      league: card.league,
+      eventId: card.eventId,
+      card: JSON.stringify({ ...card, start: Math.round(game.start.getTime() / 1000) }),
+      state: JSON.stringify(contentState(game, league)),
+    },
+    priority: 'HIGH',
+    collapseKey: `${card.league}:${card.eventId}`,
+    ttl: '1800s',
+  };
+}
+
+// A team alert, from the same payload the iPhone gets.
+export function androidAlertMessage(payload) {
+  const { title, body } = payload.aps.alert;
+  return {
+    data: { type: 'alert', title, body, route: payload.route, thread: payload.aps['thread-id'] ?? '' },
+    priority: 'HIGH',
+    ttl: '3600s',
+  };
+}
+
 // ---- Requests ----
 
-const TOKEN = /^[0-9a-f]{32,512}$/i;
+// iPhone tokens are hex, so their case doesn't matter; FCM registration
+// tokens are an id, a colon and a long base64url-ish string, case-sensitive.
+const APNS_TOKEN = /^[0-9a-f]{32,512}$/i;
+const FCM_TOKEN = /^[\w-]{8,300}:[\w-]{20,600}$/;
 const EVENT = /^\d{1,14}$/;
 const TEAM = /^[\w-]{1,20}$/;
 const ENVS = new Set(['production', 'sandbox']);
 
-export const validToken = (token) => typeof token === 'string' && TOKEN.test(token);
+export const validToken = (token) => typeof token === 'string' && (APNS_TOKEN.test(token) || FCM_TOKEN.test(token));
+
+// The token as stored: hex lowercased, FCM as is, anything else null.
+export function normalizeToken(token) {
+  if (typeof token !== 'string') return null;
+  if (APNS_TOKEN.test(token)) return token.toLowerCase();
+  return FCM_TOKEN.test(token) ? token : null;
+}
+
+// Which app sent a request, and whether its token and environment fit it.
+// Android has no APNs environment; its entries say 'production'.
+function platformOf(body) {
+  const platform = body?.platform === 'android' ? 'android' : 'ios';
+  const token = typeof body?.token === 'string' ? body.token : null;
+  if (platform === 'android') {
+    return token && FCM_TOKEN.test(token) ? { platform, token, env: 'production' } : null;
+  }
+  return token && APNS_TOKEN.test(token) && ENVS.has(body?.env) ? { platform, token: token.toLowerCase(), env: body.env } : null;
+}
+
+// The key an entry is stored under: an iPhone card has a token of its own;
+// an Android phone has one token for all its cards, so the game is added.
+export const activityKey = (entry) => (isAndroid(entry) ? `${entry.token}|${entry.league}:${entry.eventId}` : entry.token);
 
 export function parseActivity(body) {
-  const { token, env, league, eventId, start } = body ?? {};
-  if (!validToken(token) || !ENVS.has(env) || !leagueById(league) || !EVENT.test(String(eventId ?? ''))) return null;
+  const who = platformOf(body);
+  const { league, eventId, start } = body ?? {};
+  if (!who || !leagueById(league) || !EVENT.test(String(eventId ?? ''))) return null;
   const startSec = Number(start);
   return {
-    token: token.toLowerCase(),
-    env,
+    ...who,
     league,
     eventId: String(eventId),
     start: Number.isFinite(startSec) && startSec > 0 ? startSec : null,
@@ -192,10 +263,12 @@ function parseCardTeam(t) {
   return { abbr: t.abbr, name: t.name, color: t.color ?? null, logo: LOGO.test(t.logo ?? '') ? t.logo : null };
 }
 
-// POST /v1/scheduled: {token (push-to-start), env, card (details.js lockScreenCard)}.
+// POST /v1/scheduled: {token (push-to-start, or the Android phone's FCM
+// token with platform: 'android'), env, card (details.js lockScreenCard)}.
 export function parseScheduled(body) {
-  const { token, env, card } = body ?? {};
-  if (!validToken(token) || !ENVS.has(env) || !card || typeof card !== 'object') return null;
+  const who = platformOf(body);
+  const { card } = body ?? {};
+  if (!who || !card || typeof card !== 'object') return null;
   const league = leagueById(card.league);
   const start = Number(card.start);
   const away = parseCardTeam(card.away);
@@ -204,8 +277,7 @@ export function parseScheduled(body) {
     || !text(card.leagueLabel, 40) || !away || !home) return null;
   const eventId = String(card.eventId);
   return {
-    token: token.toLowerCase(),
-    env,
+    ...who,
     league: league.id,
     eventId,
     start,
@@ -213,8 +285,11 @@ export function parseScheduled(body) {
   };
 }
 
+// PUT /v1/devices/:token: {platform, env, teams}. The token is in the path.
 export function parseDevice(body) {
-  const { env, teams } = body ?? {};
+  const android = body?.platform === 'android';
+  const env = android ? 'production' : body?.env;
+  const { teams } = body ?? {};
   if (!ENVS.has(env) || !Array.isArray(teams) || teams.length > 200) return null;
   const list = [];
   for (const t of teams) {
@@ -229,5 +304,5 @@ export function parseDevice(body) {
       end: legacy || t.end === true,
     });
   }
-  return { env, teams: list.filter((t) => t.start || t.score || t.end) };
+  return { platform: android ? 'android' : 'ios', env, teams: list.filter((t) => t.start || t.score || t.end) };
 }

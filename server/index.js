@@ -1,13 +1,15 @@
 // scores.phade.app: keeps Phade Scores' lock-screen cards current and sends
 // team alerts. The iPhone app registers a card's push token or a device's
-// followed teams here; watcher.js does the rest. Runs in Docker on the Phade
-// server behind its nginx (see server/README.md).
+// followed teams here, the Android app its FCM token (platform: 'android');
+// watcher.js does the rest. Runs in Docker on the Phade server behind its
+// nginx (see server/README.md).
 //
-//   POST   /v1/activities          {token, env, league, eventId, start}
-//   DELETE /v1/activities/:token
-//   POST   /v1/scheduled           {token (push-to-start), env, card}
+//   POST   /v1/activities          {platform, token, env, league, eventId, start}
+//   DELETE /v1/activities/:token                    (an iPhone card)
+//   DELETE /v1/activities/:token/:league/:eventId   (an Android card)
+//   POST   /v1/scheduled           {platform, token (push-to-start or FCM), env, card}
 //   DELETE /v1/scheduled/:token/:league/:eventId
-//   PUT    /v1/devices/:token      {env, teams: [{league, id}]}  (no teams = forget)
+//   PUT    /v1/devices/:token      {platform, env, teams: [{league, id}]}  (no teams = forget)
 //   DELETE /v1/devices/:token
 //   GET    /health
 
@@ -16,8 +18,9 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { openStore } from './store.js';
 import { createApns } from './apns.js';
+import { createFcm, readAccount } from './fcm.js';
 import { createWatcher } from './watcher.js';
-import { parseActivity, parseDevice, parseScheduled, validToken } from './live.js';
+import { parseActivity, parseDevice, parseScheduled, normalizeToken, activityKey } from './live.js';
 
 const env = process.env;
 const log = (msg) => console.log(`${new Date().toISOString()} ${msg}`);
@@ -40,7 +43,17 @@ if (env.APNS_KEY_PATH && isFile(env.APNS_KEY_PATH) && env.APNS_KEY_ID && env.APN
   log('no APNs key configured: dry run, pushes are logged instead of sent');
 }
 
-const watcher = createWatcher({ store, apns, log });
+// Android: the Firebase service account for the Phade project.
+let fcm = null;
+const account = env.FCM_ACCOUNT_PATH && isFile(env.FCM_ACCOUNT_PATH) ? readAccount(fs.readFileSync(env.FCM_ACCOUNT_PATH, 'utf8')) : null;
+if (account) {
+  fcm = createFcm({ account, log });
+  log(`android pushes through Firebase project ${account.project_id}`);
+} else {
+  log('no Firebase service account: Android pushes are a dry run');
+}
+
+const watcher = createWatcher({ store, apns, fcm, log });
 // Every second, so a league due every 5s is fetched on time; a tick with
 // nothing due does nothing.
 setInterval(watcher.tick, 1_000);
@@ -75,14 +88,17 @@ const server = http.createServer(async (req, res) => {
       return reply(200, {
         ok: true,
         push: apns ? 'live' : 'dry-run',
+        android: fcm ? 'live' : 'dry-run',
         activities: Object.keys(data.activities).length,
         scheduled: Object.keys(data.scheduled).length,
         devices: Object.keys(data.devices).length,
       });
     }
     const [, version, kind, rawToken, ...rest] = pathname.split('/');
-    if (version !== 'v1' || !(kind in MAX) || rest.length > (kind === 'scheduled' ? 2 : 0)) return reply(404, { error: 'not found' });
-    const token = validToken(rawToken) ? rawToken.toLowerCase() : null;
+    if (version !== 'v1' || !(kind in MAX) || rest.length > (kind === 'devices' ? 0 : 2)) return reply(404, { error: 'not found' });
+    // An FCM token's colon may arrive percent-encoded.
+    let token = null;
+    try { token = rawToken === undefined ? null : normalizeToken(decodeURIComponent(rawToken)); } catch { /* bad escape */ }
 
     if (kind === 'scheduled') {
       if (req.method === 'DELETE' && token && rest.length === 2) {
@@ -104,7 +120,8 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === 'DELETE' && token) {
-      delete data[kind][token];
+      // An Android card is one game of the phone's token.
+      delete data[kind][rest.length === 2 ? `${token}|${rest[0]}:${rest[1]}` : token];
       store.save();
       return reply(200, { ok: true });
     }
@@ -112,9 +129,12 @@ const server = http.createServer(async (req, res) => {
     if (kind === 'activities' && req.method === 'POST' && rawToken === undefined) {
       const card = parseActivity(await readJson(req));
       if (!card) return reply(400, { error: 'bad activity' });
-      const existing = data.activities[card.token];
+      const key = activityKey(card);
+      const existing = data.activities[key];
       if (!existing && Object.keys(data.activities).length >= MAX.activities) return reply(503, { error: 'full' });
-      data.activities[card.token] = {
+      data.activities[key] = {
+        platform: card.platform,
+        token: card.token,
         env: card.env,
         league: card.league,
         eventId: card.eventId,

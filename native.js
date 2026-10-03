@@ -1,24 +1,65 @@
-// The iPhone app's native features: the lock-screen card (a Live Activity),
-// team alerts and haptics (the Android app only has haptics). The app's ViewController installs a message handler,
-// window.webkit.messageHandlers.phadeScores, whose postMessage returns a
-// promise. On the website it doesn't exist, every call here resolves to null,
-// and the pages show none of these controls. No Capacitor JS involved.
+// The apps' native features: the lock-screen card (a Live Activity on
+// iPhone, a live notification on Android), team alerts and haptics. No
+// Capacitor JS involved; each app installs its own line to the page:
+// - iPhone: ViewController's message handler,
+//   window.webkit.messageHandlers.phadeScores, whose postMessage returns a
+//   promise of the reply.
+// - Android: MainActivity's web message listener, window.phadeScoresAndroid
+//   (only on the app's own site). Messages are JSON strings with an id; the
+//   reply comes back on onmessage with the same id.
+// On the website neither exists, every call resolves to null, and the pages
+// show none of these controls.
 
-const handler = () => window.webkit?.messageHandlers?.phadeScores ?? null;
+const iosHandler = () => window.webkit?.messageHandlers?.phadeScores ?? null;
+const androidBridge = () => window.phadeScoresAndroid ?? null;
 
-export const inApp = () => Boolean(handler());
+// 'ios', 'android' or null (the website, or an Android build before the bridge).
+export const appPlatform = () => (iosHandler() ? 'ios' : androidBridge() ? 'android' : null);
+export const inApp = () => appPlatform() !== null;
 
-async function call(action, args = {}) {
-  const h = handler();
-  if (!h) return null;
-  try {
-    return await h.postMessage({ action, ...args });
-  } catch {
-    return null;
+// The Android app also adds "PhadeScoresAndroid" to its user agent
+// (capacitor.config.json), so even its first builds, which had no bridge,
+// are recognised for haptics.
+export const inAndroidApp = () => /PhadeScoresAndroid/.test(navigator.userAgent);
+
+const pending = new Map();
+let nextId = 0;
+
+function callAndroid(bridge, action, args) {
+  if (!bridge.onmessage) {
+    bridge.onmessage = (event) => {
+      let reply = null;
+      try { reply = JSON.parse(event.data); } catch { return; }
+      const resolve = pending.get(reply?.id);
+      pending.delete(reply?.id);
+      resolve?.(reply.result ?? null);
+    };
   }
+  return new Promise((resolve) => {
+    const id = ++nextId;
+    pending.set(id, resolve);
+    bridge.postMessage(JSON.stringify({ id, action, ...args }));
+    // Asking for notification permission waits on the person, hence the long wait.
+    setTimeout(() => {
+      if (pending.delete(id)) resolve(null);
+    }, 120_000);
+  });
 }
 
-// { liveActivities, canSchedule (iOS 17.2+), active: [{league, eventId}],
+async function call(action, args = {}) {
+  try {
+    const ios = iosHandler();
+    if (ios) return await ios.postMessage({ action, ...args });
+    const android = androidBridge();
+    if (android) return await callAndroid(android, action, args);
+  } catch {
+    // An app build that doesn't know the action.
+  }
+  return null;
+}
+
+// { platform ('android'; the iPhone app doesn't say), liveActivities,
+//   canSchedule (iOS 17.2+, Android with Firebase), active: [{league, eventId}],
 //   scheduled: [{league, eventId}], alerts: 'authorized' | 'denied' | ... }
 export const nativeInfo = () => call('info');
 
@@ -38,20 +79,13 @@ export const enableAlerts = () => call('enableAlerts');
 // to the push server with its device token.
 export const setAlertTeams = (teams) => call('setAlertTeams', { teams });
 
-// The Android app is the same site in a WebView with no bridge; it adds
-// "PhadeScoresAndroid" to its user agent (capacitor.config.json).
-export const inAndroidApp = () => /PhadeScoresAndroid/.test(navigator.userAgent);
-
-// Android's haptics: a short buzz (ms) per style.
+// The first Android builds' haptics: a short buzz (ms) per style.
 const BUZZ = { selection: 6, light: 10, medium: 18 };
 
 // A tap of the haptic engine: 'selection' (tabs, pickers, switches), 'light'
 // (buttons) or 'medium' (pull to refresh arming). Fire and forget; silent on
 // the website and in iPhone builds before 7, which don't know the action.
 export function haptic(style = 'light') {
-  if (inAndroidApp()) {
-    navigator.vibrate?.(BUZZ[style] ?? BUZZ.light);
-    return;
-  }
-  call('haptic', { style });
+  if (inApp()) call('haptic', { style });
+  else if (inAndroidApp()) navigator.vibrate?.(BUZZ[style] ?? BUZZ.light);
 }
