@@ -23,9 +23,9 @@ async function call(action, args = {}) {
 export const nativeInfo = () => call('info');
 
 // card: details.js lockScreenCard(). Each resolves to {ok: bool} or null.
-// Show now: a game that's on or starts within six hours.
+// Show now: a game that's on or starts within 15 minutes.
 export const showOnLockScreen = (card) => call('showGame', { card });
-// Later games: the push server puts the card up 30 minutes before the start.
+// Later games: the push server puts the card up 15 minutes before the start.
 export const scheduleOnLockScreen = (card) => call('scheduleGame', { card });
 // Takes one game off the Lock Screen, or cancels it if it's scheduled.
 export const removeFromLockScreen = (league, eventId) => call('removeGame', { league, eventId });

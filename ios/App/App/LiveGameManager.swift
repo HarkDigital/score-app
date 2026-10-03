@@ -2,10 +2,11 @@ import ActivityKit
 import Foundation
 
 // Games on the Lock Screen. Each game page has its own toggle:
-// - a game that's on or starts within six hours goes up straight away;
-// - a later one is scheduled: the push server starts it 30 minutes before the
-//   game with Apple's push-to-start (iOS 17.2+), since iOS ends a card after
-//   eight hours.
+// - a game that's on or starts within 15 minutes goes up straight away;
+// - a later one is scheduled: the push server starts it 15 minutes before the
+//   game with Apple's push-to-start (iOS 17.2+). Before iOS 17.2 a game
+//   within six hours goes up straight away instead (iOS ends a card after
+//   eight hours). The web app decides which; this just does it.
 // Either way the push server keeps it current through the card's own token.
 @available(iOS 16.2, *)
 @MainActor

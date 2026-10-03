@@ -242,11 +242,12 @@ test('scheduled cards are validated and keep only the attributes', () => {
   assert.equal(parseScheduled({ token: 'short', env: 'production', card: card('404') }), null);
 });
 
-test('a scheduled card goes up 30 minutes before the start, or as soon as the game is on', () => {
+test('a scheduled card goes up 15 minutes before the start, or as soon as the game is on', () => {
   const pre = game(nflBoard, '404'); // SF @ LAR, 4:25 PM EDT
   const kickoff = pre.start.getTime() / 1000;
-  assert.equal(startDue(pre, kickoff - 31 * 60), false);
-  assert.equal(startDue(pre, kickoff - 29 * 60), true);
+  assert.equal(startDue(pre, kickoff - 16 * 60), false);
+  assert.equal(startDue(pre, kickoff - 15 * 60), true);
+  assert.equal(startDue(pre, kickoff - 14 * 60), true);
   assert.equal(startDue(game(nflBoard, '402'), 0), true, 'already live');
   assert.equal(startDue({ ...pre, statusName: 'STATUS_POSTPONED' }, kickoff), false);
 });
@@ -269,9 +270,13 @@ test('the watcher starts a scheduled card once, at the right time', async () => 
   const h = harness({ scheduled: { [`${TOKEN}|nfl:404`]: { ...entry, createdAt: 0 } } });
   await h.watcher.tick(); // 18:00Z, 2h25 before
   assert.equal(h.sent.length, 0);
-  h.later(2 * 3600_000); // 20:00Z, 25 minutes before
+  h.later(2 * 3600_000 + 9.5 * 60_000); // 20:09:30Z, 15.5 minutes before
   await h.watcher.tick();
-  assert.equal(h.sent.length, 1);
+  assert.equal(h.sent.length, 0, 'not yet');
+  // The next regular poll would be 2 minutes on; the card is due at 20:10.
+  h.later(31_000);
+  await h.watcher.tick();
+  assert.equal(h.sent.length, 1, 'on time');
   assert.equal(h.sent[0].payload.aps.event, 'start');
   assert.deepEqual(h.store.data.scheduled, {}, 'sent once, then forgotten');
 });

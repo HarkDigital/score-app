@@ -5,7 +5,9 @@
 // scores and statuses read exactly like the app's.
 
 import { leagueById, dayUrls, parseScoreboard, fallbackUrl, addDays, ymd } from '../espn.js';
-import { contentState, activityPlan, activityPayload, gameAlerts, gameMemo, wantsAlert, followsGame, startDue, startPayload } from './live.js';
+import {
+  contentState, activityPlan, activityPayload, gameAlerts, gameMemo, wantsAlert, followsGame, startDue, startPayload, SCHEDULE_LEAD,
+} from './live.js';
 import { prune } from './store.js';
 
 const MIN = 60_000;
@@ -145,7 +147,12 @@ export function createWatcher({ store, apns, fetchJson: getJson = fetchJson, log
         }
         const mine = [...games.values()].filter((g) => watched(id, g));
         for (const game of mine) await handleGame(league, game);
-        nextFetch.set(id, now() + pollDelay(mine, now()));
+        // Be there when a scheduled card is due, not up to a poll later.
+        const due = Object.values(data.scheduled)
+          .filter((s) => s.league === id && s.start)
+          .map((s) => (s.start - SCHEDULE_LEAD) * 1000)
+          .filter((t) => t > now());
+        nextFetch.set(id, Math.min(now() + pollDelay(mine, now()), ...due));
       }
       if (fetched) store.save();
     } catch (err) {

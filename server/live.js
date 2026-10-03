@@ -128,9 +128,9 @@ export function followsGame(device, leagueId, game) {
 // ---- Scheduled cards ----
 
 // A card for a later game is started by the server with Apple's
-// push-to-start, this long before the game (iOS ends a card after 8 hours,
-// so it can't simply go up days early).
-export const SCHEDULE_LEAD = 30 * 60;
+// push-to-start, this long before the game (the web app's
+// LOCK_LEAD_MINUTES; iOS ends a card after 8 hours anyway).
+export const SCHEDULE_LEAD = 15 * 60;
 
 // ActivityKit decodes a Date from JSON as seconds since 2001-01-01.
 const APPLE_EPOCH = 978_307_200;

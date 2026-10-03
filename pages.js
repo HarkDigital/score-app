@@ -3,7 +3,9 @@
 // back button, swipe-back and shared links all work.
 
 import { leagueById, statusLabel, lineSteamUrl, dayUrls, parseScoreboard } from './espn.js';
-import { summaryUrl, scheduleUrls, parseSummary, parseSchedule, lockScreenCard, canShowOnLockScreen } from './details.js';
+import {
+  summaryUrl, scheduleUrls, parseSummary, parseSchedule, lockScreenCard, canShowOnLockScreen, LOCK_LEAD_MINUTES,
+} from './details.js';
 import { ICONS, getJson, TROUBLE, oddsHtml, logoHtml, emptyState, errorState, formatClock, esc } from './ui.js';
 import { inApp, nativeInfo, showOnLockScreen, scheduleOnLockScreen, removeFromLockScreen, enableAlerts } from './native.js';
 
@@ -237,10 +239,9 @@ function gameHtml(game, league, id) {
 }
 
 // iPhone app only: a toggle on every game page that hasn't finished. A game
-// that's on or starts within six hours goes on the Lock Screen and in the
+// that's on or starts within 15 minutes goes on the Lock Screen and in the
 // Dynamic Island now; a later one is scheduled, and the push server puts it
-// up 30 minutes before the start (iOS ends a card after eight hours).
-// Several games can be up at once.
+// up 15 minutes before the start. Several games can be up at once.
 function lockState(league, id) {
   const match = (g) => g.league === league.id && g.eventId === String(id);
   return {
@@ -253,15 +254,15 @@ function lockHtml(game, league, id) {
   const info = native.info;
   if (!info?.liveActivities) return '';
   const { showing, scheduled } = lockState(league, id);
-  const now = canShowOnLockScreen(game);
+  const now = canShowOnLockScreen(game, new Date(), { canSchedule: info.canSchedule });
   if (!showing && !scheduled && (game.state === 'post' || TROUBLE.test(game.statusName) || (!now && !info.canSchedule))) return '';
   const on = showing || scheduled;
   let sub;
   if (native.lockError) sub = native.lockError;
   else if (showing) sub = 'Live score on your Lock Screen and in the Dynamic Island.';
-  else if (scheduled) sub = 'Appears on your Lock Screen 30 minutes before the start.';
+  else if (scheduled) sub = `Appears on your Lock Screen ${LOCK_LEAD_MINUTES} minutes before the start.`;
   else if (now) sub = 'Live score on your Lock Screen and in the Dynamic Island.';
-  else sub = 'Turn on and it appears 30 minutes before the start.';
+  else sub = `Turn on and it appears ${LOCK_LEAD_MINUTES} minutes before the start.`;
   return `
     <button class="card ext-link lock-card${on ? ' on' : ''}" role="switch" aria-checked="${on}" data-lock${native.busy ? ' disabled' : ''}>
       <span class="ext-icon">${on ? ICONS.lockCheck : ICONS.lock}</span>
@@ -279,7 +280,9 @@ async function toggleLock() {
   render();
   let result;
   if (showing || scheduled) result = await removeFromLockScreen(route.league.id, route.id);
-  else if (canShowOnLockScreen(data)) result = await showOnLockScreen(lockScreenCard(data, route.league, route.id));
+  else if (canShowOnLockScreen(data, new Date(), { canSchedule: native.info?.canSchedule })) {
+    result = await showOnLockScreen(lockScreenCard(data, route.league, route.id));
+  }
   else result = await scheduleOnLockScreen(lockScreenCard(data, route.league, route.id));
   native.busy = false;
   if (!result?.ok) {
