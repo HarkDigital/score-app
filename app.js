@@ -15,9 +15,9 @@ import {
 import {
   initPages, parseRoute, showPage, hidePage, pageOpen, refreshPage, pageVisible, gameHref, teamHref,
 } from './pages.js';
+import { initAutoUpdate } from './update.js';
 import { initPullToRefresh } from './pull.js';
 import { initSwipeNav } from './swipe.js';
-import { initAutoUpdate } from './update.js';
 import { inApp, setAlertTeams } from './native.js';
 
 const MINE = { id: 'mine', label: 'My Teams', mine: true };
