@@ -111,12 +111,18 @@ export function lockScreenCard(game, league, eventId) {
   };
 }
 
-// A card is worth offering for a game that's on, or starts within six hours:
-// iOS ends a Live Activity after eight.
-export function canShowOnLockScreen(game, now = new Date()) {
+// A future game's card goes up this long before the start: the push server
+// starts it then (server/live.js SCHEDULE_LEAD).
+export const LOCK_LEAD_MINUTES = 15;
+
+// Whether the switch puts the card up now (rather than scheduling it): the
+// game is on, or starts within LOCK_LEAD_MINUTES. Phones that can't have a
+// card started by the server (canSchedule false, before iOS 17.2) show it
+// now for a game within six hours instead, as iOS ends a card after eight.
+export function canShowOnLockScreen(game, now = new Date(), { canSchedule = true } = {}) {
   if (game.state === 'in') return true;
   if (game.state !== 'pre' || game.statusName !== 'STATUS_SCHEDULED') return false;
-  return game.start - now < 6 * 3_600_000;
+  return game.start - now <= (canSchedule ? LOCK_LEAD_MINUTES * 60_000 : 6 * 3_600_000);
 }
 
 function recordOf(record) {

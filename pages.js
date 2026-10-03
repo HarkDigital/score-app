@@ -2,8 +2,10 @@
 // scoreboard from links like #/game/nfl/401547417 and #/team/nfl/12, so the
 // back button, swipe-back and shared links all work.
 
-import { leagueById, statusLabel, lineSteamUrl } from './espn.js';
-import { summaryUrl, scheduleUrls, parseSummary, parseSchedule, lockScreenCard, canShowOnLockScreen } from './details.js';
+import { leagueById, statusLabel, lineSteamUrl, dayUrls, parseScoreboard } from './espn.js';
+import {
+  summaryUrl, scheduleUrls, parseSummary, parseSchedule, lockScreenCard, canShowOnLockScreen, LOCK_LEAD_MINUTES,
+} from './details.js';
 import { ICONS, getJson, TROUBLE, oddsHtml, logoHtml, emptyState, errorState, formatClock, esc } from './ui.js';
 import { inApp, nativeInfo, showOnLockScreen, scheduleOnLockScreen, removeFromLockScreen, enableAlerts } from './native.js';
 
@@ -28,6 +30,8 @@ const page = {
   loading: false,
   side: 0,       // game page: whose box score is showing
   timer: null,
+  quick: null,   // live game: the 5s score and clock check
+  board: null,   // live game: the scoreboard URL that has it
   requestId: 0,
 };
 const root = () => document.getElementById('page');
@@ -61,6 +65,8 @@ function remember() {
 // Drop the timer and any request in flight for the page that's going away.
 function leave() {
   clearTimeout(page.timer);
+  clearTimeout(page.quick);
+  page.board = null;
   page.requestId++;
   remember();
   if (page.loading) {
@@ -97,8 +103,10 @@ export function refreshPage() {
 
 export function pageVisible(visible) {
   if (!page.route) return;
-  if (!visible) clearTimeout(page.timer);
-  else if (stale()) load();
+  if (!visible) {
+    clearTimeout(page.timer);
+    clearTimeout(page.quick);
+  } else if (stale()) load();
   else schedule();
   // The card may have been swiped off the Lock Screen meanwhile.
   if (visible) refreshNative();
@@ -106,6 +114,7 @@ export function pageVisible(visible) {
 
 async function load() {
   clearTimeout(page.timer);
+  clearTimeout(page.quick);
   const id = ++page.requestId;
   const { route } = page;
   page.loading = true;
@@ -133,17 +142,56 @@ async function load() {
   schedule();
 }
 
-// A summary can be over a megabyte, so a live box score refreshes every 30s
-// rather than the scoreboard's 15s.
+// A summary can be over a megabyte, so a live game's box score refreshes
+// every 30s, while its score and clock come every 5s from the day's
+// scoreboard (a few KB). A score or the game's state changing there brings
+// the box score at once.
+const QUICK = 5_000;
+const FULL = 30_000;
+
 function schedule() {
   clearTimeout(page.timer);
+  clearTimeout(page.quick);
   if (document.hidden || !page.route) return;
   const { data, route } = page;
   let delay = null;
-  if (page.error) delay = 30_000;
-  else if (route.kind === 'game' && data?.state === 'in') delay = 30_000;
-  else if (route.kind === 'team' && data?.games.some((g) => g.state === 'in')) delay = 60_000;
+  if (page.error) delay = FULL;
+  else if (route.kind === 'game' && data?.state === 'in') {
+    delay = FULL;
+    page.quick = setTimeout(quick, QUICK);
+  } else if (route.kind === 'team' && data?.games.some((g) => g.state === 'in')) delay = 60_000;
   if (delay) page.timer = setTimeout(load, delay);
+}
+
+async function quick() {
+  const { route, data } = page;
+  const id = page.requestId;
+  if (route?.kind !== 'game' || data?.state !== 'in' || document.hidden) return;
+  try {
+    // College football's game may be on the FBS or the FCS board.
+    let game = null;
+    for (const url of page.board ? [page.board] : dayUrls(route.league, data.start)) {
+      game = parseScoreboard(await getJson(url), route.league).games.find((g) => g.id === String(route.id));
+      if (game) {
+        page.board = url;
+        break;
+      }
+    }
+    if (id !== page.requestId) return; // left the page, or a full refresh started
+    const scores = (g) => g.teams.map((t) => `${t.id}:${t.score}`).sort().join();
+    if (game && (game.state !== data.state || scores(game) !== scores(data))) {
+      load();
+      return;
+    }
+    if (game && game.statusText !== data.statusText) {
+      Object.assign(data, { statusText: game.statusText, statusName: game.statusName });
+      const status = root().querySelector('.matchup-status');
+      if (status) status.innerHTML = statusHtml(data);
+    }
+  } catch {
+    // The 30s refresh reports trouble.
+  }
+  if (id === page.requestId && !document.hidden) page.quick = setTimeout(quick, QUICK);
 }
 
 function render() {
@@ -154,7 +202,7 @@ function render() {
   if (!data) html = error ? errorState() : loadingHtml(route.kind);
   else html = route.kind === 'game' ? gameHtml(data, route.league, route.id) : teamHtml(data, route.league);
   const updated = data && page.updatedAt
-    ? `<p class="status${error ? ' error' : ''}">${error ? `Couldn't reach ESPN. Showing data from ${esc(formatClock(page.updatedAt))}.` : `Updated ${esc(formatClock(page.updatedAt))}${route.kind === 'game' && data.state === 'in' ? ' · refreshing every 30s' : ''}`}</p>`
+    ? `<p class="status${error ? ' error' : ''}">${error ? `Couldn't reach ESPN. Showing data from ${esc(formatClock(page.updatedAt))}.` : `Updated ${esc(formatClock(page.updatedAt))}${route.kind === 'game' && data.state === 'in' ? ' · live, score every 5s' : ''}`}</p>`
     : '';
   root().innerHTML = html + updated;
 }
@@ -191,10 +239,9 @@ function gameHtml(game, league, id) {
 }
 
 // iPhone app only: a toggle on every game page that hasn't finished. A game
-// that's on or starts within six hours goes on the Lock Screen and in the
+// that's on or starts within 15 minutes goes on the Lock Screen and in the
 // Dynamic Island now; a later one is scheduled, and the push server puts it
-// up 30 minutes before the start (iOS ends a card after eight hours).
-// Several games can be up at once.
+// up 15 minutes before the start. Several games can be up at once.
 function lockState(league, id) {
   const match = (g) => g.league === league.id && g.eventId === String(id);
   return {
@@ -207,15 +254,15 @@ function lockHtml(game, league, id) {
   const info = native.info;
   if (!info?.liveActivities) return '';
   const { showing, scheduled } = lockState(league, id);
-  const now = canShowOnLockScreen(game);
+  const now = canShowOnLockScreen(game, new Date(), { canSchedule: info.canSchedule });
   if (!showing && !scheduled && (game.state === 'post' || TROUBLE.test(game.statusName) || (!now && !info.canSchedule))) return '';
   const on = showing || scheduled;
   let sub;
   if (native.lockError) sub = native.lockError;
   else if (showing) sub = 'Live score on your Lock Screen and in the Dynamic Island.';
-  else if (scheduled) sub = 'Appears on your Lock Screen 30 minutes before the start.';
+  else if (scheduled) sub = `Appears on your Lock Screen ${LOCK_LEAD_MINUTES} minutes before the start.`;
   else if (now) sub = 'Live score on your Lock Screen and in the Dynamic Island.';
-  else sub = 'Turn on and it appears 30 minutes before the start.';
+  else sub = `Turn on and it appears ${LOCK_LEAD_MINUTES} minutes before the start.`;
   return `
     <button class="card ext-link lock-card${on ? ' on' : ''}" role="switch" aria-checked="${on}" data-lock${native.busy ? ' disabled' : ''}>
       <span class="ext-icon">${on ? ICONS.lockCheck : ICONS.lock}</span>
@@ -233,7 +280,9 @@ async function toggleLock() {
   render();
   let result;
   if (showing || scheduled) result = await removeFromLockScreen(route.league.id, route.id);
-  else if (canShowOnLockScreen(data)) result = await showOnLockScreen(lockScreenCard(data, route.league, route.id));
+  else if (canShowOnLockScreen(data, new Date(), { canSchedule: native.info?.canSchedule })) {
+    result = await showOnLockScreen(lockScreenCard(data, route.league, route.id));
+  }
   else result = await scheduleOnLockScreen(lockScreenCard(data, route.league, route.id));
   native.busy = false;
   if (!result?.ok) {
@@ -255,14 +304,17 @@ function lineSteamHtml(league, id) {
     </a>`;
 }
 
+// The badge and clock above the score; the 5s check swaps just this in.
+function statusHtml(game) {
+  if (TROUBLE.test(game.statusName)) return `<span class="badge badge-warn">${esc(game.statusText)}</span>`;
+  if (game.state === 'in') return `<span class="badge badge-live"><span class="live-dot" aria-hidden="true"></span>Live</span><span class="clock">${esc(game.statusText)}</span>`;
+  if (game.state === 'post') return `<span class="badge">${esc(game.statusText || 'Final')}</span>`;
+  return `<span class="clock">${esc(statusLabel({ ...game, timeTbd: false }, new Date()))}</span>`;
+}
+
 function matchupHtml(game, league, id) {
   const live = game.state === 'in';
   const done = game.state === 'post';
-  let status;
-  if (TROUBLE.test(game.statusName)) status = `<span class="badge badge-warn">${esc(game.statusText)}</span>`;
-  else if (live) status = `<span class="badge badge-live"><span class="live-dot" aria-hidden="true"></span>Live</span><span class="clock">${esc(game.statusText)}</span>`;
-  else if (done) status = `<span class="badge">${esc(game.statusText || 'Final')}</span>`;
-  else status = `<span class="clock">${esc(statusLabel({ ...game, timeTbd: false }, new Date()))}</span>`;
   const decided = done && game.teams.some((t) => t.winner);
   const side = (team) => `
     <a class="matchup-team${decided && !team.winner ? ' lost' : ''}" href="${teamHref(league.id, team.id)}">
@@ -278,7 +330,7 @@ function matchupHtml(game, league, id) {
   return `
     <div class="card matchup${live ? ' live' : ''}">
       ${lineSteamHtml(league, id)}
-      <div class="matchup-status">${status}</div>
+      <div class="matchup-status">${statusHtml(game)}</div>
       <div class="matchup-teams">${a ? side(a) : ''}${middle}${b ? side(b) : ''}</div>
       ${meta.length ? `<div class="matchup-meta">${meta.map(esc).join(' · ')}</div>` : ''}
     </div>`;

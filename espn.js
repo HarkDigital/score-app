@@ -300,7 +300,7 @@ const HOUR = 60 * MINUTE;
 
 // How long to wait before re-fetching, or null to stop auto-refreshing.
 export function refreshDelay(games, now = Date.now()) {
-  if (games.some((g) => g.state === 'in')) return 15_000;
+  if (games.some((g) => g.state === 'in')) return 5_000;
   const upcoming = games.filter((g) => g.state === 'pre' && !g.timeTbd).map((g) => g.start - now);
   // About to start, or past its start time but not marked live yet.
   if (upcoming.some((ms) => ms < 30 * MINUTE && ms > -6 * HOUR)) return 30_000;

@@ -16,6 +16,7 @@ import {
 import {
   initPages, parseRoute, showPage, hidePage, pageOpen, refreshPage, pageVisible, gameHref, teamHref,
 } from './pages.js';
+import { initAutoUpdate } from './update.js';
 import { initPullToRefresh } from './pull.js';
 import { initSwipeNav } from './swipe.js';
 import { inApp, setAlertTeams, haptic } from './native.js';
@@ -129,7 +130,7 @@ function render() {
   renderContent();
 }
 
-// Chrome is only rebuilt when what it shows changes, so a refresh every 15s
+// Chrome is only rebuilt when what it shows changes, so a refresh every 5s
 // doesn't steal focus or reset scroll positions.
 const rendered = { tabs: '', modes: '', nav: '' };
 
@@ -286,7 +287,7 @@ function renderStatus() {
     html = `Couldn't reach ESPN. Showing data from ${esc(formatClock(view.updatedAt))}. Retrying…`;
   } else if (!view.error && view.updatedAt) {
     html = `${live ? '<span class="pulse" aria-hidden="true"></span>' : ''}Updated ${esc(formatClock(view.updatedAt))}`
-      + `${live ? ' · live, refreshing every 15s' : ''}`
+      + `${live ? ' · live, refreshing every 5s' : ''}`
       + `${failed.length ? ` · couldn't load ${esc(failed.join(', '))}` : ''}`;
   }
   els.status.innerHTML = html;
@@ -960,3 +961,6 @@ render();
 els.tabs.querySelector('[aria-selected="true"]')?.scrollIntoView({ inline: 'center', block: 'nearest' });
 load();
 applyRoute();
+// Pick up a new deploy when the app comes back to the front (not while the
+// team picker is open).
+initAutoUpdate({ canReload: () => !picker.open });

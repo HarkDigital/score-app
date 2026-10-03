@@ -2,7 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { leagueById } from '../espn.js';
-import { summaryUrl, scheduleUrls, parseSummary, parseSchedule, periodLabels, lockScreenCard, canShowOnLockScreen } from '../details.js';
+import {
+  summaryUrl, scheduleUrls, parseSummary, parseSchedule, periodLabels, lockScreenCard, canShowOnLockScreen, LOCK_LEAD_MINUTES,
+} from '../details.js';
 
 // Trimmed from real ESPN game summaries and team schedules (2024-26).
 const fixture = (name) => JSON.parse(readFileSync(new URL(`./fixtures/${name}.json`, import.meta.url)));
@@ -145,14 +147,21 @@ test('lock-screen card: away and home by side, scores, and a status only when it
   assert.equal(late.state.status, 'Delayed');
 });
 
-test('lock-screen card is offered for live games and ones starting within six hours', () => {
+test('the lock-screen card goes up now for live games and ones within 15 minutes; later ones are scheduled', () => {
   const now = new Date('2026-10-04T16:00:00Z');
-  const pre = (hours) => ({ state: 'pre', statusName: 'STATUS_SCHEDULED', start: new Date(now.getTime() + hours * 3_600_000) });
+  const pre = (minutes) => ({ state: 'pre', statusName: 'STATUS_SCHEDULED', start: new Date(now.getTime() + minutes * 60_000) });
+  assert.equal(LOCK_LEAD_MINUTES, 15);
   assert.ok(canShowOnLockScreen({ state: 'in' }, now));
-  assert.ok(canShowOnLockScreen(pre(2), now));
-  assert.ok(!canShowOnLockScreen(pre(9), now));
+  assert.ok(canShowOnLockScreen(pre(10), now));
+  assert.ok(canShowOnLockScreen(pre(15), now));
+  assert.ok(!canShowOnLockScreen(pre(16), now));
+  assert.ok(!canShowOnLockScreen(pre(120), now));
   assert.ok(!canShowOnLockScreen({ state: 'post' }, now));
-  assert.ok(!canShowOnLockScreen({ ...pre(1), statusName: 'STATUS_POSTPONED' }, now));
+  assert.ok(!canShowOnLockScreen({ ...pre(5), statusName: 'STATUS_POSTPONED' }, now));
+  // Before iOS 17.2 the server can't start a card: within six hours, now.
+  const old = { canSchedule: false };
+  assert.ok(canShowOnLockScreen(pre(120), now, old));
+  assert.ok(!canShowOnLockScreen(pre(9 * 60), now, old));
 });
 
 test('a live game on a team schedule has no score in the feed, so none is made up', () => {
