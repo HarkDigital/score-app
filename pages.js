@@ -5,7 +5,7 @@
 import { leagueById, statusLabel, lineSteamUrl } from './espn.js';
 import { summaryUrl, scheduleUrls, parseSummary, parseSchedule, lockScreenCard, canShowOnLockScreen } from './details.js';
 import { ICONS, getJson, TROUBLE, oddsHtml, logoHtml, emptyState, errorState, formatClock, esc } from './ui.js';
-import { inApp, nativeInfo, showOnLockScreen, removeFromLockScreen, enableAlerts } from './native.js';
+import { inApp, nativeInfo, showOnLockScreen, scheduleOnLockScreen, removeFromLockScreen, enableAlerts } from './native.js';
 
 export const gameHref = (leagueId, id) => `#/game/${leagueId}/${encodeURIComponent(id)}`;
 export const teamHref = (leagueId, id) => `#/team/${leagueId}/${encodeURIComponent(id)}`;
@@ -190,37 +190,54 @@ function gameHtml(game, league, id) {
   return sections.join('');
 }
 
-// iPhone app only: put this game's live score on the Lock Screen and in the
-// Dynamic Island (one game at a time; the push server keeps it current).
-function onLockScreen(league, id) {
-  const current = native.info?.current;
-  return current?.league === league.id && current?.eventId === String(id);
+// iPhone app only: a toggle on every game page that hasn't finished. A game
+// that's on or starts within six hours goes on the Lock Screen and in the
+// Dynamic Island now; a later one is scheduled, and the push server puts it
+// up 30 minutes before the start (iOS ends a card after eight hours).
+// Several games can be up at once.
+function lockState(league, id) {
+  const match = (g) => g.league === league.id && g.eventId === String(id);
+  return {
+    showing: Boolean(native.info?.active?.some(match)),
+    scheduled: Boolean(native.info?.scheduled?.some(match)),
+  };
 }
 
 function lockHtml(game, league, id) {
-  if (!native.info?.liveActivities) return '';
-  const on = onLockScreen(league, id);
-  if (!on && !canShowOnLockScreen(game)) return '';
-  const sub = native.lockError
-    || (on ? 'Live score on your Lock Screen and in the Dynamic Island. Tap to remove.' : 'Keep the live score on your Lock Screen and in the Dynamic Island.');
+  const info = native.info;
+  if (!info?.liveActivities) return '';
+  const { showing, scheduled } = lockState(league, id);
+  const now = canShowOnLockScreen(game);
+  if (!showing && !scheduled && (game.state === 'post' || TROUBLE.test(game.statusName) || (!now && !info.canSchedule))) return '';
+  const on = showing || scheduled;
+  let sub;
+  if (native.lockError) sub = native.lockError;
+  else if (showing) sub = 'Live score on your Lock Screen and in the Dynamic Island.';
+  else if (scheduled) sub = 'Appears on your Lock Screen 30 minutes before the start.';
+  else if (now) sub = 'Live score on your Lock Screen and in the Dynamic Island.';
+  else sub = 'Turn on and it appears 30 minutes before the start.';
   return `
-    <button class="card ext-link lock-card${on ? ' on' : ''}" data-lock aria-pressed="${on}"${native.busy ? ' disabled' : ''}>
+    <button class="card ext-link lock-card${on ? ' on' : ''}" role="switch" aria-checked="${on}" data-lock${native.busy ? ' disabled' : ''}>
       <span class="ext-icon">${on ? ICONS.lockCheck : ICONS.lock}</span>
-      <span class="ext-text"><span class="ext-title">${on ? 'On your Lock Screen' : 'Show on Lock Screen'}</span><span class="ext-sub${native.lockError ? ' error' : ''}">${esc(sub)}</span></span>
+      <span class="ext-text"><span class="ext-title">Show on Lock Screen</span><span class="ext-sub${native.lockError ? ' error' : ''}">${esc(sub)}</span></span>
+      <span class="switch" aria-hidden="true"></span>
     </button>`;
 }
 
 async function toggleLock() {
   const { data, route } = page;
   if (!data || native.busy) return;
-  const on = onLockScreen(route.league, route.id);
+  const { showing, scheduled } = lockState(route.league, route.id);
   native.busy = true;
   native.lockError = '';
   render();
-  const result = on ? await removeFromLockScreen() : await showOnLockScreen(lockScreenCard(data, route.league, route.id));
+  let result;
+  if (showing || scheduled) result = await removeFromLockScreen(route.league.id, route.id);
+  else if (canShowOnLockScreen(data)) result = await showOnLockScreen(lockScreenCard(data, route.league, route.id));
+  else result = await scheduleOnLockScreen(lockScreenCard(data, route.league, route.id));
   native.busy = false;
   if (!result?.ok) {
-    native.lockError = on ? "Couldn't remove it. Try again." : "Couldn't add it. Check that Live Activities are on for Phade Scores in Settings.";
+    native.lockError = showing || scheduled ? "Couldn't turn it off. Try again." : "Couldn't add it. Check that Live Activities are on for Phade Scores in Settings.";
   }
   native.info = await nativeInfo();
   render();
@@ -448,7 +465,7 @@ function scheduleRow(game, league) {
   const md = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   let right;
   if (TROUBLE.test(game.statusName)) right = `<span class="badge badge-warn">${esc(game.statusText)}</span>`;
-  else if (game.state === 'in') right = `<span class="badge badge-live"><span class="live-dot" aria-hidden="true"></span>${esc(game.score)}</span>`;
+  else if (game.state === 'in') right = `<span class="badge badge-live"><span class="live-dot" aria-hidden="true"></span>${esc(game.score || 'Live')}</span>`;
   else if (game.result) right = `<span class="result ${game.result.toLowerCase()}">${game.result}</span><span class="result-score">${esc(game.score)}</span>`;
   else if (game.state === 'post') right = `<span class="sub">${esc(game.statusText)}</span>`;
   else {

@@ -18,17 +18,22 @@ async function call(action, args = {}) {
   }
 }
 
-// { liveActivities: bool, current: {league, eventId} | null, alerts: 'authorized' | 'denied' | 'notDetermined' | ... }
+// { liveActivities, canSchedule (iOS 17.2+), active: [{league, eventId}],
+//   scheduled: [{league, eventId}], alerts: 'authorized' | 'denied' | ... }
 export const nativeInfo = () => call('info');
 
-// card: details.js lockScreenCard(). Resolves to {ok: true} or null.
+// card: details.js lockScreenCard(). Each resolves to {ok: bool} or null.
+// Show now: a game that's on or starts within six hours.
 export const showOnLockScreen = (card) => call('showGame', { card });
-export const removeFromLockScreen = () => call('removeGame');
+// Later games: the push server puts the card up 30 minutes before the start.
+export const scheduleOnLockScreen = (card) => call('scheduleGame', { card });
+// Takes one game off the Lock Screen, or cancels it if it's scheduled.
+export const removeFromLockScreen = (league, eventId) => call('removeGame', { league, eventId });
 
 // Asks for notification permission if it hasn't been asked yet. Resolves to
 // the permission status.
 export const enableAlerts = () => call('enableAlerts');
 
-// The followed teams that want alerts, as [{league, id}]. The app hands them
+// The followed teams that want alerts, as [{league, id, start, score, end}]. The app hands them
 // to the push server with its device token.
 export const setAlertTeams = (teams) => call('setAlertTeams', { teams });

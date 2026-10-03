@@ -291,7 +291,9 @@ function scheduleGame(event, league, teamId) {
     home,
     opponent,
     result,
-    score: result ? `${self.score}-${opponent.score}` : game.state === 'in' ? `${self.score}-${opponent.score}` : '',
+    // The schedule feed carries no live score, only finals; a live game
+    // without one shows as plain Live rather than "-".
+    score: result || (game.state === 'in' && self.score !== '' && opponent.score !== '') ? `${self.score}-${opponent.score}` : '',
     label: event.week?.text ?? '',
   };
 }

@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import { leagueById, parseScoreboard } from '../../espn.js';
 import {
   contentState, activityPlan, activityPayload, gameAlerts, gameMemo, wantsAlert, parseActivity, parseDevice,
+  parseScheduled, startDue, startPayload,
 } from '../live.js';
 import { providerToken, tokenIsDead } from '../apns.js';
 import { createWatcher, pollDelay } from '../watcher.js';
@@ -144,7 +145,7 @@ test('a live game polls every 15s, a quiet day every 15 minutes', () => {
 // The whole loop against the real NFL scoreboard, with ESPN and Apple faked.
 function harness(data) {
   const sent = [];
-  const store = { data: { activities: {}, devices: {}, games: {}, sent: {}, ...data }, save() {} };
+  const store = { data: { activities: {}, scheduled: {}, devices: {}, games: {}, sent: {}, ...data }, save() {} };
   let board = structuredClone(fixture('nfl-scoreboard'));
   const apns = {
     activity: async (token, env, payload, priority) => { sent.push({ kind: 'activity', token, payload, priority }); return { status: 200, reason: '', dead: false }; },
@@ -219,4 +220,55 @@ test('followers get the alerts they switched on, once each', async () => {
   assert.equal(h.sent[1].payload.aps.alert.body, 'Final: Chiefs 17, Bills 28');
   assert.equal(h.sent[1].token, TOKEN);
   assert.equal(h.sent[1].payload.route, '#/game/nfl/402');
+});
+
+const card = (eventId, overrides = {}) => ({
+  league: 'nfl', leagueLabel: 'NFL', eventId, start: Date.parse('2026-10-04T20:25:00Z') / 1000, homeFirst: false,
+  away: { abbr: 'SF', name: '49ers', color: '#aa0000' }, home: { abbr: 'LAR', name: 'Rams', color: null },
+  state: { away: '', home: '', state: 'pre', status: '', detail: '' },
+  ...overrides,
+});
+
+test('scheduled cards are validated and keep only the attributes', () => {
+  const entry = parseScheduled({ token: TOKEN, env: 'production', card: card('404') });
+  assert.equal(entry.league, 'nfl');
+  assert.equal(entry.eventId, '404');
+  assert.deepEqual(Object.keys(entry.card).sort(), ['away', 'eventId', 'home', 'homeFirst', 'league', 'leagueLabel', 'start']);
+  assert.equal(parseScheduled({ token: TOKEN, env: 'production', card: card('404', { away: { abbr: 'SF', name: '49ers', color: 'red' } }) }), null);
+  assert.equal(parseScheduled({ token: TOKEN, env: 'production', card: card('x') }), null);
+  assert.equal(parseScheduled({ token: 'short', env: 'production', card: card('404') }), null);
+});
+
+test('a scheduled card goes up 30 minutes before the start, or as soon as the game is on', () => {
+  const pre = game(nflBoard, '404'); // SF @ LAR, 4:25 PM EDT
+  const kickoff = pre.start.getTime() / 1000;
+  assert.equal(startDue(pre, kickoff - 31 * 60), false);
+  assert.equal(startDue(pre, kickoff - 29 * 60), true);
+  assert.equal(startDue(game(nflBoard, '402'), 0), true, 'already live');
+  assert.equal(startDue({ ...pre, statusName: 'STATUS_POSTPONED' }, kickoff), false);
+});
+
+test('the push-to-start payload carries the attributes, with the date as ActivityKit reads it', () => {
+  const pre = game(nflBoard, '404');
+  const entry = parseScheduled({ token: TOKEN, env: 'production', card: card('404') });
+  const { aps } = startPayload(entry.card, pre, nfl, 1_000);
+  assert.equal(aps.event, 'start');
+  assert.equal(aps['attributes-type'], 'GameAttributes');
+  // Seconds since 2001-01-01, ActivityKit's default Date decoding.
+  assert.equal(aps.attributes.start, pre.start.getTime() / 1000 - 978_307_200);
+  assert.equal(aps.attributes.away.name, '49ers');
+  assert.deepEqual(aps['content-state'], contentState(pre, nfl));
+  assert.equal(aps.alert.title, '49ers @ Rams');
+});
+
+test('the watcher starts a scheduled card once, at the right time', async () => {
+  const entry = parseScheduled({ token: TOKEN, env: 'production', card: card('404') });
+  const h = harness({ scheduled: { [`${TOKEN}|nfl:404`]: { ...entry, createdAt: 0 } } });
+  await h.watcher.tick(); // 18:00Z, 2h25 before
+  assert.equal(h.sent.length, 0);
+  h.later(2 * 3600_000); // 20:00Z, 25 minutes before
+  await h.watcher.tick();
+  assert.equal(h.sent.length, 1);
+  assert.equal(h.sent[0].payload.aps.event, 'start');
+  assert.deepEqual(h.store.data.scheduled, {}, 'sent once, then forgotten');
 });

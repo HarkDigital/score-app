@@ -125,6 +125,40 @@ export function followsGame(device, leagueId, game) {
   return device.teams.some((t) => t.league === leagueId && ids.has(t.id));
 }
 
+// ---- Scheduled cards ----
+
+// A card for a later game is started by the server with Apple's
+// push-to-start, this long before the game (iOS ends a card after 8 hours,
+// so it can't simply go up days early).
+export const SCHEDULE_LEAD = 30 * 60;
+
+// ActivityKit decodes a Date from JSON as seconds since 2001-01-01.
+const APPLE_EPOCH = 978_307_200;
+
+export function startDue(game, nowSec) {
+  if (game.state === 'in') return true;
+  if (game.state !== 'pre' || game.statusName !== 'STATUS_SCHEDULED') return false;
+  return game.start.getTime() / 1000 - nowSec <= SCHEDULE_LEAD;
+}
+
+// The push-to-start payload: the card's attributes (GameAttributes; the
+// start comes from the scoreboard, in case the time moved) and its first
+// state, with a quiet banner saying it's there.
+export function startPayload(card, game, league, nowSec) {
+  const { away, home } = card;
+  const title = card.homeFirst ? `${home.name} vs ${away.name}` : `${away.name} @ ${home.name}`;
+  const aps = {
+    timestamp: nowSec,
+    event: 'start',
+    'content-state': contentState(game, league),
+    'attributes-type': 'GameAttributes',
+    attributes: { ...card, start: Math.round(game.start.getTime() / 1000) - APPLE_EPOCH },
+    alert: { title, body: game.state === 'in' ? 'Live now on your Lock Screen.' : 'Starting soon. The score is on your Lock Screen.' },
+  };
+  if (game.state === 'in') aps['stale-date'] = nowSec + 15 * 60;
+  return { aps };
+}
+
 // ---- Requests ----
 
 const TOKEN = /^[0-9a-f]{32,512}$/i;
@@ -144,6 +178,35 @@ export function parseActivity(body) {
     league,
     eventId: String(eventId),
     start: Number.isFinite(startSec) && startSec > 0 ? startSec : null,
+  };
+}
+
+const HEX = /^#[0-9a-f]{6}$/i;
+const text = (v, max) => typeof v === 'string' && v.length > 0 && v.length <= max;
+
+function parseCardTeam(t) {
+  if (!t || !text(t.abbr, 12) || !text(t.name, 60) || (t.color != null && !HEX.test(t.color))) return null;
+  return { abbr: t.abbr, name: t.name, color: t.color ?? null };
+}
+
+// POST /v1/scheduled: {token (push-to-start), env, card (details.js lockScreenCard)}.
+export function parseScheduled(body) {
+  const { token, env, card } = body ?? {};
+  if (!validToken(token) || !ENVS.has(env) || !card || typeof card !== 'object') return null;
+  const league = leagueById(card.league);
+  const start = Number(card.start);
+  const away = parseCardTeam(card.away);
+  const home = parseCardTeam(card.home);
+  if (!league || !EVENT.test(String(card.eventId ?? '')) || !Number.isFinite(start) || start <= 0
+    || !text(card.leagueLabel, 40) || !away || !home) return null;
+  const eventId = String(card.eventId);
+  return {
+    token: token.toLowerCase(),
+    env,
+    league: league.id,
+    eventId,
+    start,
+    card: { league: league.id, leagueLabel: card.leagueLabel, eventId, start, homeFirst: card.homeFirst === true, away, home },
   };
 }
 

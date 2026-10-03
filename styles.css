@@ -1363,9 +1363,12 @@ a.team-cell:hover .team-name { color: var(--accent); }
 
 .matchup-name {
   max-width: 100%;
+  /* Up to two lines, so a long name keeps its followed star. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
   font-size: 15px;
   font-weight: 600;
   color: var(--white);
@@ -1427,7 +1430,7 @@ button.ext-link:not(:disabled):active { transform: scale(0.99); }
 
 /* iPhone app: the game on the Lock Screen. */
 .lock-card.on { border-color: rgb(70 187 147 / 0.45); }
-.lock-card.on .ext-title { color: var(--accent); }
+.lock-card .switch { margin-left: auto; }
 .ext-sub.error { color: var(--live); }
 
 /* Team page: Follow, and in the iPhone app the alerts bell beside it. */
@@ -1511,8 +1514,8 @@ button.ext-link:not(:disabled):active { transform: scale(0.99); }
   transition: transform 150ms ease;
 }
 
-.alert-row[aria-checked="true"] .switch { background: var(--accent); }
-.alert-row[aria-checked="true"] .switch::after { transform: translateX(18px); }
+[role="switch"][aria-checked="true"] .switch { background: var(--accent); }
+[role="switch"][aria-checked="true"] .switch::after { transform: translateX(18px); }
 
 .team-head .alert-note {
   max-width: 320px;

@@ -35,6 +35,16 @@ enum PushServer {
         await send("DELETE", "v1/activities/\(token)", nil)
     }
 
+    /// A later game for the server to start on the Lock Screen before
+    /// kickoff, with this iPhone's push-to-start token.
+    static func schedule(card: [String: Any], startToken: String) async {
+        await send("POST", "v1/scheduled", ["token": startToken, "env": environment, "card": card])
+    }
+
+    static func unschedule(startToken: String, league: String, eventId: String) async {
+        await send("DELETE", "v1/scheduled/\(startToken)/\(league)/\(eventId)", nil)
+    }
+
     /// teams: [{league, id, start, score, end}]. Empty forgets the device.
     static func registerDevice(token: String, teams: [[String: Any]]) async {
         await send("PUT", "v1/devices/\(token)", ["env": environment, "teams": teams])

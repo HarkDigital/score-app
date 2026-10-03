@@ -35,8 +35,13 @@ final class NativeBridge: NSObject, WKScriptMessageHandlerWithReply {
             return await info()
         case "showGame":
             return await showGame(body["card"])
+        case "scheduleGame":
+            guard #available(iOS 16.2, *), let card = body["card"] as? [String: Any] else { return ["ok": false] }
+            return ["ok": await LiveGameManager.shared.schedule(card: card)]
         case "removeGame":
-            if #available(iOS 16.2, *) { await LiveGameManager.shared.endAll() }
+            if #available(iOS 16.2, *), let league = body["league"] as? String, let eventId = body["eventId"] as? String {
+                await LiveGameManager.shared.remove(league: league, eventId: eventId)
+            }
             return ["ok": true]
         case "enableAlerts":
             return await PushManager.shared.requestAuthorization()
@@ -59,15 +64,17 @@ final class NativeBridge: NSObject, WKScriptMessageHandlerWithReply {
     private func info() async -> [String: Any] {
         var result: [String: Any] = [
             "liveActivities": false,
-            "current": NSNull(),
+            "canSchedule": false,
+            "active": [Any](),
+            "scheduled": [Any](),
             "alerts": await PushManager.shared.status(),
         ]
         if #available(iOS 16.2, *) {
             let manager = LiveGameManager.shared
             result["liveActivities"] = manager.enabled
-            if let game = manager.current {
-                result["current"] = ["league": game.league, "eventId": game.eventId]
-            }
+            result["canSchedule"] = manager.canSchedule
+            result["active"] = manager.active.map { ["league": $0.league, "eventId": $0.eventId] }
+            result["scheduled"] = manager.scheduled.map { ["league": $0["league"] ?? "", "eventId": $0["eventId"] ?? ""] }
         }
         return result
     }

@@ -5,7 +5,7 @@
 // scores and statuses read exactly like the app's.
 
 import { leagueById, scoreboardUrl, parseScoreboard, fallbackUrl, addDays, ymd } from '../espn.js';
-import { contentState, activityPlan, activityPayload, gameAlerts, gameMemo, wantsAlert, followsGame } from './live.js';
+import { contentState, activityPlan, activityPayload, gameAlerts, gameMemo, wantsAlert, followsGame, startDue, startPayload } from './live.js';
 import { prune } from './store.js';
 
 const MIN = 60_000;
@@ -52,8 +52,8 @@ export function createWatcher({ store, apns, fetchJson: getJson = fetchJson, log
   let running = false;
 
   const watched = (leagueId, game) => {
-    const { activities, devices } = store.data;
-    return Object.values(activities).some((a) => a.league === leagueId && a.eventId === game.id)
+    const { activities, scheduled, devices } = store.data;
+    return [...Object.values(activities), ...Object.values(scheduled)].some((a) => a.league === leagueId && a.eventId === game.id)
       || Object.values(devices).some((d) => followsGame(d, leagueId, game));
   };
 
@@ -85,6 +85,19 @@ export function createWatcher({ store, apns, fetchJson: getJson = fetchJson, log
       else if (result.ok) card.last = state;
     }
 
+    // Scheduled cards go up shortly before the game; the phone then registers
+    // the new card's own token and it's updated like any other.
+    for (const [id, entry] of Object.entries(data.scheduled)) {
+      if (entry.league !== league.id || entry.eventId !== game.id) continue;
+      if (game.state === 'post') {
+        delete data.scheduled[id];
+        continue;
+      }
+      if (!startDue(game, nowSec)) continue;
+      const result = await push('activity', entry.token, entry.env, startPayload(entry.card, game, league, nowSec), 10);
+      if (result.ok || result.dead) delete data.scheduled[id];
+    }
+
     for (const { kind, payload } of gameAlerts(prev, game, league)) {
       for (const [token, device] of Object.entries(data.devices)) {
         if (!wantsAlert(device, league.id, game, kind)) continue;
@@ -106,12 +119,14 @@ export function createWatcher({ store, apns, fetchJson: getJson = fetchJson, log
       prune(data, now());
       const leagues = new Set([
         ...Object.values(data.activities).map((a) => a.league),
+        ...Object.values(data.scheduled).map((s) => s.league),
         ...Object.values(data.devices).flatMap((d) => d.teams.map((t) => t.league)),
       ]);
       for (const id of leagues) {
         if ((nextFetch.get(id) ?? 0) > now()) continue;
         const league = leagueById(id);
-        const starts = Object.values(data.activities).filter((a) => a.league === id && a.start).map((a) => a.start * 1000);
+        const starts = [...Object.values(data.activities), ...Object.values(data.scheduled)]
+          .filter((a) => a.league === id && a.start).map((a) => a.start * 1000);
         const games = new Map();
         try {
           for (const day of scoreDays(now(), starts)) {

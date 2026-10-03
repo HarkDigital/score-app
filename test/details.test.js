@@ -153,3 +153,23 @@ test('lock-screen card is offered for live games and ones starting within six ho
   assert.ok(!canShowOnLockScreen({ state: 'post' }, now));
   assert.ok(!canShowOnLockScreen({ ...pre(1), statusName: 'STATUS_POSTPONED' }, now));
 });
+
+test('a live game on a team schedule has no score in the feed, so none is made up', () => {
+  const event = (state, scores) => ({
+    id: '9',
+    date: '2026-10-03T16:00Z',
+    competitions: [{
+      date: '2026-10-03T16:00Z',
+      status: { type: { state, name: state === 'in' ? 'STATUS_IN_PROGRESS' : 'STATUS_FINAL', shortDetail: '' } },
+      competitors: [
+        { homeAway: 'home', team: { id: '153', displayName: 'North Carolina' }, ...(scores ? { score: { displayValue: scores[0] } } : {}) },
+        { homeAway: 'away', team: { id: '87', displayName: 'Notre Dame' }, ...(scores ? { score: { displayValue: scores[1] } } : {}), winner: false },
+      ],
+    }],
+  });
+  const ncaaf = leagueById('ncaaf');
+  const live = parseSchedule([{ team: { id: '87', displayName: 'Notre Dame' }, events: [event('in')] }], ncaaf, '87');
+  assert.equal(live.games[0].score, '');
+  const scored = parseSchedule([{ team: { id: '87', displayName: 'Notre Dame' }, events: [event('in', ['20', '21'])] }], ncaaf, '87');
+  assert.equal(scored.games[0].score, '21-20');
+});

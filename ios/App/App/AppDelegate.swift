@@ -7,7 +7,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        // Before any scene: when the push server starts a scheduled Lock
+        // Screen card, iOS launches the app in the background just long
+        // enough to hand over the new card's token.
+        if #available(iOS 16.2, *) { LiveGameManager.shared.begin() }
         return true
     }
 

@@ -5,6 +5,8 @@
 //
 //   POST   /v1/activities          {token, env, league, eventId, start}
 //   DELETE /v1/activities/:token
+//   POST   /v1/scheduled           {token (push-to-start), env, card}
+//   DELETE /v1/scheduled/:token/:league/:eventId
 //   PUT    /v1/devices/:token      {env, teams: [{league, id}]}  (no teams = forget)
 //   DELETE /v1/devices/:token
 //   GET    /health
@@ -15,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 import { openStore } from './store.js';
 import { createApns } from './apns.js';
 import { createWatcher } from './watcher.js';
-import { parseActivity, parseDevice, validToken } from './live.js';
+import { parseActivity, parseDevice, parseScheduled, validToken } from './live.js';
 
 const env = process.env;
 const log = (msg) => console.log(`${new Date().toISOString()} ${msg}`);
@@ -42,7 +44,7 @@ const watcher = createWatcher({ store, apns, log });
 setInterval(watcher.tick, 5_000);
 watcher.tick();
 
-const MAX = { activities: 5_000, devices: 50_000 };
+const MAX = { activities: 5_000, scheduled: 20_000, devices: 50_000 };
 
 function readJson(req) {
   return new Promise((resolve, reject) => {
@@ -72,12 +74,32 @@ const server = http.createServer(async (req, res) => {
         ok: true,
         push: apns ? 'live' : 'dry-run',
         activities: Object.keys(data.activities).length,
+        scheduled: Object.keys(data.scheduled).length,
         devices: Object.keys(data.devices).length,
       });
     }
-    const [, version, kind, rawToken, extra] = pathname.split('/');
-    if (version !== 'v1' || !(kind in MAX) || extra !== undefined) return reply(404, { error: 'not found' });
+    const [, version, kind, rawToken, ...rest] = pathname.split('/');
+    if (version !== 'v1' || !(kind in MAX) || rest.length > (kind === 'scheduled' ? 2 : 0)) return reply(404, { error: 'not found' });
     const token = validToken(rawToken) ? rawToken.toLowerCase() : null;
+
+    if (kind === 'scheduled') {
+      if (req.method === 'DELETE' && token && rest.length === 2) {
+        delete data.scheduled[`${token}|${rest[0]}:${rest[1]}`];
+        store.save();
+        return reply(200, { ok: true });
+      }
+      if (req.method === 'POST' && rawToken === undefined) {
+        const entry = parseScheduled(await readJson(req));
+        if (!entry) return reply(400, { error: 'bad card' });
+        const id = `${entry.token}|${entry.league}:${entry.eventId}`;
+        if (!data.scheduled[id] && Object.keys(data.scheduled).length >= MAX.scheduled) return reply(503, { error: 'full' });
+        data.scheduled[id] = { ...entry, createdAt: Date.now() };
+        watcher.poke(entry.league);
+        store.save();
+        return reply(200, { ok: true });
+      }
+      return reply(405, { error: 'method not allowed' });
+    }
 
     if (req.method === 'DELETE' && token) {
       delete data[kind][token];

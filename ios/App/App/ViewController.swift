@@ -23,7 +23,7 @@ class ViewController: CAPBridgeViewController {
         PushManager.shared.navigator = self
         NotificationCenter.default.addObserver(self, selector: #selector(openURL(_:)), name: .capacitorOpenURL, object: nil)
 
-        if #available(iOS 16.2, *) { LiveGameManager.shared.resume() }
+        if #available(iOS 16.2, *) { LiveGameManager.shared.begin() }
         Task { await PushManager.shared.registerIfAllowed() }
     }
 

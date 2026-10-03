@@ -7,7 +7,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-const EMPTY = () => ({ activities: {}, devices: {}, games: {}, sent: {} });
+const EMPTY = () => ({ activities: {}, scheduled: {}, devices: {}, games: {}, sent: {} });
 
 export async function openStore(dir) {
   await fs.mkdir(dir, { recursive: true });
@@ -50,6 +50,7 @@ const DAY = 86_400_000;
 // (plus 4 on the lock screen); games and sent-alert marks after two days.
 export function prune(data, now) {
   for (const [token, a] of Object.entries(data.activities)) if (now - a.createdAt > 12 * 3600_000) delete data.activities[token];
+  for (const [key, s] of Object.entries(data.scheduled)) if (now - s.start * 1000 > 12 * 3600_000) delete data.scheduled[key];
   for (const [key, g] of Object.entries(data.games)) if (now - g.at > 2 * DAY) delete data.games[key];
   for (const [key, at] of Object.entries(data.sent)) if (now - at > 2 * DAY) delete data.sent[key];
 }
