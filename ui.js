@@ -20,6 +20,7 @@ export const ICONS = {
   alert: icon(30, stroke('M12 8v5M12 16.5v.01M10.3 3.9L2.6 17.5A2 2 0 0 0 4.3 20.5h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z')),
   winner: '<svg viewBox="0 0 8 10" width="7" height="9" aria-hidden="true"><path d="M8 0v10L0 5z" fill="currentColor"/></svg>',
   back: icon(20, stroke('M15 5l-7 7 7 7')),
+  refresh: icon(18, stroke('M20 12a8 8 0 1 1-2.34-5.66M20 4v4h-4')),
   ball: icon(14, '<circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7.5l3.8 2.7-1.4 4.5H9.6l-1.4-4.5z" fill="currentColor"/>'),
   redCard: '<svg viewBox="0 0 10 14" width="9" height="12" aria-hidden="true"><rect width="10" height="14" rx="1.5" fill="currentColor"/></svg>',
   clipboard: icon(30, stroke('M9 4h6v3H9zM7 5.5H5.5A1.5 1.5 0 0 0 4 7v12.5A1.5 1.5 0 0 0 5.5 21h13a1.5 1.5 0 0 0 1.5-1.5V7a1.5 1.5 0 0 0-1.5-1.5H17M8 12h8M8 16h5')),

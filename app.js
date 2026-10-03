@@ -12,6 +12,7 @@ import {
 import {
   initPages, parseRoute, showPage, hidePage, pageOpen, refreshPage, pageVisible, gameHref, teamHref,
 } from './pages.js';
+import { initPullToRefresh } from './pull.js';
 
 const MINE = { id: 'mine', label: 'My Teams', mine: true };
 const LEAGUE_KEY = 'scores.league';
@@ -621,7 +622,9 @@ document.addEventListener('click', (event) => {
   else if (d.action === 'retry-teams') loadTeams(picker.league);
 });
 
-els.refresh.addEventListener('click', () => (pageOpen() ? refreshPage() : load()));
+const refreshNow = () => (pageOpen() ? refreshPage() : load());
+els.refresh.addEventListener('click', refreshNow);
+initPullToRefresh({ refresh: refreshNow, enabled: () => !picker.open });
 
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') closePicker();
@@ -647,7 +650,9 @@ document.addEventListener('error', (event) => {
 
 // Links push history entries numbered from where the app was opened, so the
 // header's back button goes back within the app, and a page opened straight
-// from a shared link goes back to the scoreboard instead of leaving.
+// from a shared link goes back to the scoreboard instead of leaving. Each
+// entry keeps its scroll when a link leaves it, for coming back (the iPhone
+// app's edge swipes walk these same entries).
 let mainScroll = 0;
 let followsChanged = false;
 
@@ -661,8 +666,9 @@ function applyRoute() {
     }
     document.body.classList.add('page-mode');
     els.back.hidden = false;
-    showPage(route);
-    window.scrollTo(0, 0);
+    // A page we've seen renders at once, so going back lands where it was.
+    const ready = showPage(route);
+    window.scrollTo(0, ready ? history.state?.scroll ?? 0 : 0);
     return;
   }
   if (!wasOpen) return;
@@ -681,6 +687,7 @@ function applyRoute() {
 }
 
 function navigate(href) {
+  history.replaceState({ ...history.state, scroll: window.scrollY }, '');
   history.pushState({ depth: (history.state?.depth ?? 0) + 1 }, '', href);
   applyRoute();
 }
