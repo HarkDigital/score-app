@@ -1,7 +1,7 @@
 import UIKit
 import WebKit
 
-// The web app's line to the Lock Screen card and team alerts, without any
+// The web app's line to the Lock Screen card, team alerts and haptics, without any
 // Capacitor JS: native.js calls
 // window.webkit.messageHandlers.phadeScores.postMessage({action, ...}) and
 // gets a promise of the reply. Only the app's own site, in the main frame,
@@ -42,6 +42,9 @@ final class NativeBridge: NSObject, WKScriptMessageHandlerWithReply {
             if #available(iOS 16.2, *), let league = body["league"] as? String, let eventId = body["eventId"] as? String {
                 await LiveGameManager.shared.remove(league: league, eventId: eventId)
             }
+            return ["ok": true]
+        case "haptic":
+            Haptics.play(body["style"] as? String)
             return ["ok": true]
         case "enableAlerts":
             return await PushManager.shared.requestAuthorization()
@@ -119,5 +122,24 @@ private struct Card: Decodable {
             away: away,
             home: home
         )
+    }
+}
+
+/// The taps the web app asks for (a web page can't reach the haptic engine).
+/// iOS skips them when System Haptics is off in Settings.
+@MainActor
+private enum Haptics {
+    private static let selection = UISelectionFeedbackGenerator()
+    private static let light = UIImpactFeedbackGenerator(style: .light)
+    private static let medium = UIImpactFeedbackGenerator(style: .medium)
+
+    /// "selection": tabs, pickers, switches. "medium": pull to refresh
+    /// letting go. Anything else: a light tap for a button.
+    static func play(_ style: String?) {
+        switch style {
+        case "selection": selection.selectionChanged()
+        case "medium": medium.impactOccurred()
+        default: light.impactOccurred()
+        }
     }
 }

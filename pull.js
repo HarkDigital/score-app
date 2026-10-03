@@ -4,6 +4,7 @@
 // the pull, then spins until the refresh is done.
 
 import { ICONS } from './ui.js';
+import { haptic } from './native.js';
 
 const ARM = 64;        // pull (px) that triggers a refresh on release
 const REST = 52;       // where the content waits while it refreshes
@@ -29,7 +30,10 @@ export function initPullToRefresh({ refresh, enabled }) {
     rootStyle.setProperty('--pull', `${pull}px`);
     rootStyle.setProperty('--pull-turn', `${(pull / ARM) * 300}deg`);
     rootStyle.setProperty('--pull-show', String(Math.min(1, pull / 36)));
-    puck.classList.toggle('armed', pull >= ARM);
+    const armed = pull >= ARM;
+    // A tap as the arrow turns mint, the moment letting go would refresh.
+    if (armed && touch?.pulling && !puck.classList.contains('armed')) haptic('medium');
+    puck.classList.toggle('armed', armed);
   }
 
   // Ease to a resting pull, then run `then`.

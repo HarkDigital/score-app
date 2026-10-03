@@ -127,7 +127,10 @@ img { -webkit-touch-callout: none; }
   color: var(--white);
 }
 
-.back-btn:hover { background: rgb(255 255 255 / 0.05); }
+/* Hover only with a mouse: a phone keeps :hover on whatever was tapped last. */
+@media (hover: hover) {
+  .back-btn:hover { background: rgb(255 255 255 / 0.05); }
+}
 .back-btn[hidden] { display: none; }
 
 .page-title {
@@ -166,6 +169,13 @@ body:not(.page-mode) .page { display: none; }
   white-space: nowrap;
 }
 
+/* Find a team, then refresh, at the header's right. */
+.top-actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+}
+
 .icon-btn {
   display: grid;
   place-items: center;
@@ -175,7 +185,9 @@ body:not(.page-mode) .page { display: none; }
   color: var(--gray-400);
 }
 
-.icon-btn:not(:disabled):hover { background: rgb(255 255 255 / 0.05); color: var(--white); }
+@media (hover: hover) {
+  .icon-btn:not(:disabled):hover { background: rgb(255 255 255 / 0.05); color: var(--white); }
+}
 .icon-btn:not(:disabled):active { transform: scale(0.95); }
 
 .spinning svg { animation: spin 0.8s linear infinite; }
@@ -1256,6 +1268,17 @@ main {
 }
 
 .team-option[aria-pressed="true"] .name { color: var(--accent); }
+
+.list-label {
+  padding: 12px 10px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.team-option .league-chip { margin-left: auto; }
 
 .list-note {
   padding: 24px 16px;

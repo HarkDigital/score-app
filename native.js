@@ -1,5 +1,5 @@
-// The iPhone app's native features: the lock-screen card (a Live Activity)
-// and team alerts. The app's ViewController installs a message handler,
+// The iPhone app's native features: the lock-screen card (a Live Activity),
+// team alerts and haptics. The app's ViewController installs a message handler,
 // window.webkit.messageHandlers.phadeScores, whose postMessage returns a
 // promise. On the website it doesn't exist, every call here resolves to null,
 // and the pages show none of these controls. No Capacitor JS involved.
@@ -37,3 +37,10 @@ export const enableAlerts = () => call('enableAlerts');
 // The followed teams that want alerts, as [{league, id, start, score, end}]. The app hands them
 // to the push server with its device token.
 export const setAlertTeams = (teams) => call('setAlertTeams', { teams });
+
+// A tap of the haptic engine: 'selection' (tabs, pickers, switches), 'light'
+// (buttons) or 'medium' (pull to refresh arming). Fire and forget; silent on
+// the website and in app builds before 7, which don't know the action.
+export function haptic(style = 'light') {
+  call('haptic', { style });
+}

@@ -161,6 +161,41 @@ export function teamsFromStandings(standings) {
   return [...teams.values()].sort((a, b) => a.name.localeCompare(b.name));
 }
 
+// Case and accents don't count when searching: "quebec" finds "Québec".
+export const fold = (text) => String(text ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+// The header's team search across leagues. lists: [{league, teams}] in the
+// leagues' order. An abbreviation typed in full comes first, then names with
+// a word starting with what was typed, then names containing it anywhere;
+// ties keep the leagues' order, then go by name.
+export function searchTeams(lists, query, limit = 50) {
+  // Punctuation is a space on both sides ("St. Louis" finds "St Louis");
+  // abbreviations are matched as typed ("TA&M").
+  const raw = fold(query).trim();
+  const words = raw.replace(/[^a-z0-9]+/g, ' ').trim();
+  if (!words) return [];
+  const hits = [];
+  lists.forEach(({ league, teams }, order) => {
+    for (const team of teams ?? []) {
+      const score = matchScore(team, raw, words);
+      if (score !== null) hits.push({ league, team, score, order });
+    }
+  });
+  return hits
+    .sort((a, b) => a.score - b.score || a.order - b.order || a.team.name.localeCompare(b.team.name))
+    .slice(0, limit)
+    .map(({ league, team }) => ({ league, team }));
+}
+
+function matchScore(team, raw, words) {
+  const abbr = fold(team.abbr);
+  if (abbr === raw) return 0;
+  const text = ` ${fold(`${team.name} ${team.shortName}`).replace(/[^a-z0-9]+/g, ' ')}`;
+  if (text.includes(` ${words}`)) return 1;
+  if (text.includes(words) || abbr.startsWith(raw)) return 2;
+  return null;
+}
+
 // AP, Coaches and (late in the season) the CFP lead, then the FCS poll; the
 // feed also carries Division II and III polls, which are left out.
 const POLL_ORDER = ['cfp', 'ap', 'usa', 'fcs'];
