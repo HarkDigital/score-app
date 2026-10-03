@@ -15,7 +15,7 @@ Any static file server works. The app uses ES modules, so opening `index.html` s
 
 ## Put it on your phone
 
-Host the folder on any static host. GitHub Pages is the simplest: Settings → Pages → deploy from `main`, root folder. Then open the URL on your phone:
+It's hosted with GitHub Pages (Settings → Pages → deploy from `main`, root folder) at https://harkdigital.github.io/score-app/. Any other static host works too. Open the URL on your phone:
 
 - **iPhone (Safari):** Share → Add to Home Screen
 - **Android (Chrome):** ⋮ → Add to Home screen / Install app
