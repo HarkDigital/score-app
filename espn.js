@@ -71,7 +71,63 @@ function parseGame(event, league) {
     broadcast: [...new Set((comp.broadcasts ?? []).flatMap((b) => b.names ?? []))].join(', '),
     detail: situationText(situation),
     note: comp.notes?.[0]?.headline ?? '',
+    // Once a game is under way ESPN's entry is a stale pre-game line or nothing.
+    odds: state === 'pre' ? parseOdds(comp.odds, home, away) : null,
   };
+}
+
+// Projection models ESPN sometimes lists beside the sportsbooks. Their
+// "odds" are win percentages, not prices.
+const NOT_BOOKS = /numberfire|teamrankings|projection/i;
+
+// The pre-game line from ESPN's sportsbook partner (DraftKings in 2026):
+// the spread as ESPN words it, the total, each side's moneyline (keyed by
+// team id) and, in soccer, the draw.
+export function parseOdds(list, home, away) {
+  const books = (Array.isArray(list) ? list : [])
+    .filter((o) => o && typeof o === 'object' && !NOT_BOOKS.test(o.provider?.name ?? ''));
+  // A real book first; the consensus line only when there's nothing else.
+  const odds = books.find((o) => !/consensus/i.test(o.provider?.name ?? '')) ?? books[0];
+  if (!odds) return null;
+  const moneyline = {};
+  for (const [side, competitor] of [['homeTeamOdds', home], ['awayTeamOdds', away]]) {
+    const price = american(odds[side]?.moneyLine ?? odds[side]?.current?.moneyLine?.american);
+    if (price && competitor?.team?.id) moneyline[competitor.team.id] = price;
+  }
+  const total = Number(odds.overUnder);
+  const line = {
+    provider: odds.provider?.name ?? '',
+    spread: spreadText(odds, home, away),
+    total: odds.overUnder != null && total > 0 ? String(total) : '',
+    draw: american(odds.drawOdds?.moneyLine) ?? '',
+    moneyline,
+  };
+  return line.spread || line.total || line.draw || Object.keys(moneyline).length ? line : null;
+}
+
+// ESPN's own wording ("KC -3.5", "EVEN"), or one built from the spread,
+// which ESPN gives from the home side, when the wording names no team.
+function spreadText(odds, home, away) {
+  const details = typeof odds.details === 'string' ? odds.details.trim() : '';
+  if (/[a-z]/i.test(details)) return details;
+  const spread = Number(odds.spread);
+  if (odds.spread == null || !Number.isFinite(spread)) return details;
+  if (spread === 0) return 'PK';
+  const favorite = (spread < 0 ? home : away)?.team?.abbreviation;
+  return favorite ? `${favorite} -${Math.abs(spread)}` : details;
+}
+
+// American odds as a betslip shows them: +145, -155, EVEN. Anything with
+// a magnitude under 100 isn't a price.
+function american(value) {
+  if (typeof value === 'string') {
+    const text = value.trim().toUpperCase();
+    if (text === 'EVEN' || text === 'EV') return 'EVEN';
+    value = text === '' ? NaN : Number(text);
+  }
+  if (typeof value !== 'number' || !Number.isFinite(value) || Math.abs(value) < 100) return null;
+  const price = Math.round(value);
+  return price > 0 ? `+${price}` : String(price);
 }
 
 function parseTeam(c, state, situation) {
