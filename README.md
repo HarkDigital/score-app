@@ -8,7 +8,8 @@ Leagues: NFL, NBA, MLB, NHL, NCAAF, NCAAM, WNBA, MLS, Premier League, Champions 
 - **My Teams**: follow teams from any league and see all of their games for a day in one place. Followed teams are starred everywhere else too. Follows are kept on the device.
 - **Standings** for every league: conferences for the NFL, NBA, NHL and WNBA, leagues for MLB, conference tables for college, and the table with its qualification and relegation zones for soccer.
 - **Box scores**: tap any game for the line score (innings with R/H/E for baseball), the scoring summary (touchdowns and field goals, goals, or soccer's goals and red cards), each team's player stats and the team stat comparison. Live box scores refresh every 30 seconds.
-- **Team pages**: tap a team in a box score, the standings, the rankings or the My Teams chips for its record, standing, upcoming games and results, and to follow or unfollow it. Game and team pages have their own links (`#/game/nfl/<id>`, `#/team/nfl/<id>`), so back, swipe-back and sharing work.
+- **Team pages**: tap a team in a box score, the standings, the rankings or the My Teams chips for its record, standing, upcoming games and results, and to follow or unfollow it. Game and team pages have their own links (`#/game/nfl/<id>`, `#/team/nfl/<id>`), so back, swipe-back and sharing work. Going back to a page you've just seen shows it straight away, scrolled where you left it, then refreshes it.
+- **Gestures**: pull down from the top of any screen to refresh it. In the iPhone app, swipe in from the left edge to go back and from the right edge to go forward, as in Safari.
 - **Betting lines** on upcoming games, from ESPN's sportsbook partner (DraftKings): each side's moneyline, the spread, the total and, for soccer, the draw. Lines disappear at kickoff, since ESPN's feed only carries the pre-game line.
 - **Line movement**: game pages for the NFL, college football, MLB, NBA and NHL link to the game's chart on [LineSteam](https://linesteam.com), which records every FanDuel spread, total and moneyline move. The link goes through `linesteam.com/espn/<league>/<ESPN id>`, which lands on the game, or on LineSteam's league page if it hasn't matched that game yet.
 - **Rankings** for college football and basketball: the AP and Coaches polls, plus the CFP rankings once they're out. Pro leagues have no polls; their standings are the ranking.
@@ -35,7 +36,7 @@ The app opens full-screen like a native app and remembers the last league you vi
 
 ## iPhone app (TestFlight)
 
-"Phade Scores" (bundle ID `digital.hark.scores`) is a thin [Capacitor](https://capacitorjs.com) app that opens the live site above, the same way Phade's app works. Changes to the web app reach the iPhone app as soon as they're merged to `main`; you only need a new build when the native shell itself changes (its icon, splash, name or settings). The Xcode project is in `ios/` and uses Swift Package Manager, so there's no CocoaPods step.
+"Phade Scores" (bundle ID `digital.hark.scores`) is a thin [Capacitor](https://capacitorjs.com) app that opens the live site above, the same way Phade's app works. Changes to the web app reach the iPhone app as soon as they're merged to `main`; you only need a new build when the native shell itself changes (its icon, splash, name, settings or the Swift in `ios/App/App/`). Build 2 added the back and forward edge swipes. The Xcode project is in `ios/` and uses Swift Package Manager, so there's no CocoaPods step.
 
 **First build** (on your Mac, with Xcode installed), from the `score-app` folder:
 
@@ -79,7 +80,7 @@ Scores come from ESPN's public scoreboard feed, which is the same data that powe
 | Games later today                           | every 5 minutes    |
 | Nothing upcoming (past days, all final)     | no auto-refresh    |
 
-Scores are usually within about 15–30 seconds of ESPN's own feed. That's often ahead of a TV or streaming broadcast, which typically runs 30+ seconds behind live. The game clock jumps forward on each refresh rather than ticking every second. Polling pauses when the app is in the background and catches up as soon as you reopen it. The refresh button forces an immediate update. Standings and rankings load when you open them and refresh with the button.
+Scores are usually within about 15–30 seconds of ESPN's own feed. That's often ahead of a TV or streaming broadcast, which typically runs 30+ seconds behind live. The game clock jumps forward on each refresh rather than ticking every second. Polling pauses when the app is in the background and catches up as soon as you reopen it. The refresh button, or pulling down from the top, forces an immediate update. Standings and rankings load when you open them and refresh with the button.
 
 Start times for upcoming games come from the league schedule and are shown in your local time zone.
 
@@ -105,6 +106,7 @@ Start times for upcoming games come from the league schedule and are shown in yo
 | `app.js`                         | Scoreboard rendering, navigation, polling, the team picker, routing  |
 | `pages.js`                       | The game (box score) and team (schedule) pages                       |
 | `ui.js`                          | Shared pieces: icons, fetching, team logos, empty states             |
+| `pull.js`                        | Pull to refresh                                                      |
 | `index.html`, `styles.css`       | Page shell and styles                                                |
 | `manifest.webmanifest`, `icons/` | Home-screen install metadata and icons                               |
 | `test/`                          | Unit tests and feed responses trimmed from real ESPN data            |

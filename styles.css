@@ -181,6 +181,47 @@ body:not(.page-mode) .page { display: none; }
 .spinning svg { animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* Pull to refresh (pull.js): the content slides down under the header and a
+   puck comes out from beneath it, turning with the pull, mint once letting go
+   will refresh, spinning while it does. */
+.ptr {
+  position: fixed;
+  top: var(--ptr-top, 0px);
+  left: 50%;
+  z-index: 19;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin-left: -18px;
+  border: 1px solid var(--gray-800);
+  border-radius: 50%;
+  background: var(--gray-900);
+  color: var(--gray-400);
+  box-shadow: 0 6px 16px rgb(0 0 0 / 0.45);
+  pointer-events: none;
+  visibility: hidden;
+  opacity: var(--pull-show, 0);
+  transform: translateY(calc(var(--pull, 0px) / 2 - 18px));
+}
+
+.ptr svg { transform: rotate(var(--pull-turn, 0deg)); }
+.ptr.armed { color: var(--accent); border-color: rgb(70 187 147 / 0.35); }
+.ptr.refreshing svg { animation: ptr-spin 0.8s linear infinite; }
+@keyframes ptr-spin {
+  from { transform: rotate(var(--pull-turn, 0deg)); }
+  to { transform: rotate(calc(var(--pull-turn, 0deg) + 360deg)); }
+}
+.ptr-active .ptr { visibility: visible; }
+
+.ptr-active main,
+.ptr-active .page { transform: translateY(var(--pull, 0px)); }
+
+.ptr-settling .ptr,
+.ptr-settling main,
+.ptr-settling .page { transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 260ms ease; }
+.ptr-settling .ptr svg { transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+
 /* The 2px brand strip under the header (Phade's mobile header). */
 .accent-line {
   height: 2px;
