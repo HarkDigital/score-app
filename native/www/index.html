@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <title>Phade Scores</title>
+  <!-- The iPhone app loads the live site (capacitor.config.json server.url).
+       Capacitor needs a bundled index.html to start, and shows this page
+       (server.errorPath) when the site can't be reached. -->
+  <style>
+    html, body { margin: 0; height: 100%; background: #0a0a0a; color: #ededed; }
+    body {
+      display: grid;
+      place-items: center;
+      padding: env(safe-area-inset-top) 24px env(safe-area-inset-bottom);
+      font: 15px/1.5 -apple-system, system-ui, sans-serif;
+      text-align: center;
+      -webkit-text-size-adjust: 100%;
+    }
+    .box { max-width: 300px; }
+    .icon {
+      display: grid;
+      place-items: center;
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 18px;
+      border-radius: 18px;
+      background: rgb(70 187 147 / 0.1);
+      box-shadow: inset 0 0 0 1px rgb(70 187 147 / 0.25);
+      color: #46bb93;
+    }
+    h1 { margin: 0 0 6px; font-size: 18px; font-weight: 600; color: #fff; }
+    p { margin: 0 0 20px; color: #9ca3af; }
+    button {
+      min-height: 44px;
+      padding: 10px 28px;
+      border: 0;
+      border-radius: 10px;
+      background: linear-gradient(to right, #05203c, #46bb93);
+      color: #fff;
+      font: inherit;
+      font-weight: 500;
+    }
+    button:active { transform: scale(0.97); }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <div class="icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="30" height="30"><path d="M2 8.8a15 15 0 0 1 20 0M5.5 12.4a10 10 0 0 1 13 0M9 16a5 5 0 0 1 6 0M12 19.5v.01" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <h1>Can't reach Scores</h1>
+    <p>Check your connection, then try again.</p>
+    <button type="button" id="retry">Try again</button>
+  </div>
+  <script>
+    document.getElementById('retry').addEventListener('click', function () {
+      window.location.href = 'https://harkdigital.github.io/score-app/';
+    });
+  </script>
+</body>
+</html>

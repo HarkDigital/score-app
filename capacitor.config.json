@@ -1,0 +1,15 @@
+{
+  "appId": "digital.hark.scores",
+  "appName": "Phade Scores",
+  "webDir": "native/www",
+  "backgroundColor": "#0a0a0a",
+  "server": {
+    "url": "https://harkdigital.github.io/score-app/",
+    "allowNavigation": ["harkdigital.github.io"],
+    "errorPath": "index.html"
+  },
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#0a0a0a"
+  }
+}

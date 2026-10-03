@@ -30,7 +30,42 @@ It's hosted with GitHub Pages at https://harkdigital.github.io/score-app/ (Setti
 - **iPhone (Safari):** Share → Add to Home Screen
 - **Android (Chrome):** ⋮ → Add to Home screen / Install app
 
-The app opens full-screen like a native app and remembers the last league you viewed. It already lays out for a native shell: it draws under the status bar with safe-area padding, keeps the WebView background dark, and its text field is 16px so iOS doesn't zoom on focus.
+The app opens full-screen like a native app and remembers the last league you viewed.
+
+## iPhone app (TestFlight)
+
+"Phade Scores" (bundle ID `digital.hark.scores`) is a thin [Capacitor](https://capacitorjs.com) app that opens the live site above, the same way Phade's app works. Changes to the web app reach the iPhone app as soon as they're merged to `main`; you only need a new build when the native shell itself changes (its icon, splash, name or settings). The Xcode project is in `ios/` and uses Swift Package Manager, so there's no CocoaPods step.
+
+**First build** (on your Mac, with Xcode installed), from the `score-app` folder:
+
+```
+git pull
+npm install
+npm run ios:sync
+npm run ios:open
+```
+
+`ios:sync` copies the settings and the offline page into the Xcode project; run it after every `git pull` that touches `capacitor.config.json` or `native/`. `ios:open` opens Xcode, which then downloads Capacitor (watch for "Resolving packages" to finish).
+
+1. In Xcode, select the **App** project, then the **App** target, then **Signing & Capabilities**. Check that "Automatically manage signing" is on and **Team** is the same team as Phade. Xcode registers the bundle ID `digital.hark.scores` on its own.
+2. Optional check: pick an iPhone simulator (or your plugged-in iPhone) at the top and press **Run** (⌘R).
+3. In [App Store Connect](https://appstoreconnect.apple.com), go to **Apps**, then **+**, then **New App**:
+   - **Platform:** iOS.
+   - **Name:** must be unique on the App Store, e.g. "Phade Scores". The home-screen name is set separately in the project.
+   - **Primary language:** English (U.S.).
+   - **Bundle ID:** `digital.hark.scores`.
+   - **SKU:** `phade-scores-ios`.
+   - **User access:** Full Access.
+4. Back in Xcode, choose **Any iOS Device (arm64)** at the top, then **Product**, then **Archive**. When the Organizer window opens, choose **Distribute App**, then **App Store Connect**, then **Upload**, keeping the defaults.
+5. In App Store Connect, open the app's **TestFlight** tab. The build shows up after processing (usually 5 to 15 minutes). Export compliance is already answered in the app's settings. Under **Internal Testing**, create a group, add yourself, and install **Phade Scores** from the TestFlight app on your iPhone. Internal testers (people on your App Store Connect team) don't need App Review.
+
+**Later builds:** raise the **Build** number (target **App**, then **General**, then **Identity**; or `CURRENT_PROJECT_VERSION` in `ios/App/App.xcodeproj/project.pbxproj`) before each upload, then repeat step 4.
+
+**Before the App Store (not needed for TestFlight):**
+- **External testers:** TestFlight testers outside your team need a quick Beta App Review.
+- **Store listing:** the App Store version needs screenshots, including 13-inch iPad ones since the app supports iPad, plus a privacy policy URL and the App Privacy answers.
+- **Age rating:** the betting lines will likely mean answering "Gambling: Yes" in the age rating; Phade was rejected under guideline 2.3.6 until it did.
+- **Review risks:** Apple can reject apps that are mostly a website (guideline 4.2) or that use others' data and logos without permission (5.2: ESPN's feed and team logos).
 
 ## How fresh are the scores?
 
@@ -72,3 +107,6 @@ Start times for upcoming games come from the league schedule and are shown in yo
 | `index.html`, `styles.css`       | Page shell and styles                                                |
 | `manifest.webmanifest`, `icons/` | Home-screen install metadata and icons                               |
 | `test/`                          | Unit tests and feed responses trimmed from real ESPN data            |
+| `capacitor.config.json`          | iPhone app settings: app ID, name, the site it loads                 |
+| `native/www/`                    | Offline page bundled into the iPhone app                             |
+| `ios/`                           | The Xcode project for the iPhone app                                 |
