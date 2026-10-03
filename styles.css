@@ -1,44 +1,60 @@
+/* Phade's design language: dark-only, Poppins, mint (#46bb93) on near-black,
+   rounded gradient cards. Values mirror Phade's globals.css and the Tailwind
+   grays it uses, so the two apps read as one family. */
 :root {
-  --bg: #f4f5f7;
-  --card: #ffffff;
-  --text: #111418;
-  --muted: #6b7280;
-  --line: #e4e6ea;
-  --chip: #e8eaee;
-  --accent: #1d4ed8;
-  --accent-text: #ffffff;
-  --live: #dc2626;
-  --logo-shadow: none;
-  color-scheme: light dark;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0b0d10;
-    --card: #16191e;
-    --text: #f1f3f5;
-    --muted: #8b929c;
-    --line: #262a31;
-    --chip: #1f232a;
-    --accent: #60a5fa;
-    --accent-text: #0b0d10;
-    --live: #f87171;
-    /* Lifts dark team logos off the dark background. */
-    --logo-shadow: drop-shadow(0 0 1px rgb(255 255 255 / 0.5));
-  }
+  --bg: #0a0a0a;
+  --fg: #ededed;
+  --accent: #46bb93;
+  --accent-dark: #05203c;
+  --live: #ef6b6b;
+  --warn: #fbbf24;
+  --white: #ffffff;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  --surface: #10161f;
+  --surface-hover: #151d29;
+  --surface-active: #2a3442;
+  --sheet: #111111;
+  --card-border: rgb(31 41 55 / 0.6);
+  --card-bg: linear-gradient(to bottom, rgb(17 24 39 / 0.8), rgb(3 7 18 / 0.8));
+  --hairline: rgb(31 41 55 / 0.4);
+  --font: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --max: 980px;
+  --gutter: 16px;
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
 
-html { -webkit-text-size-adjust: 100%; }
+html {
+  background: var(--bg);
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* contain: keeps scroll momentum but stops the rubber-band overshoot, which
+   shows as jitter under a sticky header in the iOS shell. */
+html, body {
+  overflow-x: clip;
+  overscroll-behavior-y: contain;
+}
 
 body {
   margin: 0;
+  min-height: 100svh;
   background: var(--bg);
-  color: var(--text);
-  font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--fg);
+  font: 15px/1.45 var(--font);
+  font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
 }
+
+h1, h2, h3 { letter-spacing: -0.015em; }
 
 button {
   font: inherit;
@@ -47,168 +63,458 @@ button {
   border: 0;
   padding: 0;
   cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, transform 150ms ease;
 }
 
 button:disabled { cursor: default; }
 
+img { -webkit-touch-callout: none; }
+
+:where(a, button, [role="tab"], input):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ---- Header ---- */
+
 .top {
   position: sticky;
   top: 0;
-  z-index: 1;
-  background: var(--bg);
+  z-index: 20;
+  background: rgb(10 10 10 / 0.85);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   padding-top: env(safe-area-inset-top);
-  border-bottom: 1px solid var(--line);
 }
 
-.title-row {
+.top-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 640px;
+  max-width: var(--max);
   margin: 0 auto;
-  padding: 10px 16px 4px;
+  padding: 10px max(var(--gutter), env(safe-area-inset-right)) 6px max(var(--gutter), env(safe-area-inset-left));
 }
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand img { border-radius: 8px; }
 
 h1 {
   margin: 0;
   font-size: 22px;
-  letter-spacing: -0.01em;
+  font-weight: 700;
+  color: var(--white);
 }
 
 .icon-btn {
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  font-size: 26px;
-  line-height: 1;
-  color: var(--muted);
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  color: var(--gray-400);
 }
 
-.icon-btn:not(:disabled):hover { background: var(--chip); color: var(--text); }
-.icon-btn:disabled { opacity: 0.3; }
+.icon-btn:not(:disabled):hover { background: rgb(255 255 255 / 0.05); color: var(--white); }
+.icon-btn:not(:disabled):active { transform: scale(0.95); }
 
 .spinning svg { animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* The 2px brand strip under the header (Phade's mobile header). */
+.accent-line {
+  height: 2px;
+  background: linear-gradient(to right, var(--accent-dark), var(--accent), var(--accent-dark));
+  opacity: 0.8;
+}
+
+/* League pills: Phade's pill group (DayStrip view toggle, calendar button). */
 .tabs {
   display: flex;
   gap: 8px;
-  max-width: 640px;
+  max-width: var(--max);
   margin: 0 auto;
-  padding: 6px 16px;
+  padding: 4px max(var(--gutter), env(safe-area-inset-right)) 12px max(var(--gutter), env(safe-area-inset-left));
   overflow-x: auto;
   scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .tabs::-webkit-scrollbar { display: none; }
 
 .tab {
   flex: none;
-  padding: 6px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--gray-800);
   border-radius: 999px;
-  background: var(--chip);
-  font-size: 14px;
-  font-weight: 600;
+  background: var(--surface);
+  color: var(--gray-400);
+  font-size: 13px;
+  font-weight: 500;
   white-space: nowrap;
 }
 
+.tab:hover { color: var(--white); background: var(--surface-hover); }
+
 .tab[aria-selected="true"] {
-  background: var(--accent);
-  color: var(--accent-text);
+  background: var(--surface-active);
+  color: #34d399;
+  font-weight: 700;
+  border-color: rgb(70 187 147 / 0.35);
 }
 
-.date-nav {
+.tab svg { flex: none; }
+
+/* ---- Main ---- */
+
+main {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 16px max(var(--gutter), env(safe-area-inset-right)) calc(32px + env(safe-area-inset-bottom)) max(var(--gutter), env(safe-area-inset-left));
+}
+
+/* Segmented control: Phade's Upcoming / Live / Complete tab bar. */
+.segmented {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 16px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: rgb(17 24 39 / 0.8);
+}
+
+.segmented button {
+  flex: 1;
+  min-height: 40px;
+  border-radius: 8px;
+  color: var(--gray-400);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.segmented button:hover { color: var(--gray-300); }
+
+.segmented button[aria-selected="true"] {
+  background: var(--gray-800);
+  color: var(--white);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+}
+
+.toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 640px;
-  margin: 0 auto;
-  padding: 2px 8px 6px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
-.nav-label {
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.sub {
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--gray-800);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--accent);
+  font-size: 12px;
   font-weight: 600;
-  padding: 6px 12px;
-  border-radius: 8px;
 }
 
-.nav-label:not(:disabled) { color: var(--accent); }
+.pill-btn:hover { background: var(--surface-active); }
 
-main {
-  max-width: 640px;
-  margin: 0 auto;
-  padding: 0 16px calc(24px + env(safe-area-inset-bottom));
+/* ---- Day strip (Phade's DayStrip) ---- */
+
+.nav-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 32px;
+  margin-bottom: 8px;
 }
+
+.strip {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 40px;
+  overflow: hidden;
+  border: 1px solid var(--gray-800);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.strip-arrow {
+  display: grid;
+  place-items: center;
+  min-height: 56px;
+  color: var(--accent);
+}
+
+.strip-arrow:not(:disabled):hover { background: var(--surface-hover); }
+.strip-arrow:disabled { color: var(--gray-700); }
+
+.strip-window { overflow: hidden; }
+
+.strip-track {
+  display: flex;
+  transition: transform 300ms ease-out;
+}
+
+.day {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  flex: none;
+  padding: 10px 2px;
+  color: var(--gray-400);
+}
+
+.day:hover { background: var(--surface-hover); }
+
+.day .dow {
+  font-size: 12px;
+  white-space: nowrap;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.day .date {
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  line-height: 1.2;
+}
+
+.day.selected { color: var(--white); }
+.day.selected .dow { font-weight: 700; }
+.day.selected .date { color: var(--white); }
+
+.day.selected::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--accent);
+}
+
+.today-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* Week bar for football. */
+.week-center {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 1px;
+  padding: 8px 4px;
+  text-align: center;
+}
+
+.week-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--white);
+}
+
+.week-detail {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+}
+
+/* ---- Status ---- */
 
 .status {
-  min-height: 1.4em;
-  margin: 10px 0 0;
-  font-size: 13px;
-  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 20px;
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: var(--gray-500);
 }
 
 .status.error { color: var(--live); }
 
-.empty {
-  margin: 48px 0;
-  text-align: center;
-  color: var(--muted);
+.status .pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 2s ease-in-out infinite;
 }
 
-.group h2 {
-  margin: 18px 0 8px;
-  font-size: 13px;
+/* ---- Groups ---- */
+
+.group-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 22px 0 10px;
+  font-size: 11px;
   font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
+  color: var(--gray-500);
 }
 
-.game {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 10px 14px;
-  margin-bottom: 10px;
+.group-title.in { color: var(--live); }
+.group-title.pre { color: var(--accent); }
+
+.count {
+  display: inline-flex;
+  align-items: center;
+  min-width: 20px;
+  height: 18px;
+  justify-content: center;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--gray-800);
+  color: var(--gray-400);
+  font-size: 10px;
+  letter-spacing: 0;
 }
+
+.group-title.in .count { background: rgb(239 68 68 / 0.15); color: var(--live); }
+.group-title.pre .count { background: rgb(70 187 147 / 0.15); color: var(--accent); }
+
+.grid {
+  display: grid;
+  gap: 12px;
+}
+
+@media (min-width: 720px) {
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ---- Cards ---- */
+
+.card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: var(--card-bg);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.2), 0 4px 6px -4px rgb(0 0 0 / 0.2);
+}
+
+.game.live { border-color: rgb(239 107 107 / 0.3); }
 
 .game-head {
   display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 4px;
-  font-size: 13px;
-  color: var(--muted);
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 6px 16px;
+  border-bottom: 1px solid var(--hairline);
+  font-size: 12px;
+  color: var(--gray-500);
 }
 
-.game-tv { text-align: right; }
+.game-head .tv {
+  margin-left: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
+}
 
-.game.in .game-status {
-  color: var(--live);
+.clock {
+  color: var(--gray-300);
+  font-weight: 500;
+}
+
+.badge {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--gray-800);
+  color: var(--gray-400);
+  font-size: 10px;
   font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.game.in .game-status::before {
-  content: "";
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  margin-right: 6px;
+.badge-live { background: rgb(239 68 68 / 0.15); color: var(--live); }
+.badge-warn { background: rgb(245 158 11 / 0.15); color: var(--warn); }
+
+.league-chip {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgb(70 187 147 / 0.15);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: currentColor;
-  vertical-align: 1px;
   animation: pulse 2s ease-in-out infinite;
 }
 
 @keyframes pulse { 50% { opacity: 0.35; } }
 
+.teams { padding: 4px 0; }
+
 .team {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: 36px;
+  min-height: 42px;
+  padding: 0 16px;
 }
 
 .logo {
@@ -216,23 +522,45 @@ main {
   width: 28px;
   height: 28px;
   object-fit: contain;
-  filter: var(--logo-shadow);
+  /* Lifts dark logos (Raiders, Nets) off the near-black card. */
+  filter: drop-shadow(0 0 1px rgb(255 255 255 / 0.35));
 }
 
-.logo.broken { visibility: hidden; }
+/* Phade's TeamLogo fallback: team color circle with its abbreviation. */
+.logo-fallback {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  filter: none;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.12);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
 
 .name {
-  font-weight: 600;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--white);
 }
 
 .rank {
   margin-right: 5px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gray-500);
+}
+
+.star {
+  display: inline-block;
+  margin-left: 6px;
+  color: var(--accent);
+  vertical-align: -1px;
 }
 
 .poss {
@@ -240,13 +568,14 @@ main {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--live);
+  background: var(--accent);
+  box-shadow: 0 0 0 3px rgb(70 187 147 / 0.2);
 }
 
 .record {
   flex: none;
-  font-size: 13px;
-  color: var(--muted);
+  font-size: 12px;
+  color: var(--gray-500);
 }
 
 .score {
@@ -254,29 +583,522 @@ main {
   margin-left: auto;
   min-width: 2ch;
   text-align: right;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
-  font-variant-numeric: tabular-nums;
+  color: var(--white);
 }
 
-.team.lost .name,
-.team.lost .score { color: var(--muted); font-weight: 500; }
+.win-mark {
+  flex: none;
+  width: 8px;
+  margin-right: -6px;
+  color: var(--accent);
+}
+
+.team.lost .name { color: var(--gray-400); }
+.team.lost .score { color: var(--gray-500); font-weight: 600; }
+.team.lost .logo { opacity: 0.7; }
+
+/* Phade's "@" rule between the two teams. */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 16px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gray-600);
+}
+
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgb(31 41 55 / 0.5);
+}
 
 .game-foot {
-  margin-top: 4px;
-  padding-top: 6px;
-  border-top: 1px solid var(--line);
-  font-size: 13px;
-  color: var(--muted);
+  padding: 8px 16px;
+  border-top: 1px solid var(--hairline);
+  font-size: 12px;
+  color: var(--gray-400);
 }
 
-.credit {
-  margin: 24px 0 0;
+/* ---- Standings ---- */
+
+.table-wrap { overflow-x: auto; }
+
+.standings {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.standings th,
+.standings td {
+  height: 40px;
+  padding: 0 6px;
   text-align: center;
+  white-space: nowrap;
+}
+
+.standings thead th {
+  height: 34px;
+  border-bottom: 1px solid var(--hairline);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+}
+
+.standings tbody tr + tr > * { border-top: 1px solid rgb(31 41 55 / 0.35); }
+
+.standings td { color: var(--gray-300); }
+.standings td.key { color: var(--white); font-weight: 600; }
+
+.standings .col-team {
+  width: 100%;
+  max-width: 0;
+  padding-left: 12px;
+  text-align: left;
+}
+
+.standings tbody .col-team {
+  font-weight: 500;
+  color: var(--white);
+}
+
+.team-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.team-cell .logo { width: 22px; height: 22px; }
+.team-cell .logo-fallback { font-size: 7px; }
+
+.team-cell .team-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pos {
+  flex: none;
+  position: relative;
+  width: 22px;
   font-size: 12px;
-  color: var(--muted);
+  font-weight: 600;
+  color: var(--gray-500);
+  text-align: left;
+}
+
+/* Zone marker (playoffs, Europe, relegation) from the feed's entry notes. */
+.pos[style]::before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: -11px;
+  bottom: -11px;
+  width: 3px;
+  background: var(--note);
+}
+
+.standings tr.followed .team-name { color: var(--accent); }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 10px 2px 0;
+  font-size: 11px;
+  color: var(--gray-500);
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--note);
+}
+
+/* ---- Rankings ---- */
+
+.pills {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--gray-800);
+  border-radius: 999px;
+  background: var(--surface);
+}
+
+.pills button {
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  color: var(--gray-500);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.pills button:hover { color: var(--white); }
+
+.pills button[aria-pressed="true"] {
+  background: var(--surface-active);
+  color: #34d399;
+  font-weight: 700;
+}
+
+.poll-row {
+  display: grid;
+  grid-template-columns: 30px 34px 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 50px;
+  padding: 0 14px;
+}
+
+.poll-row + .poll-row { border-top: 1px solid rgb(31 41 55 / 0.35); }
+
+.poll-rank {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--white);
+  text-align: right;
+}
+
+.trend {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gray-600);
+}
+
+.trend.up { color: #34d399; }
+.trend.down { color: var(--live); }
+
+.poll-team { min-width: 0; }
+
+.poll-team .name { display: block; }
+.poll-team .record { display: block; }
+
+.poll-points {
+  text-align: right;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-300);
+}
+
+.poll-points small {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--gray-500);
+}
+
+.poll-row.followed .name { color: var(--accent); }
+
+.others {
+  margin: 12px 2px 0;
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+/* ---- Empty / error states (Phade's EmptyState) ---- */
+
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  margin-top: 20px;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.empty-icon {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  margin-bottom: 10px;
+  border-radius: 18px;
+  background: rgb(70 187 147 / 0.1);
+  box-shadow: inset 0 0 0 1px rgb(70 187 147 / 0.25);
+  color: var(--accent);
+}
+
+.empty.error .empty-icon {
+  background: rgb(239 68 68 / 0.1);
+  box-shadow: inset 0 0 0 1px rgb(239 68 68 / 0.25);
+  color: var(--live);
+}
+
+.empty h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.empty p {
+  max-width: 34ch;
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: var(--gray-400);
+}
+
+.empty .link-btn {
+  min-height: 40px;
+  font-size: 13px;
+  color: var(--gray-400);
+}
+
+.empty .link-btn:hover { color: var(--white); }
+
+/* Phade's primary button: navy-to-mint gradient that slides on hover. */
+.btn-primary {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 10px 24px;
+  border-radius: 10px;
+  color: var(--white);
+  font-weight: 500;
+  background: linear-gradient(to right, var(--accent-dark) 0%, var(--accent-dark) 50%, var(--accent) 100%);
+  background-size: 200% 100%;
+  background-position: right center;
+  transition: background-position 400ms ease, transform 150ms ease;
+}
+
+.btn-primary:hover { background-position: left center; }
+.btn-primary:active { transform: scale(0.95); }
+
+/* ---- Loading skeletons ---- */
+
+.skeleton {
+  display: block;
+  border-radius: 6px;
+  background: linear-gradient(90deg, rgb(31 41 55 / 0.6) 0%, rgb(55 65 81 / 0.45) 50%, rgb(31 41 55 / 0.6) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-card { padding: 14px 16px; display: grid; gap: 14px; }
+.skeleton-row { display: flex; align-items: center; gap: 10px; }
+.skeleton-row .skeleton:last-child { margin-left: auto; }
+
+/* ---- Entrance animation, only when the view changes (not on refresh) ---- */
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.stagger-in .card { animation: fadeInUp 400ms ease both; }
+.stagger-in .group:nth-child(2) .card { animation-delay: 80ms; }
+.stagger-in .group:nth-child(3) .card { animation-delay: 160ms; }
+
+/* ---- Team picker sheet ---- */
+
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgb(0 0 0 / 0.6);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 200ms ease-out both;
+}
+
+.sheet {
+  position: fixed;
+  z-index: 41;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100svh - env(safe-area-inset-top) - 24px);
+  height: 88svh;
+  padding-bottom: env(safe-area-inset-bottom);
+  border: 1px solid var(--gray-800);
+  border-bottom: 0;
+  border-radius: 20px 20px 0 0;
+  background: var(--sheet);
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+  animation: sheetRise 240ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@media (min-width: 720px) {
+  .sheet {
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    top: 50%;
+    width: 520px;
+    height: min(720px, 85svh);
+    border-bottom: 1px solid var(--gray-800);
+    border-radius: 16px;
+    transform: translate(-50%, -50%);
+    animation: sheetSettle 240ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .sheet-grabber { display: none; }
+}
+
+@keyframes fadeIn { from { opacity: 0; } }
+@keyframes sheetRise { from { opacity: 0.6; transform: translateY(24px); } }
+@keyframes sheetSettle { from { opacity: 0.6; transform: translate(-50%, -50%) scale(0.97); } }
+
+.sheet-grabber {
+  flex: none;
+  width: 36px;
+  height: 4px;
+  margin: 8px auto 0;
+  border-radius: 2px;
+  background: var(--gray-700);
+}
+
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px 4px;
+}
+
+.sheet-head h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--white);
+}
+
+/* auto margins would stop the row stretching to the sheet, and it would
+   grow to fit every league instead of scrolling. */
+.sheet .tabs {
+  flex: none;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 8px 16px;
+}
+
+.tab .count { margin-left: 2px; }
+.tab[aria-selected="true"] .count { background: rgb(70 187 147 / 0.2); color: var(--accent); }
+
+/* 16px so iOS doesn't zoom the page when the field gets focus. */
+.search {
+  margin: 4px 16px 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--gray-700);
+  border-radius: 10px;
+  background: var(--gray-900);
+  color: var(--white);
+  font: 16px var(--font);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgb(70 187 147 / 0.25);
+}
+
+.search::placeholder { color: var(--gray-500); }
+
+.team-list {
+  flex: 1;
+  margin: 0;
+  padding: 0 8px 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  list-style: none;
+}
+
+.team-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 10px;
+  border-radius: 10px;
+  text-align: left;
+}
+
+.team-option:hover { background: rgb(255 255 255 / 0.04); }
+
+.team-option .name { flex: 1; }
+
+.follow-mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--gray-700);
+  border-radius: 50%;
+  color: var(--gray-500);
+}
+
+.team-option[aria-pressed="true"] .follow-mark {
+  border-color: transparent;
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.team-option[aria-pressed="true"] .name { color: var(--accent); }
+
+.list-note {
+  padding: 24px 16px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--gray-400);
+}
+
+/* ---- Footer ---- */
+
+.credit {
+  margin: 32px 0 0;
+  text-align: center;
+  font-size: 11px;
+  color: var(--gray-600);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .spinning svg, .game.in .game-status::before { animation: none; }
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+.clinch {
+  flex: none;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--gray-500);
+}
+
+/* Phones: seven days share ~280px. */
+@media (max-width: 420px) {
+  .day .dow { font-size: 11px; letter-spacing: 0.03em; }
+  .day .date { font-size: 9px; letter-spacing: 0; }
 }

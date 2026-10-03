@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
   LEAGUES, scoreboardUrl, parseScoreboard, groupGames, refreshDelay,
-  statusLabel, formatStart, dayLabel, weekLabel, adjacentWeek,
+  statusLabel, formatStart, dayLabel, weekLabel, weekInfo, adjacentWeek, teamColor, fallbackUrl,
 } from '../espn.js';
 
 const league = (id) => LEAGUES.find((l) => l.id === id);
@@ -27,6 +27,31 @@ test('weekly leagues ask for the current week unless one is picked', () => {
   const picked = new URL(scoreboardUrl(league('nfl'), { week: { seasonType: 3, week: 1 } }));
   assert.equal(picked.searchParams.get('seasontype'), '3');
   assert.equal(picked.searchParams.get('week'), '1');
+
+  // My Teams looks at one day across leagues, football included.
+  const byDate = new URL(scoreboardUrl(league('nfl'), { date: new Date(2026, 9, 4), byDate: true }));
+  assert.equal(byDate.searchParams.get('dates'), '20261004');
+  assert.equal(byDate.searchParams.get('week'), null);
+});
+
+test('team colors are normalized and anything odd is ignored', () => {
+  assert.equal(teamColor('E31837'), '#e31837');
+  assert.equal(teamColor('#e31837'), null);
+  assert.equal(teamColor('red'), null);
+  assert.equal(teamColor(undefined), null);
+  const board = parseScoreboard({ events: [{ id: '1', competitions: [{ competitors: [
+    { homeAway: 'home', team: { id: '1', abbreviation: 'A', color: '002B5C' } },
+    { homeAway: 'away', team: { id: '2', abbreviation: 'B', color: 'javascript:' } },
+  ] }] }] }, league('nba'));
+  assert.deepEqual(board.games[0].teams.map((t) => t.color), [null, '#002b5c']);
+});
+
+test('requests fall back to the site.web.api host', () => {
+  assert.equal(
+    fallbackUrl('https://site.api.espn.com/apis/v2/sports/football/nfl/standings?x=1'),
+    'https://site.web.api.espn.com/apis/v2/sports/football/nfl/standings?x=1',
+  );
+  assert.equal(fallbackUrl('https://site.web.api.espn.com/apis/site/v2/sports'), null);
 });
 
 test('US sports list the away team first', () => {
@@ -102,16 +127,29 @@ test('games are grouped live, upcoming, final and sorted by start', () => {
 
 test('weeks step across season types using the calendar', () => {
   assert.equal(weekLabel(nfl), 'Week 5');
-  assert.deepEqual(adjacentWeek(nfl, -1), { seasonType: 2, week: 4, label: 'Week 4' });
-  assert.deepEqual(adjacentWeek(nfl, 1), { seasonType: 2, week: 6, label: 'Week 6' });
+  assert.deepEqual(adjacentWeek(nfl, -1), { seasonType: 2, week: 4, label: 'Week 4', season: 'Regular Season' });
+  assert.deepEqual(adjacentWeek(nfl, 1), { seasonType: 2, week: 6, label: 'Week 6', season: 'Regular Season' });
 
   const lastRegular = { ...nfl, week: { seasonType: 2, week: 18 } };
-  assert.deepEqual(adjacentWeek(lastRegular, 1), { seasonType: 3, week: 1, label: 'Wild Card' });
+  assert.deepEqual(adjacentWeek(lastRegular, 1), { seasonType: 3, week: 1, label: 'Wild Card', season: 'Postseason' });
   const firstRegular = { ...nfl, week: { seasonType: 2, week: 1 } };
-  assert.deepEqual(adjacentWeek(firstRegular, -1), { seasonType: 1, week: 4, label: 'Preseason Week 3' });
+  assert.deepEqual(adjacentWeek(firstRegular, -1), { seasonType: 1, week: 4, label: 'Preseason Week 3', season: 'Preseason' });
   // The off-season isn't browsable.
   const superBowl = { ...nfl, week: { seasonType: 3, week: 5 } };
   assert.equal(adjacentWeek(superBowl, 1), null);
+});
+
+test('week dates and season name come from the calendar when present', () => {
+  assert.deepEqual(weekInfo(nfl), { detail: '', season: 'Regular Season' });
+  const board = parseScoreboard({
+    week: { number: 1 },
+    season: { type: 2 },
+    leagues: [{ calendar: [{ label: 'Regular Season', value: '2', entries: [
+      { label: 'Week 1', alternateLabel: 'Week 1', detail: 'Sep 9-15', value: '1', startDate: '2026-09-09T07:00Z' },
+    ] }] }],
+  }, league('nfl'));
+  assert.deepEqual(weekInfo(board), { detail: 'Sep 9-15', season: 'Regular Season' });
+  assert.deepEqual(weekInfo(null), { detail: '', season: '' });
 });
 
 test('weeks fall back to simple counting without a calendar', () => {

@@ -6,23 +6,28 @@ const BASE = 'https://site.api.espn.com/apis/site/v2/sports';
 
 // weekly: football is browsed by week rather than by day.
 // homeFirst: soccer lists the home side first; US sports list away first.
+// college: conference standings, and weekly polls (AP, Coaches, CFP).
 export const LEAGUES = [
   { id: 'nfl', label: 'NFL', path: 'football/nfl', weekly: true },
   { id: 'nba', label: 'NBA', path: 'basketball/nba' },
   { id: 'mlb', label: 'MLB', path: 'baseball/mlb' },
   { id: 'nhl', label: 'NHL', path: 'hockey/nhl' },
-  { id: 'ncaaf', label: 'NCAAF', path: 'football/college-football', weekly: true, params: { groups: '80', limit: '300' } },
-  { id: 'ncaam', label: 'NCAAM', path: 'basketball/mens-college-basketball', params: { groups: '50', limit: '400' } },
+  { id: 'ncaaf', label: 'NCAAF', path: 'football/college-football', weekly: true, college: true, rankings: true, params: { groups: '80', limit: '300' }, standingsParams: { group: '80' } },
+  { id: 'ncaam', label: 'NCAAM', path: 'basketball/mens-college-basketball', college: true, rankings: true, params: { groups: '50', limit: '400' }, standingsParams: { group: '50' } },
   { id: 'wnba', label: 'WNBA', path: 'basketball/wnba' },
   { id: 'mls', label: 'MLS', path: 'soccer/usa.1', homeFirst: true },
   { id: 'epl', label: 'Premier League', path: 'soccer/eng.1', homeFirst: true },
   { id: 'ucl', label: 'Champions League', path: 'soccer/uefa.champions', homeFirst: true },
 ];
 
-export function scoreboardUrl(league, { date, week } = {}) {
+export const leagueById = (id) => LEAGUES.find((l) => l.id === id);
+
+// byDate: fetch a weekly league by calendar day instead (My Teams mixes
+// leagues on one day, so football can't be browsed by week there).
+export function scoreboardUrl(league, { date, week, byDate = false } = {}) {
   const url = new URL(`${BASE}/${league.path}/scoreboard`);
   for (const [key, value] of Object.entries(league.params ?? {})) url.searchParams.set(key, value);
-  if (league.weekly) {
+  if (league.weekly && !byDate) {
     // No week means "the current week", which ESPN works out for us.
     if (week) {
       url.searchParams.set('seasontype', String(week.seasonType));
@@ -76,7 +81,8 @@ function parseTeam(c, state, situation) {
     id: team.id,
     name: team.shortDisplayName ?? team.displayName ?? team.name ?? 'TBD',
     abbr: team.abbreviation ?? '',
-    logo: team.logo ?? '',
+    logo: team.logo ?? team.logos?.[0]?.href ?? '',
+    color: teamColor(team.color),
     record: c.records?.[0]?.summary ?? '',
     // ESPN uses 99 for "unranked".
     rank: rank >= 1 && rank <= 25 ? rank : null,
@@ -98,6 +104,20 @@ function situationText(s) {
   return '';
 }
 
+// ESPN team colors are bare hex ("e31837"). Anything else is ignored.
+export function teamColor(value) {
+  return typeof value === 'string' && /^[0-9a-f]{6}$/i.test(value) ? `#${value.toLowerCase()}` : null;
+}
+
+// ESPN's edge sometimes refuses site.api with a 403 (and no CORS header, so
+// the browser reports a network error). site.web.api serves the same feeds.
+export function fallbackUrl(url) {
+  const parsed = new URL(url);
+  if (parsed.hostname !== 'site.api.espn.com') return null;
+  parsed.hostname = 'site.web.api.espn.com';
+  return parsed.toString();
+}
+
 // Football calendars are a list of season types (pre/regular/post), each with
 // week entries. Flatten them so prev/next can cross season-type boundaries.
 function parseCalendar(calendar) {
@@ -108,14 +128,28 @@ function parseCalendar(calendar) {
       seasonType: Number(seasonType.value),
       week: Number(entry.value),
       label: entry.label,
+      ...(entry.detail ? { detail: entry.detail } : {}),
+      ...(seasonType.label ? { season: seasonType.label } : {}),
     })));
+}
+
+function currentWeekEntry(board) {
+  const cur = board?.week;
+  if (!cur) return null;
+  return board.weeks.find((w) => w.seasonType === cur.seasonType && w.week === cur.week) ?? null;
 }
 
 export function weekLabel(board) {
   const cur = board?.week;
   if (!cur) return 'This week';
-  const entry = board.weeks.find((w) => w.seasonType === cur.seasonType && w.week === cur.week);
-  return entry?.label ?? `Week ${cur.week}`;
+  return currentWeekEntry(board)?.label ?? `Week ${cur.week}`;
+}
+
+// The dates a week covers ("Oct 1-7") and its season ("Regular Season"),
+// when the feed's calendar provides them.
+export function weekInfo(board) {
+  const entry = currentWeekEntry(board);
+  return { detail: entry?.detail ?? '', season: entry?.season ?? '' };
 }
 
 export function adjacentWeek(board, dir) {
