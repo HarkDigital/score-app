@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Scores</title>
+  <meta name="description" content="Live scores, no ads.">
+  <meta name="theme-color" content="#f4f5f7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0b0d10" media="(prefers-color-scheme: dark)">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Scores">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header class="top">
+    <div class="title-row">
+      <h1>Scores</h1>
+      <button id="refresh" class="icon-btn" aria-label="Refresh">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v4h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+    <nav id="tabs" class="tabs" role="tablist" aria-label="League"></nav>
+    <div class="date-nav">
+      <button id="prev" class="icon-btn" aria-label="Previous">‹</button>
+      <button id="nav-label" class="nav-label"></button>
+      <button id="next" class="icon-btn" aria-label="Next">›</button>
+    </div>
+  </header>
+  <main>
+    <p id="status" class="status" aria-live="polite"></p>
+    <div id="games"></div>
+    <p class="credit">Scores from ESPN.</p>
+  </main>
+</body>
+</html>
