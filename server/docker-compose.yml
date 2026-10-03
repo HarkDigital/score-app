@@ -1,0 +1,32 @@
+# The push server on the Phade box, as its own compose project in
+# /opt/scores-push (deploy.sh copies espn.js and server/ into ./app). It joins
+# Phade's network so phade-nginx can reach it as scores-push:8080; nothing is
+# published on the host.
+services:
+  scores-push:
+    image: node:22-alpine
+    container_name: scores-push
+    restart: unless-stopped
+    working_dir: /app
+    command: ["node", "server/index.js"]
+    environment:
+      TZ: America/New_York # ESPN's scoreboard days are Eastern dates
+      PORT: "8080"
+      DATA_DIR: /data
+      APNS_KEY_PATH: /secrets/apns.p8
+      APNS_BUNDLE_ID: digital.hark.scores
+    env_file: .env # APNS_KEY_ID and APNS_TEAM_ID
+    volumes:
+      - ./app:/app:ro
+      - ./data:/data
+      - ./secrets/apns.p8:/secrets/apns.p8:ro
+    mem_limit: 256m
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+    networks: [phade]
+
+networks:
+  phade:
+    name: phade_default
+    external: true

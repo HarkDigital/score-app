@@ -5,6 +5,7 @@ import {
 import { standingsUrl, parseStandings, rankingsUrl, parseRankings, teamsFromStandings } from './standings.js';
 import {
   loadFollowed, saveFollowed, isFollowed, toggleFollowed, followedLeagues, countFollowed, gamesForTeams,
+  alertsFor, setAlerts, alertTeams,
 } from './myteams.js';
 import {
   ICONS, getJson, TROUBLE, oddsHtml, failedLogos, logoHtml, fallbackLogo, emptyState, errorState, fullDate, formatClock, esc,
@@ -13,6 +14,7 @@ import {
   initPages, parseRoute, showPage, hidePage, pageOpen, refreshPage, pageVisible, gameHref, teamHref,
 } from './pages.js';
 import { initPullToRefresh } from './pull.js';
+import { inApp, setAlertTeams } from './native.js';
 
 const MINE = { id: 'mine', label: 'My Teams', mine: true };
 const LEAGUE_KEY = 'scores.league';
@@ -576,6 +578,7 @@ function toggleTeam(button) {
   if (!team) return;
   followed = toggleFollowed(followed, picker.league.id, team);
   saveFollowed(storage, followed);
+  syncAlerts();
   picker.changed = true;
   const on = isFollowed(followed, picker.league.id, team.id);
   button.setAttribute('aria-pressed', String(on));
@@ -715,12 +718,27 @@ initPages({
   toggleFollow(leagueId, team) {
     followed = toggleFollowed(followed, leagueId, team);
     saveFollowed(storage, followed);
+    syncAlerts();
     followsChanged = true;
+  },
+  alertsFor: (leagueId, teamId) => alertsFor(followed, leagueId, teamId),
+  setAlerts(leagueId, teamId, kinds) {
+    followed = setAlerts(followed, leagueId, teamId, kinds);
+    saveFollowed(storage, followed);
+    syncAlerts();
   },
   setTitle: (text) => { els.pageTitle.textContent = text; },
   setLoading: (on) => els.refresh.classList.toggle('spinning', on),
 });
 
+// iPhone app: hand the teams that want alerts to the app, which registers
+// them with the push server. Also at every launch, since the device's push
+// token can change.
+function syncAlerts() {
+  if (inApp()) setAlertTeams(alertTeams(followed));
+}
+
+syncAlerts();
 render();
 els.tabs.querySelector('[aria-selected="true"]')?.scrollIntoView({ inline: 'center', block: 'nearest' });
 load();

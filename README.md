@@ -9,9 +9,11 @@ Leagues: NFL, NBA, MLB, NHL, NCAAF, NCAAM, WNBA, MLS, Premier League, Champions 
 - **Standings** for every league: conferences for the NFL, NBA, NHL and WNBA, leagues for MLB, conference tables for college, and the table with its qualification and relegation zones for soccer.
 - **Box scores**: tap any game for the line score (innings with R/H/E for baseball), the scoring summary (touchdowns and field goals, goals, or soccer's goals and red cards), each team's player stats and the team stat comparison. Live box scores refresh every 30 seconds.
 - **Team pages**: tap a team in a box score, the standings, the rankings or the My Teams chips for its record, standing, upcoming games and results, and to follow or unfollow it. Game and team pages have their own links (`#/game/nfl/<id>`, `#/team/nfl/<id>`), so back, swipe-back and sharing work. Going back to a page you've just seen shows it straight away, scrolled where you left it, then refreshes it.
+- **Lock Screen** (iPhone app): every game page that hasn't finished has a **Show on Lock Screen** switch. A game that's on or starts within six hours goes onto the Lock Screen and into the Dynamic Island straight away; a later game is scheduled and appears 30 minutes before the start (iPhones on iOS 17.2 or later). The push server (scores.phade.app) keeps it current every few seconds. Several games can be up at once; tap a card to open its game.
+- **Team alerts** (iPhone app): on a followed team's page, the bell opens three switches for that team: **Game starts**, **Scores** (every score; in basketball, the score at the end of each quarter or half) and **Final score**. Tap an alert to open the game.
 - **Gestures**: pull down from the top of any screen to refresh it. In the iPhone app, swipe in from the left edge to go back and from the right edge to go forward, as in Safari.
 - **Betting lines** on upcoming games, from ESPN's sportsbook partner (DraftKings): each side's moneyline, the spread, the total and, for soccer, the draw. Lines disappear at kickoff, since ESPN's feed only carries the pre-game line.
-- **Line movement**: game pages for the NFL, college football, MLB, NBA and NHL link to the game's chart on [LineSteam](https://linesteam.com), which records every FanDuel spread, total and moneyline move. The link goes through `linesteam.com/espn/<league>/<ESPN id>`, which lands on the game, or on LineSteam's league page if it hasn't matched that game yet.
+- **Line movement**: on game pages for the NFL, college football, MLB, NBA and NHL, the LineSteam mark in the top-right corner of the score card opens the game's chart on [LineSteam](https://linesteam.com), which records every FanDuel spread, total and moneyline move. The link goes through `linesteam.com/espn/<league>/<ESPN id>`, which lands on the game, or on LineSteam's league page if it hasn't matched that game yet.
 - **Rankings** for college football and basketball: the AP and Coaches polls, plus the CFP rankings once they're out. Pro leagues have no polls; their standings are the ranking.
 
 The look follows Phade's design language: dark-only, Poppins, the mint `#46bb93` accent on near-black, rounded gradient cards and Phade's day strip. Team logos come from ESPN; when one is missing or fails to load, the team's color with its abbreviation stands in, as in Phade's `TeamLogo`.
@@ -61,7 +63,13 @@ npm run ios:open
 4. Back in Xcode, choose **Any iOS Device (arm64)** at the top, then **Product**, then **Archive**. When the Organizer window opens, choose **Distribute App**, then **App Store Connect**, then **Upload**, keeping the defaults.
 5. In App Store Connect, open the app's **TestFlight** tab. The build shows up after processing (usually 5 to 15 minutes). Export compliance is already answered in the app's settings. Under **Internal Testing**, create a group, add yourself, and install **Phade Scores** from the TestFlight app on your iPhone. Internal testers (people on your App Store Connect team) don't need App Review.
 
-**Later builds:** raise the **Build** number (target **App**, then **General**, then **Identity**; or `CURRENT_PROJECT_VERSION` in `ios/App/App.xcodeproj/project.pbxproj`) before each upload, then repeat step 4.
+**Later builds:** raise the build number before each upload, then repeat step 4. The app and its Lock Screen extension (the **LiveGame** target) must carry the same number, so use the script rather than Xcode's General tab:
+
+```
+npm run ios:bump
+```
+
+The app needs iOS 16 or later. The Lock Screen card and alerts need the push server running (see `server/README.md`); without it the card shows the score from when it was added and alerts don't arrive.
 
 **Before the App Store (not needed for TestFlight):**
 - **External testers:** TestFlight testers outside your team need a quick Beta App Review.
@@ -107,9 +115,12 @@ Start times for upcoming games come from the league schedule and are shown in yo
 | `pages.js`                       | The game (box score) and team (schedule) pages                       |
 | `ui.js`                          | Shared pieces: icons, fetching, team logos, empty states             |
 | `pull.js`                        | Pull to refresh                                                      |
+| `native.js`                      | The iPhone app's Lock Screen card and alerts, called from the pages  |
 | `index.html`, `styles.css`       | Page shell and styles                                                |
 | `manifest.webmanifest`, `icons/` | Home-screen install metadata and icons                               |
 | `test/`                          | Unit tests and feed responses trimmed from real ESPN data            |
 | `capacitor.config.json`          | iPhone app settings: app ID, name, the site it loads                 |
 | `native/www/`                    | Offline page bundled into the iPhone app                             |
-| `ios/`                           | The Xcode project for the iPhone app                                 |
+| `ios/`                           | The Xcode project: the app, and `LiveGame/` for the Lock Screen card |
+| `server/`                        | The push server for Lock Screen cards and alerts (scores.phade.app)  |
+| `scripts/bump-build.js`          | `npm run ios:bump`: next build number for the app and its extension  |

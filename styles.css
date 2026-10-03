@@ -1295,9 +1295,38 @@ a.team-cell:hover .team-name { color: var(--accent); }
 /* ---- Game page ---- */
 
 .matchup {
+  position: relative;
   padding: 14px 16px 16px;
   text-align: center;
 }
+
+/* LineSteam's mark, top right of the matchup card: a 36px circle in a 44px
+   tap target. */
+.ls-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+}
+
+.ls-circle {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--gray-800);
+  border-radius: 50%;
+  background: var(--bg);
+  transition: border-color 150ms ease, transform 150ms ease;
+}
+
+.ls-circle img { display: block; }
+.ls-badge:hover .ls-circle { border-color: rgb(70 187 147 / 0.45); }
+.ls-badge:active .ls-circle { transform: scale(0.94); }
 
 .matchup.live { border-color: rgb(239 107 107 / 0.3); }
 
@@ -1334,9 +1363,12 @@ a.team-cell:hover .team-name { color: var(--accent); }
 
 .matchup-name {
   max-width: 100%;
+  /* Up to two lines, so a long name keeps its followed star. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
   font-size: 15px;
   font-weight: 600;
   color: var(--white);
@@ -1373,8 +1405,8 @@ a.team-cell:hover .team-name { color: var(--accent); }
 .page-odds { margin-top: 12px; }
 .page-odds .game-odds:first-child { border-top: 0; }
 
-/* Link out to LineSteam's line-movement chart for the game. */
-a.ext-link {
+/* A card-sized button with an icon tile (the game page's Lock Screen card). */
+button.ext-link {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1385,7 +1417,111 @@ a.ext-link {
   text-decoration: none;
 }
 
-a.ext-link:hover { border-color: rgb(70 187 147 / 0.35); }
+button.ext-link:hover { border-color: rgb(70 187 147 / 0.35); }
+
+button.ext-link {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+button.ext-link:disabled { opacity: 0.6; }
+button.ext-link:not(:disabled):active { transform: scale(0.99); }
+
+/* iPhone app: the game on the Lock Screen. */
+.lock-card.on { border-color: rgb(70 187 147 / 0.45); }
+.lock-card .switch { margin-left: auto; }
+.ext-sub.error { color: var(--live); }
+
+/* Team page: Follow, and in the iPhone app the alerts bell beside it. */
+.team-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.alert-btn { color: var(--gray-400); }
+
+.alert-btn.on {
+  color: var(--accent);
+  border-color: rgb(70 187 147 / 0.35);
+}
+
+/* The team's three alert switches, under its buttons. */
+.alert-panel {
+  max-width: 360px;
+  margin: 14px auto 0;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: rgb(10 10 10 / 0.35);
+  overflow: hidden;
+}
+
+.alert-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--hairline);
+  text-align: left;
+}
+
+.alert-row:first-child { border-top: 0; }
+.alert-row:hover { background: rgb(255 255 255 / 0.03); }
+
+.alert-text {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.alert-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.alert-sub {
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.switch {
+  flex: none;
+  position: relative;
+  width: 44px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--gray-700);
+  transition: background-color 150ms ease;
+}
+
+.switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--white);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.4);
+  transition: transform 150ms ease;
+}
+
+[role="switch"][aria-checked="true"] .switch { background: var(--accent); }
+[role="switch"][aria-checked="true"] .switch::after { transform: translateX(18px); }
+
+.team-head .alert-note {
+  max-width: 320px;
+  margin: 10px auto 0;
+  color: var(--live);
+}
 
 .ext-icon {
   flex: none;
@@ -1417,10 +1553,6 @@ a.ext-link:hover { border-color: rgb(70 187 147 / 0.35); }
   color: var(--gray-500);
 }
 
-.ext-arrow {
-  flex: none;
-  color: var(--gray-500);
-}
 
 .box-table {
   width: 100%;
@@ -1636,7 +1768,6 @@ a.ext-link:hover { border-color: rgb(70 187 147 / 0.35); }
 
 .team-head .sub { margin: 0; }
 
-.follow-btn { margin-top: 10px; }
 
 .follow-btn.on {
   border-color: transparent;

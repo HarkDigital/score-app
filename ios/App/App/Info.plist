@@ -72,5 +72,22 @@
 	<string>Dark</string>
 	<key>UIStatusBarStyle</key>
 	<string>UIStatusBarStyleLightContent</string>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
+	<key>NSSupportsLiveActivitiesFrequentUpdates</key>
+	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>digital.hark.scores</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>phadescores</string>
+			</array>
+		</dict>
+	</array>
+	<key>ScoresPushServer</key>
+	<string>https://scores.phade.app</string>
 </dict>
 </plist>

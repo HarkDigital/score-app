@@ -7,7 +7,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        // Before any scene: when the push server starts a scheduled Lock
+        // Screen card, iOS launches the app in the background just long
+        // enough to hand over the new card's token.
+        if #available(iOS 16.2, *) { LiveGameManager.shared.begin() }
         return true
     }
 
@@ -31,6 +34,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+    }
+
+    // Team alerts: the device's push token goes to PushManager, which hands it
+    // and the followed teams to the push server.
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        PushManager.shared.didRegister(deviceToken: deviceToken)
+    }
+
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        print("Push registration failed: \(error.localizedDescription)")
     }
 
     func application(_ application: UIApplication,
