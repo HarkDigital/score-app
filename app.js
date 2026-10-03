@@ -287,7 +287,6 @@ function renderStatus() {
     html = `Couldn't reach ESPN. Showing data from ${esc(formatClock(view.updatedAt))}. Retrying…`;
   } else if (!view.error && view.updatedAt) {
     html = `${live ? '<span class="pulse" aria-hidden="true"></span>' : ''}Updated ${esc(formatClock(view.updatedAt))}`
-      + `${live ? ' · live, refreshing every 5s' : ''}`
       + `${failed.length ? ` · couldn't load ${esc(failed.join(', '))}` : ''}`;
   }
   els.status.innerHTML = html;

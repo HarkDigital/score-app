@@ -202,7 +202,7 @@ function render() {
   if (!data) html = error ? errorState() : loadingHtml(route.kind);
   else html = route.kind === 'game' ? gameHtml(data, route.league, route.id) : teamHtml(data, route.league);
   const updated = data && page.updatedAt
-    ? `<p class="status${error ? ' error' : ''}">${error ? `Couldn't reach ESPN. Showing data from ${esc(formatClock(page.updatedAt))}.` : `Updated ${esc(formatClock(page.updatedAt))}${route.kind === 'game' && data.state === 'in' ? ' · live, score every 5s' : ''}`}</p>`
+    ? `<p class="status${error ? ' error' : ''}">${error ? `Couldn't reach ESPN. Showing data from ${esc(formatClock(page.updatedAt))}.` : `Updated ${esc(formatClock(page.updatedAt))}`}</p>`
     : '';
   root().innerHTML = html + updated;
 }
