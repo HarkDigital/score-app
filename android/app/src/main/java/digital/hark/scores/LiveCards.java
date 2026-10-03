@@ -137,6 +137,9 @@ final class LiveCards {
             .setOnlyAlertOnce(true)
             .setShowWhen(false)
             .setOngoing(!end)
+            // Its own group, so Android never bundles a card with alerts
+            // (a bundle hides the scoreboard layout).
+            .setGroup("card:" + key)
             .setContentIntent(PendingIntent.getActivity(c, id, open, flags))
             .setDeleteIntent(PendingIntent.getBroadcast(c, id, dismissed, flags));
         if (end) n.setAutoCancel(true).setTimeoutAfter(FINAL_STAYS);
@@ -213,13 +216,23 @@ final class LiveCards {
             if ("in".equals(state)) return status.isEmpty() ? "Live" : "Live · " + status;
             if (!status.isEmpty()) return status;
             if ("post".equals(state)) return "Final";
-            Calendar when = Calendar.getInstance();
-            when.setTimeInMillis(start);
-            Calendar now = Calendar.getInstance();
+            // As the scoreboard words it: "Today 7:30 PM", "Tomorrow 1:00 PM",
+            // "Sun 1:00 PM" within the week, else the date.
             String time = android.text.format.DateFormat.getTimeFormat(c).format(new Date(start));
-            boolean today = when.get(Calendar.YEAR) == now.get(Calendar.YEAR) && when.get(Calendar.DAY_OF_YEAR) == now.get(Calendar.DAY_OF_YEAR);
-            if (today) return "Today " + time;
-            return DateFormat.getDateInstance(DateFormat.SHORT).format(new Date(start)) + " " + time;
+            long days = dayNumber(start) - dayNumber(System.currentTimeMillis());
+            if (days == 0) return "Today " + time;
+            if (days == 1) return "Tomorrow " + time;
+            String day = days > 1 && days < 7
+                ? new java.text.SimpleDateFormat("EEE", java.util.Locale.getDefault()).format(new Date(start))
+                : DateFormat.getDateInstance(DateFormat.SHORT).format(new Date(start));
+            return day + " " + time;
+        }
+
+        // Days since 1970 in the phone's own time zone.
+        private static long dayNumber(long millis) {
+            Calendar cal = Calendar.getInstance();
+            cal.setTimeInMillis(millis);
+            return (millis + cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET)) / 86_400_000L;
         }
     }
 }

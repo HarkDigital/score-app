@@ -41,7 +41,8 @@ final class Alerts {
         return "denied";
     }
 
-    static void show(Context c, String title, String body, String route) {
+    // thread: one game's alerts ("nfl-401547417"), grouped as on iPhone.
+    static void show(Context c, String title, String body, String route, String thread) {
         if (!NotificationManagerCompat.from(c).areNotificationsEnabled()) return;
         LiveCards.channels(c);
         int id = (int) (System.currentTimeMillis() & 0x3fffffff) | 0x40000000;
@@ -59,6 +60,7 @@ final class Alerts {
             .setCategory(NotificationCompat.CATEGORY_EVENT)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setAutoCancel(true)
+            .setGroup("alerts:" + (thread == null ? "" : thread))
             .setContentIntent(PendingIntent.getActivity(c, id, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
         try {
             NotificationManagerCompat.from(c).notify(id, n.build());

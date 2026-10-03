@@ -43,7 +43,7 @@ public class FcmService extends FirebaseMessagingService {
                     break;
                 }
                 case "alert":
-                    Alerts.show(this, data.get("title"), data.get("body"), data.get("route"));
+                    Alerts.show(this, data.get("title"), data.get("body"), data.get("route"), data.get("thread"));
                     break;
                 default:
                     break;
