@@ -14,7 +14,7 @@ export const LEAGUES = [
   { id: 'nba', label: 'NBA', path: 'basketball/nba', linesteam: 'nba' },
   { id: 'mlb', label: 'MLB', path: 'baseball/mlb', linesteam: 'mlb' },
   { id: 'nhl', label: 'NHL', path: 'hockey/nhl', linesteam: 'nhl' },
-  { id: 'ncaaf', label: 'NCAAF', path: 'football/college-football', weekly: true, college: true, rankings: true, linesteam: 'cfb', params: { groups: '80', limit: '300' }, standingsParams: { group: '80' } },
+  { id: 'ncaaf', label: 'NCAAF', path: 'football/college-football', weekly: true, college: true, rankings: true, linesteam: 'cfb', params: { groups: '80', limit: '300' }, standingsParams: { group: '80' }, filters: cfbFilters(), divisions: ['80', '81'] },
   { id: 'ncaam', label: 'NCAAM', path: 'basketball/mens-college-basketball', college: true, rankings: true, params: { groups: '50', limit: '400' }, standingsParams: { group: '50' } },
   { id: 'wnba', label: 'WNBA', path: 'basketball/wnba' },
   { id: 'mls', label: 'MLS', path: 'soccer/usa.1', homeFirst: true },
@@ -23,6 +23,43 @@ export const LEAGUES = [
 ];
 
 export const leagueById = (id) => LEAGUES.find((l) => l.id === id);
+
+// College football's scoreboard filters, as ESPN's `groups`: FBS is 80, FCS
+// 81, and each conference has its own id (from ESPN's scoreboard/conferences
+// feed, which a browser can't read: no CORS header). A conference shows every
+// game one of its teams plays. No groups at all is ESPN's Top 25 board, the
+// games with a ranked team. `division` is the standings a filter goes with.
+// Realignment moves teams, not these ids; a new conference needs adding here.
+function cfbFilters() {
+  const conferences = (division, list) => list
+    .map(([groups, label]) => ({ id: groups, label, groups, division }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+  return [
+    { label: '', options: [
+      { id: 'top25', label: 'Top 25', groups: null, division: '80' },
+      { id: '80', label: 'All FBS', groups: '80', division: '80' },
+      { id: '81', label: 'All FCS', groups: '81', division: '81' },
+    ] },
+    { label: 'FBS conferences', options: conferences('80', [
+      ['1', 'ACC'], ['151', 'American'], ['4', 'Big 12'], ['5', 'Big Ten'], ['12', 'Conference USA'],
+      ['18', 'FBS Independents'], ['15', 'MAC'], ['17', 'Mountain West'], ['9', 'Pac-12'], ['8', 'SEC'],
+      ['37', 'Sun Belt'],
+    ]) },
+    { label: 'FCS conferences', options: conferences('81', [
+      ['20', 'Big Sky'], ['48', 'CAA'], ['32', 'FCS Independents'], ['22', 'Ivy League'], ['24', 'MEAC'],
+      ['21', 'Missouri Valley'], ['25', 'NEC'], ['179', 'OVC'], ['27', 'Patriot League'], ['28', 'Pioneer'],
+      ['29', 'SoCon'], ['30', 'Southland'], ['31', 'SWAC'], ['177', 'UAC'],
+    ]) },
+  ];
+}
+
+// The league's filter with this id, else its default (the one matching its
+// own params: All FBS). Null for leagues without filters.
+export function leagueFilter(league, id) {
+  const options = (league?.filters ?? []).flatMap((section) => section.options);
+  if (!options.length) return null;
+  return options.find((o) => o.id === id) ?? options.find((o) => o.groups === league.params?.groups) ?? options[0];
+}
 
 // LineSteam's page for a game, by ESPN's event id: linesteam.com/espn/... redirects
 // to the game (or to the league's dashboard if LineSteam hasn't matched it yet).
@@ -33,9 +70,13 @@ export function lineSteamUrl(league, eventId) {
 
 // byDate: fetch a weekly league by calendar day instead (My Teams mixes
 // leagues on one day, so football can't be browsed by week there).
-export function scoreboardUrl(league, { date, week, byDate = false } = {}) {
+// groups: a filter's (or division's) groups in place of the league's own;
+// null drops it (Top 25).
+export function scoreboardUrl(league, { date, week, byDate = false, groups } = {}) {
   const url = new URL(`${BASE}/${league.path}/scoreboard`);
   for (const [key, value] of Object.entries(league.params ?? {})) url.searchParams.set(key, value);
+  if (groups) url.searchParams.set('groups', groups);
+  else if (groups === null) url.searchParams.delete('groups');
   if (league.weekly && !byDate) {
     // No week means "the current week", which ESPN works out for us.
     if (week) {
@@ -46,6 +87,19 @@ export function scoreboardUrl(league, { date, week, byDate = false } = {}) {
     url.searchParams.set('dates', ymd(date));
   }
   return url.toString();
+}
+
+// Every game a league has on a day. College football's default board is FBS
+// only, so My Teams and the push server read the FCS board too (a game
+// between the two is on both; mergeGames keeps one).
+export function dayUrls(league, date) {
+  return (league.divisions ?? [undefined]).map((groups) => scoreboardUrl(league, { date, byDate: true, groups }));
+}
+
+export function mergeGames(boards) {
+  const games = new Map();
+  for (const board of boards) for (const game of board.games) if (!games.has(game.id)) games.set(game.id, game);
+  return [...games.values()];
 }
 
 export function parseScoreboard(data, league) {

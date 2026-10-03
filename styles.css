@@ -306,6 +306,60 @@ main {
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3);
 }
 
+/* College football's conference picker: a native select dressed as a card
+   row, so the phone still opens its own wheel. */
+.filter {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  margin: -4px 0 16px;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: var(--card-bg);
+}
+
+.filter:focus-within { border-color: rgb(70 187 147 / 0.6); }
+
+.filter-label {
+  position: absolute;
+  left: 16px;
+  color: var(--gray-500);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.filter select {
+  flex: 1;
+  min-width: 0;
+  min-height: 46px;
+  padding: 0 44px 0 100px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--white);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.filter select:focus { outline: none; }
+.filter option, .filter optgroup { background: var(--gray-900); color: var(--fg); }
+
+.filter-chevron {
+  position: absolute;
+  right: 16px;
+  display: flex;
+  color: var(--accent);
+  pointer-events: none;
+}
+
 .toolbar {
   display: flex;
   align-items: center;

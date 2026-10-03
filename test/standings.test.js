@@ -2,7 +2,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { leagueById } from '../espn.js';
-import { standingsUrl, rankingsUrl, parseStandings, parseRankings, teamsFromStandings } from '../standings.js';
+import {
+  standingsUrl, filterStandingsGroup, teamListUrls, rankingsUrl, parseStandings, parseRankings, teamsFromStandings,
+} from '../standings.js';
+import { leagueFilter } from '../espn.js';
 
 // Trimmed from real ESPN responses (2024-25 seasons and the 2026 week 4 polls).
 const fixture = (name) => JSON.parse(readFileSync(new URL(`./fixtures/${name}.json`, import.meta.url)));
@@ -16,6 +19,27 @@ test('standings come from /apis/v2, college limited to its division', () => {
   assert.equal(new URL(standingsUrl(leagueById('ncaaf'))).searchParams.get('group'), '80');
   assert.equal(new URL(standingsUrl(leagueById('ncaam'))).searchParams.get('group'), '50');
   assert.equal(rankingsUrl(leagueById('ncaam')), 'https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/rankings');
+});
+
+test('college football standings follow the scoreboard filter', () => {
+  const ncaafLeague = leagueById('ncaaf');
+  const group = (id) => new URL(standingsUrl(ncaafLeague, filterStandingsGroup(leagueFilter(ncaafLeague, id)))).searchParams.get('group');
+  assert.equal(group('top25'), '80');
+  assert.equal(group('80'), '80');
+  assert.equal(group('81'), '81');
+  // A conference reads its own table (group=8 is the SEC alone).
+  assert.equal(group('8'), '8');
+  assert.equal(group('29'), '29');
+  assert.equal(filterStandingsGroup(null), undefined);
+  // The team picker reads FBS and FCS; other leagues their one table.
+  assert.deepEqual(teamListUrls(ncaafLeague).map((u) => new URL(u).searchParams.get('group')), ['80', '81']);
+  assert.deepEqual(teamListUrls(leagueById('nfl')), ['https://site.api.espn.com/apis/v2/sports/football/nfl/standings']);
+});
+
+test('a single conference\'s standings are one table at the top level', () => {
+  const entry = (id, name) => ({ team: { id, displayName: name, abbreviation: id }, stats: [{ name: 'leagueWinPercent', type: 'leaguewinpercent', value: 1 }] });
+  const { groups } = parseStandings({ id: '8', name: 'Southeastern Conference', shortName: 'SEC', standings: { entries: [entry('1', 'A'), entry('2', 'B')] } }, leagueById('ncaaf'));
+  assert.deepEqual(groups.map((g) => [g.name, g.rows.length]), [['SEC', 2]]);
 });
 
 test('pro standings are ordered by playoff seed, not feed order', () => {
@@ -57,8 +81,8 @@ test('every team in the standings is offered in the picker, alphabetically', () 
   assert.deepEqual(teamsFromStandings({ groups: [] }), []);
 });
 
-test('polls keep AP and Coaches, and drop FCS and lower divisions', () => {
-  assert.deepEqual(polls.polls.map((p) => p.shortName), ['AP Poll', 'AFCA Coaches Poll']);
+test('polls keep AP, Coaches and FCS, and drop Division II and III', () => {
+  assert.deepEqual(polls.polls.map((p) => p.shortName), ['AP Poll', 'AFCA Coaches Poll', 'FCS Coaches Poll']);
   const ap = polls.polls[0];
   assert.equal(ap.headline, 'Week 4');
   assert.deepEqual(ap.ranks.map((r) => r.team.abbr), ['TEX', 'UGA', 'ND', 'MISS', 'IU']);
@@ -83,8 +107,9 @@ test('the CFP rankings lead once they exist, whatever the feed calls them', () =
     { type: 'playoff', name: 'College Football Playoff Rankings', shortName: 'CFP Rankings', ranks },
     { type: 'fcs', shortName: 'FCS Coaches Poll', ranks },
     { type: 'other', name: 'AFCA Division II Coaches Poll', shortName: 'AFCA Div II', ranks },
+    { type: 'afca', name: 'AFCA Division III Coaches Poll', shortName: 'AFCA Div III', ranks },
   ] });
-  assert.deepEqual(list.map((p) => p.shortName), ['CFP Rankings', 'AP Poll', 'AFCA Coaches Poll']);
+  assert.deepEqual(list.map((p) => p.shortName), ['CFP Rankings', 'AP Poll', 'AFCA Coaches Poll', 'FCS Coaches Poll']);
 });
 
 test('poll movement: new entries and the first poll of a season', () => {

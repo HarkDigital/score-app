@@ -5,6 +5,7 @@ Live scores, standings and your teams, without the ads. A single-page web app th
 Leagues: NFL, NBA, MLB, NHL, NCAAF, NCAAM, WNBA, MLS, Premier League, Champions League. Edit `LEAGUES` in `espn.js` to add or remove leagues.
 
 - **Scores** for every league. Football is browsed by week; everything else by day, on a sliding day strip.
+- **College football filter**: NCAAF has a **Showing** dropdown with Top 25 (games with a ranked team), All FBS, All FCS and every FBS and FCS conference. A conference shows every game one of its teams plays, conference or not, and the standings follow it (that conference's table, or all of FBS or FCS). The choice is remembered. FCS teams can be followed like any other, and their games show in My Teams, alerts and on the Lock Screen.
 - **My Teams**: follow teams from any league and see all of their games for a day in one place. Followed teams are starred everywhere else too. Follows are kept on the device.
 - **Standings** for every league: conferences for the NFL, NBA, NHL and WNBA, leagues for MLB, conference tables for college, and the table with its qualification and relegation zones for soccer.
 - **Box scores**: tap any game for the line score (innings with R/H/E for baseball), the scoring summary (touchdowns and field goals, goals, or soccer's goals and red cards), each team's player stats and the team stat comparison. Live box scores refresh every 30 seconds.
@@ -14,7 +15,7 @@ Leagues: NFL, NBA, MLB, NHL, NCAAF, NCAAM, WNBA, MLS, Premier League, Champions 
 - **Gestures**: pull down from the top of any screen to refresh it. In the iPhone app, swipe right anywhere on the screen to go back and left to go forward: the page follows your finger, and letting go a third of the way across (or flicking) finishes the move. Swipes that start at the very edge are Safari's own, with a preview of the page underneath.
 - **Betting lines** on upcoming games, from ESPN's sportsbook partner (DraftKings): each side's moneyline, the spread, the total and, for soccer, the draw. Lines disappear at kickoff, since ESPN's feed only carries the pre-game line.
 - **Line movement**: on game pages for the NFL, college football, MLB, NBA and NHL, the LineSteam mark in the top-right corner of the score card opens the game's chart on [LineSteam](https://linesteam.com), which records every FanDuel spread, total and moneyline move. The link goes through `linesteam.com/espn/<league>/<ESPN id>`, which lands on the game, or on LineSteam's league page if it hasn't matched that game yet.
-- **Rankings** for college football and basketball: the AP and Coaches polls, plus the CFP rankings once they're out. Pro leagues have no polls; their standings are the ranking.
+- **Rankings** for college football and basketball: the AP and Coaches polls, plus the CFP rankings once they're out, and the FCS Coaches Poll for college football. Pro leagues have no polls; their standings are the ranking.
 
 The look follows Phade's design language: dark-only, Poppins, the mint `#46bb93` accent on near-black, rounded gradient cards and Phade's day strip. Team logos come from ESPN; when one is missing or fails to load, the team's color with its abbreviation stands in, as in Phade's `TeamLogo`.
 

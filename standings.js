@@ -7,10 +7,23 @@ import { teamColor } from './espn.js';
 const STANDINGS_BASE = 'https://site.api.espn.com/apis/v2/sports';
 const SITE_BASE = 'https://site.api.espn.com/apis/site/v2/sports';
 
-export function standingsUrl(league) {
+// group: a college division or one conference in place of the league's own
+// (`group=8` is the SEC's table alone, a fraction of the whole division's).
+export function standingsUrl(league, group) {
   const url = new URL(`${STANDINGS_BASE}/${league.path}/standings`);
   for (const [key, value] of Object.entries(league.standingsParams ?? {})) url.searchParams.set(key, value);
+  if (group) url.searchParams.set('group', group);
   return url.toString();
+}
+
+// The standings a scoreboard filter goes with: a conference's own table, else
+// its division's (Top 25 reads FBS).
+export const filterStandingsGroup = (filter) => (filter ? filter.groups ?? filter.division : undefined);
+
+// Every division's standings, for the team picker: college football's FCS
+// teams aren't in the FBS tables.
+export function teamListUrls(league) {
+  return (league.divisions ?? [undefined]).map((group) => standingsUrl(league, group));
 }
 
 export function rankingsUrl(league) {
@@ -148,19 +161,21 @@ export function teamsFromStandings(standings) {
   return [...teams.values()].sort((a, b) => a.name.localeCompare(b.name));
 }
 
-// AP, Coaches and (late in the season) the CFP lead; the feed also carries
-// FCS and lower-division polls, which are left out.
-const POLL_ORDER = ['cfp', 'ap', 'usa'];
-const LOWER_DIVISION = /\bFCS\b|\bDiv(ision)?\.? ?I{2,3}\b|\bNAIA\b/i;
+// AP, Coaches and (late in the season) the CFP lead, then the FCS poll; the
+// feed also carries Division II and III polls, which are left out.
+const POLL_ORDER = ['cfp', 'ap', 'usa', 'fcs'];
+const LOWER_DIVISION = /\bDiv(ision)?\.? ?I{2,3}\b|\bNAIA\b/i;
+const isFcs = (poll) => poll.type === 'fcs' || /\bFCS\b/.test(`${poll.name} ${poll.shortName}`);
 function pollRank(poll) {
   if (/playoff|\bCFP\b/i.test(`${poll.name} ${poll.shortName}`)) return 0;
+  if (isFcs(poll)) return POLL_ORDER.indexOf('fcs');
   return POLL_ORDER.includes(poll.type) ? POLL_ORDER.indexOf(poll.type) : POLL_ORDER.length;
 }
 
 export function parseRankings(data) {
   const polls = (data?.rankings ?? [])
     .filter((poll) => Array.isArray(poll?.ranks) && poll.ranks.length)
-    .filter((poll) => !['fcs', 'afca'].includes(poll.type) && !LOWER_DIVISION.test(`${poll.name} ${poll.shortName}`))
+    .filter((poll) => poll.type !== 'afca' && !LOWER_DIVISION.test(`${poll.name} ${poll.shortName}`))
     .sort((a, b) => pollRank(a) - pollRank(b))
     .map((poll) => {
       // A season's first poll has nothing to move from.
