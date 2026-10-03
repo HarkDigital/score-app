@@ -1,0 +1,1400 @@
+{
+ "header": {
+  "competitions": [
+   {
+    "id": "401701044",
+    "date": "2024-10-31T00:08Z",
+    "status": {
+     "type": {
+      "id": "3",
+      "name": "STATUS_FINAL",
+      "state": "post",
+      "completed": true,
+      "description": "Final",
+      "detail": "Final",
+      "shortDetail": "Final"
+     },
+     "featuredAthletes": [
+      {
+       "name": "winningPitcher",
+       "displayName": "Winning Pitcher",
+       "playerId": 32185,
+       "athlete": {
+        "id": "32185",
+        "uid": "s:1~l:10~a:32185",
+        "guid": "d07aca8d-d70c-454d-65d3-178301a834d4",
+        "fullName": "Blake Treinen",
+        "displayName": "Blake Treinen",
+        "shortName": "B. Treinen",
+        "links": [
+         {
+          "language": "en-US",
+          "rel": [
+           "playercard",
+           "desktop",
+           "athlete"
+          ],
+          "href": "https://www.espn.com/mlb/player/_/id/32185",
+          "text": "Player Card",
+          "shortText": "Player Card"
+         }
+        ],
+        "headshot": {
+         "href": "https://a.espncdn.com/i/headshots/mlb/players/full/32185.png",
+         "alt": "Blake Treinen"
+        },
+        "record": "2-0",
+        "saves": "3"
+       },
+       "team": {
+        "id": "19",
+        "name": "Dodgers",
+        "logos": [
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/mlb/500/lad.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "default"
+          ],
+          "lastUpdated": "2024-07-01T17:48Z"
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/mlb/500-dark/lad.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "dark"
+          ],
+          "lastUpdated": "2024-07-01T17:49Z"
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/mlb/500/scoreboard/lad.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "scoreboard"
+          ],
+          "lastUpdated": "2024-07-01T17:48Z"
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/mlb/500-dark/scoreboard/lad.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "scoreboard",
+           "dark"
+          ],
+          "lastUpdated": "2024-07-01T17:49Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/fb7cf413-5156-9fc2-abe0-2273b89f70db/logos/primary_logo_on_white_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_white_color"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/fb7cf413-5156-9fc2-abe0-2273b89f70db/logos/primary_logo_on_black_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_black_color"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/fb7cf413-5156-9fc2-abe0-2273b89f70db/logos/primary_logo_on_primary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_primary_color"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/fb7cf413-5156-9fc2-abe0-2273b89f70db/logos/primary_logo_on_secondary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_secondary_color"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/fb7cf413-5156-9fc2-abe0-2273b89f70db/logos/primary_logo_black.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_black"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/fb7cf413-5156-9fc2-abe0-2273b89f70db/logos/primary_logo_white.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_white"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/fb7cf413-5156-9fc2-abe0-2273b89f70db/logos/secondary_logo_on_white_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_white_color"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/fb7cf413-5156-9fc2-abe0-2273b89f70db/logos/secondary_logo_on_black_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_black_color"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/fb7cf413-5156-9fc2-abe0-2273b89f70db/logos/secondary_logo_on_primary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_primary_color"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/fb7cf413-5156-9fc2-abe0-2273b89f70db/logos/secondary_logo_on_secondary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_secondary_color"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/fb7cf413-5156-9fc2-abe0-2273b89f70db/logos/secondary_logo_black.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_black"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/fb7cf413-5156-9fc2-abe0-2273b89f70db/logos/secondary_logo_white.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_white"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         }
+        ]
+       }
+      },
+      {
+       "name": "losingPitcher",
+       "displayName": "Losing Pitcher",
+       "playerId": 31867,
+       "athlete": {
+        "id": "31867",
+        "uid": "s:1~l:10~a:31867",
+        "guid": "17942761-e268-183a-a0bd-398409978d58",
+        "fullName": "Tommy Kahnle",
+        "displayName": "Tommy Kahnle",
+        "shortName": "T. Kahnle",
+        "links": [
+         {
+          "language": "en-US",
+          "rel": [
+           "playercard",
+           "desktop",
+           "athlete"
+          ],
+          "href": "https://www.espn.com/mlb/player/_/id/31867",
+          "text": "Player Card",
+          "shortText": "Player Card"
+         }
+        ],
+        "headshot": {
+         "href": "https://a.espncdn.com/i/headshots/mlb/players/full/31867.png",
+         "alt": "Tommy Kahnle"
+        },
+        "record": "1-1",
+        "saves": "1"
+       },
+       "team": {
+        "id": "10",
+        "name": "Yankees",
+        "logos": [
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/mlb/500/nyy.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "default"
+          ],
+          "lastUpdated": "2024-07-01T17:48Z"
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/mlb/500-dark/nyy.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "dark"
+          ],
+          "lastUpdated": "2024-07-01T17:49Z"
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/mlb/500/scoreboard/nyy.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "scoreboard"
+          ],
+          "lastUpdated": "2024-07-01T17:48Z"
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/mlb/500-dark/scoreboard/nyy.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "scoreboard",
+           "dark"
+          ],
+          "lastUpdated": "2024-07-01T17:49Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/2b9cedf3-ce60-0bcf-fafe-8cd055255685/logos/primary_logo_on_white_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_white_color"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/2b9cedf3-ce60-0bcf-fafe-8cd055255685/logos/primary_logo_on_black_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_black_color"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/2b9cedf3-ce60-0bcf-fafe-8cd055255685/logos/primary_logo_on_primary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_primary_color"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/2b9cedf3-ce60-0bcf-fafe-8cd055255685/logos/primary_logo_on_secondary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_secondary_color"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/2b9cedf3-ce60-0bcf-fafe-8cd055255685/logos/primary_logo_black.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_black"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/2b9cedf3-ce60-0bcf-fafe-8cd055255685/logos/primary_logo_white.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_white"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/2b9cedf3-ce60-0bcf-fafe-8cd055255685/logos/secondary_logo_on_white_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_white_color"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/2b9cedf3-ce60-0bcf-fafe-8cd055255685/logos/secondary_logo_on_black_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_black_color"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/2b9cedf3-ce60-0bcf-fafe-8cd055255685/logos/secondary_logo_on_primary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_primary_color"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/2b9cedf3-ce60-0bcf-fafe-8cd055255685/logos/secondary_logo_on_secondary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_secondary_color"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/2b9cedf3-ce60-0bcf-fafe-8cd055255685/logos/secondary_logo_black.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_black"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/2b9cedf3-ce60-0bcf-fafe-8cd055255685/logos/secondary_logo_white.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_white"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         }
+        ]
+       }
+      },
+      {
+       "name": "savingPitcher",
+       "displayName": "Saving Pitcher",
+       "playerId": 39251,
+       "athlete": {
+        "id": "39251",
+        "uid": "s:1~l:10~a:39251",
+        "guid": "4f3a9a2c-768f-e9fe-0ae2-175d62644ea4",
+        "fullName": "Walker Buehler",
+        "displayName": "Walker Buehler",
+        "shortName": "W. Buehler",
+        "links": [
+         {
+          "language": "en-US",
+          "rel": [
+           "playercard",
+           "desktop",
+           "athlete"
+          ],
+          "href": "https://www.espn.com/mlb/player/_/id/39251",
+          "text": "Player Card",
+          "shortText": "Player Card"
+         }
+        ],
+        "headshot": {
+         "href": "https://a.espncdn.com/i/headshots/mlb/players/full/39251.png",
+         "alt": "Walker Buehler"
+        },
+        "record": "1-1",
+        "saves": "1"
+       },
+       "team": {
+        "id": "19",
+        "name": "Dodgers",
+        "logos": [
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/mlb/500/lad.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "default"
+          ],
+          "lastUpdated": "2024-07-01T17:48Z"
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/mlb/500-dark/lad.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "dark"
+          ],
+          "lastUpdated": "2024-07-01T17:49Z"
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/mlb/500/scoreboard/lad.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "scoreboard"
+          ],
+          "lastUpdated": "2024-07-01T17:48Z"
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/mlb/500-dark/scoreboard/lad.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "scoreboard",
+           "dark"
+          ],
+          "lastUpdated": "2024-07-01T17:49Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/fb7cf413-5156-9fc2-abe0-2273b89f70db/logos/primary_logo_on_white_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_white_color"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/fb7cf413-5156-9fc2-abe0-2273b89f70db/logos/primary_logo_on_black_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_black_color"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/fb7cf413-5156-9fc2-abe0-2273b89f70db/logos/primary_logo_on_primary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_primary_color"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/fb7cf413-5156-9fc2-abe0-2273b89f70db/logos/primary_logo_on_secondary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_secondary_color"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/fb7cf413-5156-9fc2-abe0-2273b89f70db/logos/primary_logo_black.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_black"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/fb7cf413-5156-9fc2-abe0-2273b89f70db/logos/primary_logo_white.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_white"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/fb7cf413-5156-9fc2-abe0-2273b89f70db/logos/secondary_logo_on_white_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_white_color"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/fb7cf413-5156-9fc2-abe0-2273b89f70db/logos/secondary_logo_on_black_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_black_color"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/fb7cf413-5156-9fc2-abe0-2273b89f70db/logos/secondary_logo_on_primary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_primary_color"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/fb7cf413-5156-9fc2-abe0-2273b89f70db/logos/secondary_logo_on_secondary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_secondary_color"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/fb7cf413-5156-9fc2-abe0-2273b89f70db/logos/secondary_logo_black.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_black"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/fb7cf413-5156-9fc2-abe0-2273b89f70db/logos/secondary_logo_white.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_white"
+          ],
+          "lastUpdated": "2026-02-12T22:40Z"
+         }
+        ]
+       }
+      }
+     ],
+     "periodPrefix": "End"
+    },
+    "broadcasts": [
+     {
+      "type": {
+       "id": "5",
+       "shortName": "Radio"
+      },
+      "market": {
+       "id": "1",
+       "type": "National"
+      },
+      "media": {
+       "shortName": "ERADM"
+      },
+      "lang": "en",
+      "region": "us",
+      "isNational": true
+     },
+     {
+      "type": {
+       "id": "1",
+       "shortName": "TV"
+      },
+      "market": {
+       "id": "1",
+       "type": "National"
+      },
+      "media": {
+       "shortName": "FOX"
+      },
+      "lang": "en",
+      "region": "us",
+      "isNational": true
+     }
+    ],
+    "competitors": [
+     {
+      "id": "10",
+      "homeAway": "home",
+      "winner": false,
+      "score": "6",
+      "linescores": [
+       {
+        "displayValue": "3",
+        "hits": 2,
+        "errors": 0
+       },
+       {
+        "displayValue": "1",
+        "hits": 2,
+        "errors": 0
+       },
+       {
+        "displayValue": "1",
+        "hits": 1,
+        "errors": 0
+       },
+       {
+        "displayValue": "0",
+        "hits": 1,
+        "errors": 0
+       },
+       {
+        "displayValue": "0",
+        "hits": 1,
+        "errors": 2
+       },
+       {
+        "displayValue": "1",
+        "hits": 0,
+        "errors": 0
+       },
+       {
+        "displayValue": "0",
+        "hits": 0,
+        "errors": 0
+       },
+       {
+        "displayValue": "0",
+        "hits": 1,
+        "errors": 1
+       },
+       {
+        "displayValue": "0",
+        "hits": 0,
+        "errors": 0
+       }
+      ],
+      "record": [
+       {
+        "type": "total",
+        "summary": "94-68",
+        "displayValue": "94-68"
+       },
+       {
+        "type": "home",
+        "summary": "44-37",
+        "displayValue": "44-37"
+       }
+      ],
+      "hits": 8,
+      "errors": 3,
+      "team": {
+       "id": "10",
+       "abbreviation": "NYY",
+       "displayName": "New York Yankees",
+       "name": "Yankees",
+       "color": "132448",
+       "logos": [
+        {
+         "href": "https://a.espncdn.com/i/teamlogos/mlb/500/nyy.png",
+         "width": 500,
+         "height": 500,
+         "alt": "",
+         "rel": [
+          "full",
+          "default"
+         ],
+         "lastUpdated": "2024-07-01T17:48Z"
+        }
+       ]
+      }
+     },
+     {
+      "id": "19",
+      "homeAway": "away",
+      "winner": true,
+      "score": "7",
+      "linescores": [
+       {
+        "displayValue": "0",
+        "hits": 0,
+        "errors": 0
+       },
+       {
+        "displayValue": "0",
+        "hits": 0,
+        "errors": 0
+       },
+       {
+        "displayValue": "0",
+        "hits": 0,
+        "errors": 0
+       },
+       {
+        "displayValue": "0",
+        "hits": 0,
+        "errors": 0
+       },
+       {
+        "displayValue": "5",
+        "hits": 4,
+        "errors": 0
+       },
+       {
+        "displayValue": "0",
+        "hits": 0,
+        "errors": 0
+       },
+       {
+        "displayValue": "0",
+        "hits": 0,
+        "errors": 0
+       },
+       {
+        "displayValue": "2",
+        "hits": 2,
+        "errors": 0
+       },
+       {
+        "displayValue": "0",
+        "hits": 1,
+        "errors": 0
+       }
+      ],
+      "record": [
+       {
+        "type": "total",
+        "summary": "98-64",
+        "displayValue": "98-64"
+       },
+       {
+        "type": "road",
+        "summary": "46-35",
+        "displayValue": "46-35"
+       }
+      ],
+      "hits": 7,
+      "errors": 0,
+      "team": {
+       "id": "19",
+       "abbreviation": "LAD",
+       "displayName": "Los Angeles Dodgers",
+       "name": "Dodgers",
+       "color": "005a9c",
+       "logos": [
+        {
+         "href": "https://a.espncdn.com/i/teamlogos/mlb/500/lad.png",
+         "width": 500,
+         "height": 500,
+         "alt": "",
+         "rel": [
+          "full",
+          "default"
+         ],
+         "lastUpdated": "2024-07-01T17:48Z"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ "boxscore": {
+  "players": [
+   {
+    "team": {
+     "id": "19",
+     "abbreviation": "LAD"
+    },
+    "statistics": [
+     {
+      "type": "batting",
+      "labels": [
+       "H-AB",
+       "AB",
+       "R",
+       "H",
+       "RBI",
+       "HR",
+       "BB",
+       "K",
+       "#P",
+       "AVG",
+       "OBP",
+       "SLG"
+      ],
+      "totals": [
+       "7-34",
+       "34",
+       "7",
+       "7",
+       "7",
+       "0",
+       "7",
+       "9",
+       "156",
+       "",
+       "",
+       ""
+      ],
+      "athletes": [
+       {
+        "starter": true,
+        "stats": [
+         "0-4",
+         "4",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0",
+         "1",
+         "12",
+         ".230",
+         ".373",
+         ".393"
+        ],
+        "athlete": {
+         "displayName": "Shohei Ohtani",
+         "shortName": "S. Ohtani",
+         "position": {
+          "name": "Designated Hitter",
+          "displayName": "Designated Hitter",
+          "abbreviation": "DH"
+         }
+        }
+       },
+       {
+        "starter": true,
+        "stats": [
+         "1-3",
+         "3",
+         "1",
+         "1",
+         "2",
+         "0",
+         "1",
+         "0",
+         "14",
+         ".290",
+         ".387",
+         ".565"
+        ],
+        "athlete": {
+         "displayName": "Mookie Betts",
+         "shortName": "M. Betts",
+         "position": {
+          "name": "Shortstop",
+          "displayName": "Shortstop",
+          "abbreviation": "SS"
+         }
+        }
+       },
+       {
+        "starter": true,
+        "stats": [
+         "1-4",
+         "4",
+         "1",
+         "1",
+         "2",
+         "0",
+         "1",
+         "1",
+         "20",
+         ".250",
+         ".291",
+         ".519"
+        ],
+        "athlete": {
+         "displayName": "Freddie Freeman",
+         "shortName": "F. Freeman",
+         "position": {
+          "name": "First Base",
+          "displayName": "First Baseman",
+          "abbreviation": "1B"
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "pitching",
+      "labels": [
+       "IP",
+       "H",
+       "R",
+       "ER",
+       "BB",
+       "K",
+       "HR",
+       "PC-ST",
+       "ERA",
+       "PC"
+      ],
+      "totals": [
+       "9.0",
+       "8",
+       "6",
+       "6",
+       "9",
+       "9",
+       "3",
+       "186-104",
+       "",
+       "186"
+      ],
+      "athletes": [
+       {
+        "starter": true,
+        "stats": [
+         "1.1",
+         "4",
+         "4",
+         "4",
+         "1",
+         "1",
+         "2",
+         "35-18",
+         "7.36",
+         "35"
+        ],
+        "athlete": {
+         "displayName": "Jack Flaherty",
+         "shortName": "J. Flaherty",
+         "position": {
+          "name": "Starting Pitcher",
+          "displayName": "Starting Pitcher",
+          "abbreviation": "SP"
+         }
+        }
+       },
+       {
+        "starter": false,
+        "stats": [
+         "0.2",
+         "0",
+         "0",
+         "0",
+         "2",
+         "1",
+         "0",
+         "16-8",
+         "1.13",
+         "16"
+        ],
+        "athlete": {
+         "displayName": "Anthony Banda",
+         "shortName": "A. Banda",
+         "position": {
+          "name": "Relief Pitcher",
+          "displayName": "Relief Pitcher",
+          "abbreviation": "RP"
+         }
+        }
+       },
+       {
+        "starter": false,
+        "stats": [
+         "1.0",
+         "1",
+         "1",
+         "1",
+         "0",
+         "1",
+         "1",
+         "12-8",
+         "5.00",
+         "12"
+        ],
+        "athlete": {
+         "displayName": "Ryan Brasier",
+         "shortName": "R. Brasier",
+         "position": {
+          "name": "Relief Pitcher",
+          "displayName": "Relief Pitcher",
+          "abbreviation": "RP"
+         }
+        }
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "team": {
+     "id": "10",
+     "abbreviation": "NYY"
+    },
+    "statistics": [
+     {
+      "type": "batting",
+      "labels": [
+       "H-AB",
+       "AB",
+       "R",
+       "H",
+       "RBI",
+       "HR",
+       "BB",
+       "K",
+       "#P",
+       "AVG",
+       "OBP",
+       "SLG"
+      ],
+      "totals": [
+       "8-34",
+       "34",
+       "6",
+       "8",
+       "6",
+       "3",
+       "9",
+       "9",
+       "186",
+       "",
+       "",
+       ""
+      ],
+      "athletes": [
+       {
+        "starter": true,
+        "stats": [
+         "0-5",
+         "5",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0",
+         "1",
+         "18",
+         ".241",
+         ".348",
+         ".397"
+        ],
+        "athlete": {
+         "displayName": "Gleyber Torres",
+         "shortName": "G. Torres",
+         "position": {
+          "name": "Second Base",
+          "displayName": "Second Baseman",
+          "abbreviation": "2B"
+         }
+        }
+       },
+       {
+        "starter": true,
+        "stats": [
+         "1-2",
+         "2",
+         "2",
+         "1",
+         "0",
+         "0",
+         "3",
+         "0",
+         "22",
+         ".327",
+         ".469",
+         ".633"
+        ],
+        "athlete": {
+         "displayName": "Juan Soto",
+         "shortName": "J. Soto",
+         "position": {
+          "name": "Left Field",
+          "displayName": "Left Fielder",
+          "abbreviation": "LF"
+         }
+        }
+       },
+       {
+        "starter": true,
+        "stats": [
+         "2-3",
+         "3",
+         "1",
+         "2",
+         "2",
+         "1",
+         "2",
+         "0",
+         "23",
+         ".184",
+         ".344",
+         ".408"
+        ],
+        "athlete": {
+         "displayName": "Aaron Judge",
+         "shortName": "A. Judge",
+         "position": {
+          "name": "Right Field",
+          "displayName": "Right Fielder",
+          "abbreviation": "RF"
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "pitching",
+      "labels": [
+       "IP",
+       "H",
+       "R",
+       "ER",
+       "BB",
+       "K",
+       "HR",
+       "PC-ST",
+       "ERA",
+       "PC"
+      ],
+      "totals": [
+       "9.0",
+       "7",
+       "7",
+       "2",
+       "7",
+       "9",
+       "0",
+       "156-100",
+       "",
+       "156"
+      ],
+      "athletes": [
+       {
+        "starter": true,
+        "stats": [
+         "6.2",
+         "4",
+         "5",
+         "0",
+         "4",
+         "6",
+         "0",
+         "108-76",
+         "2.17",
+         "108"
+        ],
+        "athlete": {
+         "displayName": "Gerrit Cole",
+         "shortName": "G. Cole",
+         "position": {
+          "name": "Starting Pitcher",
+          "displayName": "Starting Pitcher",
+          "abbreviation": "SP"
+         }
+        }
+       },
+       {
+        "starter": false,
+        "stats": [
+         "0.1",
+         "0",
+         "0",
+         "0",
+         "1",
+         "1",
+         "0",
+         "11-4",
+         "2.25",
+         "11"
+        ],
+        "athlete": {
+         "displayName": "Clay Holmes",
+         "shortName": "C. Holmes",
+         "position": {
+          "name": "Starting Pitcher",
+          "displayName": "Starting Pitcher",
+          "abbreviation": "SP"
+         }
+        }
+       },
+       {
+        "starter": false,
+        "stats": [
+         "0.0",
+         "2",
+         "2",
+         "2",
+         "1",
+         "0",
+         "0",
+         "8-3",
+         "2.08",
+         "8"
+        ],
+        "athlete": {
+         "displayName": "Tommy Kahnle",
+         "shortName": "T. Kahnle",
+         "position": {
+          "name": "Relief Pitcher",
+          "displayName": "Relief Pitcher",
+          "abbreviation": "RP"
+         }
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "teams": [
+   {
+    "team": {
+     "id": "19"
+    },
+    "homeAway": "away",
+    "statistics": [
+     {
+      "name": "batting",
+      "displayName": "Batting",
+      "stats": [
+       {
+        "name": "gamesPlayed",
+        "displayName": "Games Played",
+        "shortDisplayName": "GP",
+        "description": "Games Played",
+        "abbreviation": "GP",
+        "value": 1.0,
+        "displayValue": "1"
+       },
+       {
+        "name": "teamGamesPlayed",
+        "displayName": "Team Games Played",
+        "shortDisplayName": "G",
+        "description": "The number of games played by a team.",
+        "abbreviation": "G",
+        "value": 1.0,
+        "displayValue": "1"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "team": {
+     "id": "10"
+    },
+    "homeAway": "home",
+    "statistics": [
+     {
+      "name": "batting",
+      "displayName": "Batting",
+      "stats": [
+       {
+        "name": "gamesPlayed",
+        "displayName": "Games Played",
+        "shortDisplayName": "GP",
+        "description": "Games Played",
+        "abbreviation": "GP",
+        "value": 1.0,
+        "displayValue": "1"
+       },
+       {
+        "name": "teamGamesPlayed",
+        "displayName": "Team Games Played",
+        "shortDisplayName": "G",
+        "description": "The number of games played by a team.",
+        "abbreviation": "G",
+        "value": 1.0,
+        "displayValue": "1"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "gameInfo": {
+  "venue": {
+   "fullName": "Yankee Stadium",
+   "address": {
+    "city": "Bronx",
+    "state": "New York",
+    "zipCode": "10451"
+   }
+  },
+  "attendance": 49263
+ }
+}

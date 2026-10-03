@@ -1,11 +1,17 @@
 import {
   LEAGUES, leagueById, scoreboardUrl, parseScoreboard, groupGames, refreshDelay,
-  statusLabel, dayLabel, addDays, weekLabel, weekInfo, adjacentWeek, fallbackUrl,
+  statusLabel, dayLabel, addDays, weekLabel, weekInfo, adjacentWeek,
 } from './espn.js';
 import { standingsUrl, parseStandings, rankingsUrl, parseRankings, teamsFromStandings } from './standings.js';
 import {
   loadFollowed, saveFollowed, isFollowed, toggleFollowed, followedLeagues, countFollowed, gamesForTeams,
 } from './myteams.js';
+import {
+  ICONS, getJson, TROUBLE, oddsHtml, failedLogos, logoHtml, fallbackLogo, emptyState, errorState, fullDate, formatClock, esc,
+} from './ui.js';
+import {
+  initPages, parseRoute, showPage, hidePage, pageOpen, refreshPage, pageVisible, gameHref, teamHref,
+} from './pages.js';
 
 const MINE = { id: 'mine', label: 'My Teams', mine: true };
 const LEAGUE_KEY = 'scores.league';
@@ -37,43 +43,11 @@ const els = {
   status: document.getElementById('status'),
   content: document.getElementById('content'),
   sheet: document.getElementById('sheet-root'),
-};
-
-const icon = (size, body, extra = '') =>
-  `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true"${extra}>${body}</svg>`;
-const stroke = (d) => `<path d="${d}" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`;
-const STAR_PATH = '<path fill="currentColor" d="M12 2.6l2.9 5.98 6.6.95-4.78 4.65 1.13 6.57L12 17.65l-5.9 3.1 1.13-6.57L2.5 9.53l6.6-.95z"/>';
-const ICONS = {
-  star: icon(14, STAR_PATH),
-  starSmall: icon(11, STAR_PATH),
-  starLarge: icon(30, STAR_PATH),
-  left: icon(16, stroke('M15 5l-7 7 7 7')),
-  right: icon(16, stroke('M9 5l7 7-7 7')),
-  plus: icon(16, stroke('M12 5v14M5 12h14')),
-  check: icon(16, stroke('M5 12.5l4.5 4.5L19 7.5')),
-  calendar: icon(30, stroke('M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM4 10h16M8 3v4M16 3v4')),
-  trophy: icon(30, stroke('M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8M10 17h4')),
-  alert: icon(30, stroke('M12 8v5M12 16.5v.01M10.3 3.9L2.6 17.5A2 2 0 0 0 4.3 20.5h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z')),
-  winner: '<svg viewBox="0 0 8 10" width="7" height="9" aria-hidden="true"><path d="M8 0v10L0 5z" fill="currentColor"/></svg>',
+  back: document.getElementById('back'),
+  pageTitle: document.getElementById('page-title'),
 };
 
 // ---- Loading ----
-
-async function getJson(url) {
-  try {
-    return await fetchJson(url);
-  } catch (err) {
-    const retry = fallbackUrl(url);
-    if (!retry) throw err;
-    return fetchJson(retry);
-  }
-}
-
-async function fetchJson(url) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
-}
 
 async function load() {
   clearTimeout(timer);
@@ -121,7 +95,7 @@ async function fetchMyTeams(date) {
 
 function schedule() {
   clearTimeout(timer);
-  if (document.hidden) return;
+  if (document.hidden || pageOpen()) return;
   let delay = null;
   if (view.error) delay = 30_000;
   else if (view.mode === 'scores') delay = refreshDelay(view.data?.games ?? []);
@@ -159,7 +133,7 @@ function renderTabs() {
 
 function renderModes() {
   const { league, mode } = view;
-  const key = `${league.id}|${mode}|${followed.length}`;
+  const key = `${league.id}|${mode}|${followed.map((t) => `${t.league}:${t.id}`).join(',')}`;
   if (rendered.modes === key) return;
   rendered.modes = key;
   if (league.mine) {
@@ -167,7 +141,10 @@ function renderModes() {
       <div class="toolbar">
         <span class="eyebrow">Following ${followed.length} team${followed.length === 1 ? '' : 's'}</span>
         <button class="pill-btn" data-action="edit-teams">Edit teams</button>
-      </div>` : '';
+      </div>
+      <nav class="chips" aria-label="Your teams">
+        ${followed.map((t) => `<a class="chip" href="${teamHref(t.league, t.id)}">${logoHtml(t, 20)}${esc(t.abbr || t.name)}</a>`).join('')}
+      </nav>` : '';
     return;
   }
   const modes = [['scores', 'Scores'], ['standings', 'Standings'], ...(league.rankings ? [['rankings', 'Rankings']] : [])];
@@ -342,8 +319,6 @@ function gamesHtml(games) {
   `).join('');
 }
 
-const TROUBLE = /POSTPONED|CANCELED|CANCELLED|SUSPENDED|DELAYED|FORFEIT|ABANDONED/;
-
 function gameCard(game, now) {
   const league = game.league ?? view.league;
   const live = game.state === 'in';
@@ -359,7 +334,7 @@ function gameCard(game, now) {
   const rows = game.teams.map((team) => teamRow(team, league, done, decided, odds?.moneyline[team.id]));
   const foot = [game.detail, game.note].filter(Boolean).join(' · ');
   return `
-    <article class="card game${live ? ' live' : ''}">
+    <a class="card game${live ? ' live' : ''}" href="${gameHref(league.id, game.id)}">
       <div class="game-head">
         ${game.league ? `<span class="league-chip">${esc(league.label)}</span>` : ''}
         ${status}
@@ -368,24 +343,9 @@ function gameCard(game, now) {
       <div class="teams">
         ${rows.length === 2 ? `${rows[0]}<div class="divider">${league.homeFirst ? 'vs' : '@'}</div>${rows[1]}` : rows.join('')}
       </div>
-      ${odds ? oddsRow(odds, league) : ''}
+      ${odds ? oddsHtml(odds, league) : ''}
       ${foot ? `<div class="game-foot">${esc(foot)}</div>` : ''}
-    </article>`;
-}
-
-// Spread, total and (soccer) the draw, with the book they come from.
-function oddsRow(odds, league) {
-  const items = [
-    [league.homeFirst ? 'Line' : 'Spread', odds.spread],
-    ['Total', odds.total],
-    ['Draw', odds.draw],
-  ].filter(([, value]) => value);
-  if (!items.length) return '';
-  return `
-    <div class="game-odds">
-      ${items.map(([label, value]) => `<span class="odd"><span class="odd-label">${label}</span>${esc(value)}</span>`).join('')}
-      ${odds.provider ? `<span class="book">${esc(odds.provider)}</span>` : ''}
-    </div>`;
+    </a>`;
 }
 
 function teamRow(team, league, done, decided, moneyline) {
@@ -432,12 +392,12 @@ function standingsRow(row, i, columns) {
   return `
     <tr${mine ? ' class="followed"' : ''}>
       <th scope="row" class="col-team">
-        <span class="team-cell">
+        <a class="team-cell" href="${teamHref(view.league.id, row.team.id)}">
           <span class="pos"${note}>${i + 1}</span>
           ${logoHtml(row.team, 22)}
           <span class="team-name">${esc(row.team.shortName || row.team.name)}</span>
           ${row.clincher ? `<span class="clinch" title="Clinched or eliminated">${esc(row.clincher)}</span>` : ''}
-        </span>
+        </a>
       </th>
       ${columns.map((c) => `<td${c.key ? ' class="key"' : ''}>${esc(row.stats[c.id] ?? '–')}</td>`).join('')}
     </tr>`;
@@ -475,66 +435,16 @@ function rankRow(r) {
   else if (r.movement > 0) trend = `<span class="trend up">▲${r.movement}</span>`;
   else if (r.movement < 0) trend = `<span class="trend down">▼${-r.movement}</span>`;
   return `
-    <div class="poll-row${mine ? ' followed' : ''}">
+    <a class="poll-row${mine ? ' followed' : ''}" href="${teamHref(view.league.id, r.team.id)}">
       <span class="poll-rank">${r.rank}</span>
       ${trend}
       ${logoHtml(r.team)}
       <span class="poll-team"><span class="name">${esc(r.team.name)}</span><span class="record">${esc(r.record)}</span></span>
       <span class="poll-points">${r.points ? esc(r.points) : ''}${r.firstPlaceVotes ? `<small>(${esc(r.firstPlaceVotes)})</small>` : ''}</span>
-    </div>`;
+    </a>`;
 }
 
 // ---- Shared pieces ----
-
-// ESPN's logo, or Phade's fallback: the team's color with its abbreviation.
-const failedLogos = new Set();
-
-function logoHtml(team, size = 28) {
-  const abbr = team.abbr || abbreviate(team.name);
-  if (team.logo && !failedLogos.has(team.logo)) {
-    return `<img class="logo" src="${esc(team.logo)}" alt="" width="${size}" height="${size}" loading="lazy" decoding="async" data-abbr="${esc(abbr)}" data-color="${esc(team.color ?? '')}">`;
-  }
-  return fallbackLogo(abbr, team.color);
-}
-
-function fallbackLogo(abbr, color) {
-  const bg = /^#[0-9a-f]{6}$/i.test(color ?? '') ? color : '#374151';
-  return `<span class="logo logo-fallback" style="background:${bg};color:${textOn(bg)}" aria-hidden="true">${esc(abbr)}</span>`;
-}
-
-// Phade's TeamLogo rule: "New York Yankees" → NYY, "Texas Rangers" → RAN.
-function abbreviate(name = '') {
-  const words = name.trim().split(/\s+/).filter(Boolean);
-  if (!words.length) return '?';
-  if (words.length >= 3) return words.slice(0, 3).map((w) => w[0].toUpperCase()).join('');
-  return words[words.length - 1].slice(0, 3).toUpperCase();
-}
-
-function textOn(hex) {
-  const n = parseInt(hex.slice(1), 16);
-  const lum = 0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255);
-  return lum > 186 ? '#0a0a0a' : '#ffffff';
-}
-
-function emptyState({ icon: art, title, text, action = '', error = false }) {
-  return `
-    <div class="card empty${error ? ' error' : ''}">
-      <div class="empty-icon">${art}</div>
-      <h2>${esc(title)}</h2>
-      <p>${esc(text)}</p>
-      ${action}
-    </div>`;
-}
-
-function errorState() {
-  return emptyState({
-    error: true,
-    icon: ICONS.alert,
-    title: "Couldn't reach ESPN",
-    text: 'Check your connection. This retries on its own every 30 seconds.',
-    action: '<button class="btn-primary" data-action="retry">Try again</button>',
-  });
-}
 
 function skeleton(mode) {
   const bar = (w, h, extra = '') => `<span class="skeleton" style="width:${w};height:${h}px${extra}"></span>`;
@@ -546,23 +456,11 @@ function skeleton(mode) {
   return `<div class="card skeleton-card" style="margin-top:22px">${row.repeat(8)}</div>`;
 }
 
-function fullDate(date) {
-  return date.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
-}
-
 function dayPhrase(offset) {
   if (offset === 0) return 'today';
   if (offset === -1) return 'yesterday';
   if (offset === 1) return 'tomorrow';
   return `on ${dayLabel(offset)}`;
-}
-
-function formatClock(date) {
-  return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', second: '2-digit' });
-}
-
-function esc(value) {
-  return String(value ?? '').replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);
 }
 
 function readStorage(key) {
@@ -723,7 +621,7 @@ document.addEventListener('click', (event) => {
   else if (d.action === 'retry-teams') loadTeams(picker.league);
 });
 
-els.refresh.addEventListener('click', () => load());
+els.refresh.addEventListener('click', () => (pageOpen() ? refreshPage() : load()));
 
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') closePicker();
@@ -731,7 +629,8 @@ document.addEventListener('keydown', (event) => {
 
 // Don't poll in the background; catch up as soon as the app is looked at again.
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) clearTimeout(timer);
+  if (pageOpen()) pageVisible(!document.hidden);
+  else if (document.hidden) clearTimeout(timer);
   else if (!view.updatedAt || Date.now() - view.updatedAt > 10_000) load();
   else schedule();
 });
@@ -744,6 +643,78 @@ document.addEventListener('error', (event) => {
   img.outerHTML = fallbackLogo(img.dataset.abbr, img.dataset.color);
 }, true);
 
+// ---- Game and team pages ----
+
+// Links push history entries numbered from where the app was opened, so the
+// header's back button goes back within the app, and a page opened straight
+// from a shared link goes back to the scoreboard instead of leaving.
+let mainScroll = 0;
+let followsChanged = false;
+
+function applyRoute() {
+  const route = parseRoute(location.hash);
+  const wasOpen = pageOpen();
+  if (route) {
+    if (!wasOpen) {
+      mainScroll = window.scrollY;
+      clearTimeout(timer);
+    }
+    document.body.classList.add('page-mode');
+    els.back.hidden = false;
+    showPage(route);
+    window.scrollTo(0, 0);
+    return;
+  }
+  if (!wasOpen) return;
+  hidePage();
+  document.body.classList.remove('page-mode');
+  els.back.hidden = true;
+  els.pageTitle.textContent = '';
+  if (followsChanged) {
+    followsChanged = false;
+    if (view.league.mine) changeView({});
+    else render();
+  }
+  window.scrollTo(0, mainScroll);
+  if (!view.updatedAt || Date.now() - view.updatedAt > 10_000) load();
+  else schedule();
+}
+
+function navigate(href) {
+  history.pushState({ depth: (history.state?.depth ?? 0) + 1 }, '', href);
+  applyRoute();
+}
+
+function goBack() {
+  if (history.state?.depth > 0) history.back();
+  else {
+    history.replaceState(null, '', location.pathname + location.search);
+    applyRoute();
+  }
+}
+
+document.addEventListener('click', (event) => {
+  const link = event.target.closest('a[href^="#/"]');
+  if (!link || event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
+  event.preventDefault();
+  if (link.getAttribute('href') !== location.hash) navigate(link.getAttribute('href'));
+});
+window.addEventListener('popstate', applyRoute);
+window.addEventListener('hashchange', applyRoute);
+els.back.addEventListener('click', goBack);
+
+initPages({
+  isFollowed: (leagueId, teamId) => isFollowed(followed, leagueId, teamId),
+  toggleFollow(leagueId, team) {
+    followed = toggleFollowed(followed, leagueId, team);
+    saveFollowed(storage, followed);
+    followsChanged = true;
+  },
+  setTitle: (text) => { els.pageTitle.textContent = text; },
+  setLoading: (on) => els.refresh.classList.toggle('spinning', on),
+});
+
 render();
 els.tabs.querySelector('[aria-selected="true"]')?.scrollIntoView({ inline: 'center', block: 'nearest' });
 load();
+applyRoute();

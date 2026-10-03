@@ -7,6 +7,8 @@ Leagues: NFL, NBA, MLB, NHL, NCAAF, NCAAM, WNBA, MLS, Premier League, Champions 
 - **Scores** for every league. Football is browsed by week; everything else by day, on a sliding day strip.
 - **My Teams**: follow teams from any league and see all of their games for a day in one place. Followed teams are starred everywhere else too. Follows are kept on the device.
 - **Standings** for every league: conferences for the NFL, NBA, NHL and WNBA, leagues for MLB, conference tables for college, and the table with its qualification and relegation zones for soccer.
+- **Box scores**: tap any game for the line score (innings with R/H/E for baseball), the scoring summary (touchdowns and field goals, goals, or soccer's goals and red cards), each team's player stats and the team stat comparison. Live box scores refresh every 30 seconds.
+- **Team pages**: tap a team in a box score, the standings, the rankings or the My Teams chips for its record, standing, upcoming games and results, and to follow or unfollow it. Game and team pages have their own links (`#/game/nfl/<id>`, `#/team/nfl/<id>`), so back, swipe-back and sharing work.
 - **Betting lines** on upcoming games, from ESPN's sportsbook partner (DraftKings): each side's moneyline, the spread, the total and, for soccer, the draw. Lines disappear at kickoff, since ESPN's feed only carries the pre-game line.
 - **Rankings** for college football and basketball: the AP and Coaches polls, plus the CFP rankings once they're out. Pro leagues have no polls; their standings are the ranking.
 
@@ -52,6 +54,8 @@ Start times for upcoming games come from the league schedule and are shown in yo
 - Standings entries arrive in no useful order, so they're sorted by playoff seed (pro leagues), table position (soccer) or conference record (college).
 - College standings repeat each stat once per split (home, road, conference) under the same name; only the totals are read.
 - `site.api.espn.com` occasionally refuses requests; the app retries on `site.web.api.espn.com`, which serves the same feeds.
+- Team schedules come one season type per request, and only the current one by default (an empty list between seasons), so the app asks for the regular season and the postseason and merges them. Soccer instead splits results from fixtures still to play, so it asks for both.
+- A game summary can be over a megabyte, so it's only fetched when a game is opened.
 - College basketball standings are a large download (every Division I conference at once), so that tab is slower than the rest.
 
 ## Files
@@ -60,8 +64,11 @@ Start times for upcoming games come from the league schedule and are shown in yo
 | -------------------------------- | -------------------------------------------------------------------- |
 | `espn.js`                        | League list, scoreboard URLs and parsing, lines, refresh timing      |
 | `standings.js`                   | Standings and poll URLs and parsing, the picker's team list          |
+| `details.js`                     | Box score (game summary) and team schedule URLs and parsing          |
 | `myteams.js`                     | Followed teams: storage and filtering games to them                  |
-| `app.js`                         | Rendering, navigation, polling, the team picker                      |
+| `app.js`                         | Scoreboard rendering, navigation, polling, the team picker, routing  |
+| `pages.js`                       | The game (box score) and team (schedule) pages                       |
+| `ui.js`                          | Shared pieces: icons, fetching, team logos, empty states             |
 | `index.html`, `styles.css`       | Page shell and styles                                                |
 | `manifest.webmanifest`, `icons/` | Home-screen install metadata and icons                               |
 | `test/`                          | Unit tests and feed responses trimmed from real ESPN data            |

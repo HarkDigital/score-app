@@ -1,0 +1,536 @@
+{
+ "header": {
+  "competitions": [
+   {
+    "id": "401671889",
+    "date": "2025-02-09T23:30Z",
+    "status": {
+     "type": {
+      "id": "3",
+      "name": "STATUS_FINAL",
+      "state": "post",
+      "completed": true,
+      "description": "Final",
+      "detail": "Final",
+      "shortDetail": "Final"
+     },
+     "isTBDFlex": false
+    },
+    "broadcasts": [
+     {
+      "type": {
+       "id": "1",
+       "shortName": "TV"
+      },
+      "market": {
+       "id": "1",
+       "type": "National"
+      },
+      "media": {
+       "shortName": "FOX"
+      },
+      "lang": "en",
+      "region": "us",
+      "isNational": true
+     }
+    ],
+    "competitors": [
+     {
+      "id": "21",
+      "homeAway": "home",
+      "winner": true,
+      "score": "40",
+      "linescores": [
+       {
+        "displayValue": "7"
+       },
+       {
+        "displayValue": "17"
+       },
+       {
+        "displayValue": "10"
+       },
+       {
+        "displayValue": "6"
+       }
+      ],
+      "record": [
+       {
+        "type": "total",
+        "summary": "14-3",
+        "displayValue": "14-3"
+       },
+       {
+        "type": "home",
+        "summary": "8-1",
+        "displayValue": "8-1"
+       },
+       {
+        "type": "vsconf",
+        "summary": "9-3",
+        "displayValue": "9-3"
+       }
+      ],
+      "team": {
+       "id": "21",
+       "abbreviation": "PHI",
+       "displayName": "Philadelphia Eagles",
+       "name": "Eagles",
+       "color": "06424d",
+       "logos": [
+        {
+         "href": "https://a.espncdn.com/i/teamlogos/nfl/500/phi.png",
+         "width": 500,
+         "height": 500,
+         "alt": "",
+         "rel": [
+          "full",
+          "default"
+         ],
+         "lastUpdated": "2024-06-25T18:55Z"
+        }
+       ]
+      }
+     },
+     {
+      "id": "12",
+      "homeAway": "away",
+      "winner": false,
+      "score": "22",
+      "linescores": [
+       {
+        "displayValue": "0"
+       },
+       {
+        "displayValue": "0"
+       },
+       {
+        "displayValue": "6"
+       },
+       {
+        "displayValue": "16"
+       }
+      ],
+      "record": [
+       {
+        "type": "total",
+        "summary": "15-2",
+        "displayValue": "15-2"
+       },
+       {
+        "type": "road",
+        "summary": "7-2",
+        "displayValue": "7-2"
+       },
+       {
+        "type": "vsconf",
+        "summary": "10-2",
+        "displayValue": "10-2"
+       }
+      ],
+      "team": {
+       "id": "12",
+       "abbreviation": "KC",
+       "displayName": "Kansas City Chiefs",
+       "name": "Chiefs",
+       "color": "e31837",
+       "logos": [
+        {
+         "href": "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png",
+         "width": 500,
+         "height": 500,
+         "alt": "",
+         "rel": [
+          "full",
+          "default"
+         ],
+         "lastUpdated": "2024-06-25T18:51Z"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ "boxscore": {
+  "teams": [
+   {
+    "team": {
+     "id": "12",
+     "abbreviation": "KC"
+    },
+    "homeAway": "away",
+    "statistics": [
+     {
+      "name": "firstDowns",
+      "displayValue": "12",
+      "value": 12.0,
+      "label": "1st Downs"
+     },
+     {
+      "name": "firstDownsPassing",
+      "displayValue": "11",
+      "value": 11.0,
+      "label": "Passing 1st downs"
+     },
+     {
+      "name": "firstDownsRushing",
+      "displayValue": "1",
+      "value": 1.0,
+      "label": "Rushing 1st downs"
+     },
+     {
+      "name": "firstDownsPenalty",
+      "displayValue": "0",
+      "value": 0.0,
+      "label": "1st downs from penalties"
+     },
+     {
+      "name": "thirdDownEff",
+      "displayValue": "3-11",
+      "value": 0.2727272727,
+      "label": "3rd down efficiency"
+     },
+     {
+      "name": "fourthDownEff",
+      "displayValue": "0-1",
+      "value": 0,
+      "label": "4th down efficiency"
+     }
+    ]
+   },
+   {
+    "team": {
+     "id": "21",
+     "abbreviation": "PHI"
+    },
+    "homeAway": "home",
+    "statistics": [
+     {
+      "name": "firstDowns",
+      "displayValue": "21",
+      "value": 21.0,
+      "label": "1st Downs"
+     },
+     {
+      "name": "firstDownsPassing",
+      "displayValue": "11",
+      "value": 11.0,
+      "label": "Passing 1st downs"
+     },
+     {
+      "name": "firstDownsRushing",
+      "displayValue": "7",
+      "value": 7.0,
+      "label": "Rushing 1st downs"
+     },
+     {
+      "name": "firstDownsPenalty",
+      "displayValue": "3",
+      "value": 3.0,
+      "label": "1st downs from penalties"
+     },
+     {
+      "name": "thirdDownEff",
+      "displayValue": "3-12",
+      "value": 0.25,
+      "label": "3rd down efficiency"
+     },
+     {
+      "name": "fourthDownEff",
+      "displayValue": "0-1",
+      "value": 0,
+      "label": "4th down efficiency"
+     }
+    ]
+   }
+  ],
+  "players": [
+   {
+    "team": {
+     "id": "12",
+     "abbreviation": "KC"
+    },
+    "statistics": [
+     {
+      "name": "passing",
+      "text": "Kansas City Passing",
+      "labels": [
+       "C/ATT",
+       "YDS",
+       "AVG",
+       "TD",
+       "INT",
+       "SACKS",
+       "QBR",
+       "RTG"
+      ],
+      "athletes": [
+       {
+        "stats": [
+         "21/32",
+         "257",
+         "8.0",
+         "3",
+         "2",
+         "6-31",
+         "10.0",
+         "95.4"
+        ],
+        "athlete": {
+         "displayName": "Patrick Mahomes"
+        }
+       }
+      ],
+      "totals": [
+       "21/32",
+       "226",
+       "8.0",
+       "3",
+       "2",
+       "6-31",
+       "--",
+       "95.4"
+      ]
+     },
+     {
+      "name": "rushing",
+      "text": "Kansas City Rushing",
+      "labels": [
+       "CAR",
+       "YDS",
+       "AVG",
+       "TD",
+       "LONG"
+      ],
+      "athletes": [
+       {
+        "stats": [
+         "4",
+         "25",
+         "6.3",
+         "0",
+         "8"
+        ],
+        "athlete": {
+         "displayName": "Patrick Mahomes"
+        }
+       },
+       {
+        "stats": [
+         "3",
+         "9",
+         "3.0",
+         "0",
+         "6"
+        ],
+        "athlete": {
+         "displayName": "Kareem Hunt"
+        }
+       },
+       {
+        "stats": [
+         "1",
+         "8",
+         "8.0",
+         "0",
+         "8"
+        ],
+        "athlete": {
+         "displayName": "Samaje Perine"
+        }
+       }
+      ],
+      "totals": [
+       "11",
+       "49",
+       "4.5",
+       "0",
+       "8"
+      ]
+     }
+    ]
+   },
+   {
+    "team": {
+     "id": "21",
+     "abbreviation": "PHI"
+    },
+    "statistics": [
+     {
+      "name": "passing",
+      "text": "Philadelphia Passing",
+      "labels": [
+       "C/ATT",
+       "YDS",
+       "AVG",
+       "TD",
+       "INT",
+       "SACKS",
+       "QBR",
+       "RTG"
+      ],
+      "athletes": [
+       {
+        "stats": [
+         "17/22",
+         "221",
+         "10.0",
+         "2",
+         "1",
+         "2-11",
+         "72.8",
+         "119.7"
+        ],
+        "athlete": {
+         "displayName": "Jalen Hurts"
+        }
+       },
+       {
+        "stats": [
+         "0/1",
+         "0",
+         "0.0",
+         "0",
+         "0",
+         "0-0",
+         "0.4",
+         "39.6"
+        ],
+        "athlete": {
+         "displayName": "Kenny Pickett"
+        }
+       }
+      ],
+      "totals": [
+       "17/23",
+       "210",
+       "9.6",
+       "2",
+       "1",
+       "2-11",
+       "--",
+       "114.6"
+      ]
+     },
+     {
+      "name": "rushing",
+      "text": "Philadelphia Rushing",
+      "labels": [
+       "CAR",
+       "YDS",
+       "AVG",
+       "TD",
+       "LONG"
+      ],
+      "athletes": [
+       {
+        "stats": [
+         "11",
+         "72",
+         "6.5",
+         "1",
+         "17"
+        ],
+        "athlete": {
+         "displayName": "Jalen Hurts"
+        }
+       },
+       {
+        "stats": [
+         "25",
+         "57",
+         "2.3",
+         "0",
+         "10"
+        ],
+        "athlete": {
+         "displayName": "Saquon Barkley"
+        }
+       },
+       {
+        "stats": [
+         "6",
+         "10",
+         "1.7",
+         "0",
+         "4"
+        ],
+        "athlete": {
+         "displayName": "Kenneth Gainwell"
+        }
+       }
+      ],
+      "totals": [
+       "45",
+       "135",
+       "3.0",
+       "1",
+       "17"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "scoringPlays": [
+  {
+   "text": "Jalen Hurts 1 Yd Rush (Jake Elliott Kick)",
+   "period": {
+    "number": 1
+   },
+   "clock": {
+    "value": 375.0,
+    "displayValue": "6:15"
+   },
+   "awayScore": 0,
+   "homeScore": 7,
+   "team": {
+    "id": "21"
+   }
+  },
+  {
+   "text": "Jake Elliott 48 Yd Field Goal ",
+   "period": {
+    "number": 2
+   },
+   "clock": {
+    "value": 518.0,
+    "displayValue": "8:38"
+   },
+   "awayScore": 0,
+   "homeScore": 10,
+   "team": {
+    "id": "21"
+   }
+  },
+  {
+   "text": "Cooper DeJean 38 Yd Interception Return (Jake Elliott Kick)",
+   "period": {
+    "number": 2
+   },
+   "clock": {
+    "value": 423.0,
+    "displayValue": "7:03"
+   },
+   "awayScore": 0,
+   "homeScore": 17,
+   "team": {
+    "id": "21"
+   }
+  }
+ ],
+ "gameInfo": {
+  "venue": {
+   "fullName": "Caesars Superdome",
+   "address": {
+    "city": "New Orleans",
+    "state": "LA",
+    "zipCode": "70112",
+    "country": "USA"
+   }
+  },
+  "attendance": 65719
+ }
+}

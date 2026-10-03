@@ -1,0 +1,1995 @@
+{
+ "header": {
+  "competitions": [
+   {
+    "id": "401675111",
+    "date": "2024-06-25T00:00Z",
+    "status": {
+     "type": {
+      "id": "3",
+      "name": "STATUS_FINAL",
+      "state": "post",
+      "completed": true,
+      "description": "Final",
+      "detail": "Final",
+      "shortDetail": "Final"
+     },
+     "featuredAthletes": [
+      {
+       "name": "winningGoalie",
+       "displayName": "Winning Goalie",
+       "playerId": 5571,
+       "athlete": {
+        "id": "5571",
+        "uid": "s:70~l:90~a:5571",
+        "guid": "64c24e22-3e0a-e97a-0a79-3ba239e98ad8",
+        "fullName": "Sergei Bobrovsky",
+        "displayName": "Sergei Bobrovsky",
+        "shortName": "S. Bobrovsky",
+        "links": [
+         {
+          "language": "en-US",
+          "rel": [
+           "playercard",
+           "desktop",
+           "athlete"
+          ],
+          "href": "https://www.espn.com/nhl/player/_/id/5571",
+          "text": "Player Card",
+          "shortText": "Player Card"
+         }
+        ],
+        "headshot": {
+         "href": "https://a.espncdn.com/i/headshots/nhl/players/full/5571.png",
+         "alt": "Sergei Bobrovsky"
+        }
+       },
+       "team": {
+        "id": "26",
+        "name": "Panthers",
+        "nickname": "Panthers",
+        "logos": [
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nhl/500/fla.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "default"
+          ],
+          "lastUpdated": "2024-07-02T15:51Z"
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/fla.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "dark"
+          ],
+          "lastUpdated": "2018-06-05T12:12Z"
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nhl/500/scoreboard/fla.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "scoreboard"
+          ],
+          "lastUpdated": "2024-07-02T15:51Z"
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/scoreboard/fla.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "scoreboard",
+           "dark"
+          ],
+          "lastUpdated": "2018-06-05T12:12Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/primary_logo_on_white_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_white_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/primary_logo_on_black_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_black_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/primary_logo_on_primary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_primary_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/primary_logo_on_secondary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_secondary_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/primary_logo_black.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_black"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/primary_logo_white.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_white"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/secondary_logo_on_white_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_white_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/secondary_logo_on_black_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_black_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/secondary_logo_on_primary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_primary_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/secondary_logo_on_secondary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_secondary_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/secondary_logo_black.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_black"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/secondary_logo_white.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_white"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         }
+        ]
+       }
+      },
+      {
+       "name": "losingGoalie",
+       "displayName": "Losing Goalie",
+       "playerId": 4268767,
+       "athlete": {
+        "id": "4268767",
+        "uid": "s:70~l:90~a:4268767",
+        "guid": "8cbb2141-3895-67e0-318a-1a012cd17466",
+        "fullName": "Stuart Skinner",
+        "displayName": "Stuart Skinner",
+        "shortName": "S. Skinner",
+        "links": [
+         {
+          "language": "en-US",
+          "rel": [
+           "playercard",
+           "desktop",
+           "athlete"
+          ],
+          "href": "https://www.espn.com/nhl/player/_/id/4268767",
+          "text": "Player Card",
+          "shortText": "Player Card"
+         }
+        ],
+        "headshot": {
+         "href": "https://a.espncdn.com/i/headshots/nhl/players/full/4268767.png",
+         "alt": "Stuart Skinner"
+        }
+       },
+       "team": {
+        "id": "6",
+        "name": "Oilers",
+        "nickname": "Oilers",
+        "logos": [
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nhl/500/edm.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "default"
+          ],
+          "lastUpdated": "2024-07-02T15:51Z"
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/edm.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "dark"
+          ],
+          "lastUpdated": "2024-07-02T15:46Z"
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nhl/500/scoreboard/edm.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "scoreboard"
+          ],
+          "lastUpdated": "2024-07-02T15:51Z"
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/scoreboard/edm.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "scoreboard",
+           "dark"
+          ],
+          "lastUpdated": "2024-07-02T15:46Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/c78600f3-cea1-f6e0-11cf-dfeefe1897ff/logos/primary_logo_on_white_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_white_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/c78600f3-cea1-f6e0-11cf-dfeefe1897ff/logos/primary_logo_on_black_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_black_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/c78600f3-cea1-f6e0-11cf-dfeefe1897ff/logos/primary_logo_on_primary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_primary_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/c78600f3-cea1-f6e0-11cf-dfeefe1897ff/logos/primary_logo_on_secondary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_secondary_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/c78600f3-cea1-f6e0-11cf-dfeefe1897ff/logos/primary_logo_black.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_black"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/c78600f3-cea1-f6e0-11cf-dfeefe1897ff/logos/primary_logo_white.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_white"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/c78600f3-cea1-f6e0-11cf-dfeefe1897ff/logos/secondary_logo_on_white_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_white_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/c78600f3-cea1-f6e0-11cf-dfeefe1897ff/logos/secondary_logo_on_black_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_black_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/c78600f3-cea1-f6e0-11cf-dfeefe1897ff/logos/secondary_logo_on_primary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_primary_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/c78600f3-cea1-f6e0-11cf-dfeefe1897ff/logos/secondary_logo_on_secondary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_secondary_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/c78600f3-cea1-f6e0-11cf-dfeefe1897ff/logos/secondary_logo_black.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_black"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/c78600f3-cea1-f6e0-11cf-dfeefe1897ff/logos/secondary_logo_white.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_white"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         }
+        ]
+       }
+      },
+      {
+       "name": "firstStar",
+       "displayName": "First Star",
+       "playerId": 5571,
+       "athlete": {
+        "id": "5571",
+        "uid": "s:70~l:90~a:5571",
+        "guid": "64c24e22-3e0a-e97a-0a79-3ba239e98ad8",
+        "fullName": "Sergei Bobrovsky",
+        "displayName": "Sergei Bobrovsky",
+        "shortName": "S. Bobrovsky",
+        "links": [
+         {
+          "language": "en-US",
+          "rel": [
+           "playercard",
+           "desktop",
+           "athlete"
+          ],
+          "href": "https://www.espn.com/nhl/player/_/id/5571",
+          "text": "Player Card",
+          "shortText": "Player Card"
+         }
+        ],
+        "headshot": {
+         "href": "https://a.espncdn.com/i/headshots/nhl/players/full/5571.png",
+         "alt": "Sergei Bobrovsky"
+        }
+       },
+       "team": {
+        "id": "26",
+        "name": "Panthers",
+        "nickname": "Panthers",
+        "logos": [
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nhl/500/fla.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "default"
+          ],
+          "lastUpdated": "2024-07-02T15:51Z"
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/fla.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "dark"
+          ],
+          "lastUpdated": "2018-06-05T12:12Z"
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nhl/500/scoreboard/fla.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "scoreboard"
+          ],
+          "lastUpdated": "2024-07-02T15:51Z"
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/scoreboard/fla.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "scoreboard",
+           "dark"
+          ],
+          "lastUpdated": "2018-06-05T12:12Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/primary_logo_on_white_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_white_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/primary_logo_on_black_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_black_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/primary_logo_on_primary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_primary_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/primary_logo_on_secondary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_secondary_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/primary_logo_black.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_black"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/primary_logo_white.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_white"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/secondary_logo_on_white_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_white_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/secondary_logo_on_black_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_black_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/secondary_logo_on_primary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_primary_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/secondary_logo_on_secondary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_secondary_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/secondary_logo_black.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_black"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/secondary_logo_white.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_white"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         }
+        ]
+       }
+      },
+      {
+       "name": "secondStar",
+       "displayName": "Second Star",
+       "playerId": 3114722,
+       "athlete": {
+        "id": "3114722",
+        "uid": "s:70~l:90~a:3114722",
+        "guid": "1ebf6e18-9262-fd26-fa16-ff534d8b7a63",
+        "fullName": "Sam Reinhart",
+        "displayName": "Sam Reinhart",
+        "shortName": "S. Reinhart",
+        "links": [
+         {
+          "language": "en-US",
+          "rel": [
+           "playercard",
+           "desktop",
+           "athlete"
+          ],
+          "href": "https://www.espn.com/nhl/player/_/id/3114722",
+          "text": "Player Card",
+          "shortText": "Player Card"
+         }
+        ],
+        "headshot": {
+         "href": "https://a.espncdn.com/i/headshots/nhl/players/full/3114722.png",
+         "alt": "Sam Reinhart"
+        }
+       },
+       "team": {
+        "id": "26",
+        "name": "Panthers",
+        "nickname": "Panthers",
+        "logos": [
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nhl/500/fla.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "default"
+          ],
+          "lastUpdated": "2024-07-02T15:51Z"
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/fla.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "dark"
+          ],
+          "lastUpdated": "2018-06-05T12:12Z"
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nhl/500/scoreboard/fla.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "scoreboard"
+          ],
+          "lastUpdated": "2024-07-02T15:51Z"
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/scoreboard/fla.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "scoreboard",
+           "dark"
+          ],
+          "lastUpdated": "2018-06-05T12:12Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/primary_logo_on_white_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_white_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/primary_logo_on_black_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_black_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/primary_logo_on_primary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_primary_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/primary_logo_on_secondary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_secondary_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/primary_logo_black.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_black"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/primary_logo_white.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_white"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/secondary_logo_on_white_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_white_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/secondary_logo_on_black_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_black_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/secondary_logo_on_primary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_primary_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/secondary_logo_on_secondary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_secondary_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/secondary_logo_black.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_black"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/secondary_logo_white.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_white"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         }
+        ]
+       }
+      },
+      {
+       "name": "thirdStar",
+       "displayName": "Third Star",
+       "playerId": 3042088,
+       "athlete": {
+        "id": "3042088",
+        "uid": "s:70~l:90~a:3042088",
+        "guid": "7b6e2bed-03dd-b6b3-8b53-088de7b5f5d1",
+        "fullName": "Carter Verhaeghe",
+        "displayName": "Carter Verhaeghe",
+        "shortName": "C. Verhaeghe",
+        "links": [
+         {
+          "language": "en-US",
+          "rel": [
+           "playercard",
+           "desktop",
+           "athlete"
+          ],
+          "href": "https://www.espn.com/nhl/player/_/id/3042088",
+          "text": "Player Card",
+          "shortText": "Player Card"
+         }
+        ],
+        "headshot": {
+         "href": "https://a.espncdn.com/i/headshots/nhl/players/full/3042088.png",
+         "alt": "Carter Verhaeghe"
+        }
+       },
+       "team": {
+        "id": "26",
+        "name": "Panthers",
+        "nickname": "Panthers",
+        "logos": [
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nhl/500/fla.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "default"
+          ],
+          "lastUpdated": "2024-07-02T15:51Z"
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/fla.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "dark"
+          ],
+          "lastUpdated": "2018-06-05T12:12Z"
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nhl/500/scoreboard/fla.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "scoreboard"
+          ],
+          "lastUpdated": "2024-07-02T15:51Z"
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/scoreboard/fla.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "scoreboard",
+           "dark"
+          ],
+          "lastUpdated": "2018-06-05T12:12Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/primary_logo_on_white_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_white_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/primary_logo_on_black_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_black_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/primary_logo_on_primary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_primary_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/primary_logo_on_secondary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_on_secondary_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/primary_logo_black.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_black"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/primary_logo_white.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "primary_logo_white"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/secondary_logo_on_white_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_white_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/secondary_logo_on_black_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_black_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/secondary_logo_on_primary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_primary_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/secondary_logo_on_secondary_color.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_on_secondary_color"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/secondary_logo_black.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_black"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         },
+         {
+          "href": "https://a.espncdn.com/guid/195561c3-b7d9-935e-0623-8f0a00357080/logos/secondary_logo_white.png",
+          "width": 4096,
+          "height": 4096,
+          "alt": "",
+          "rel": [
+           "full",
+           "secondary_logo_white"
+          ],
+          "lastUpdated": "2026-02-13T03:22Z"
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "broadcasts": [
+     {
+      "type": {
+       "id": "1",
+       "shortName": "TV"
+      },
+      "market": {
+       "id": "1",
+       "type": "National"
+      },
+      "media": {
+       "shortName": "ABC"
+      },
+      "lang": "en",
+      "region": "us",
+      "isNational": true
+     },
+     {
+      "type": {
+       "id": "4",
+       "shortName": "Streaming"
+      },
+      "market": {
+       "id": "1",
+       "type": "National"
+      },
+      "media": {
+       "shortName": "ESPN+"
+      },
+      "lang": "en",
+      "region": "us",
+      "isNational": true
+     }
+    ],
+    "competitors": [
+     {
+      "id": "26",
+      "homeAway": "home",
+      "winner": true,
+      "score": "2",
+      "linescores": [
+       {
+        "displayValue": "1"
+       },
+       {
+        "displayValue": "1"
+       },
+       {
+        "displayValue": "0"
+       }
+      ],
+      "record": [
+       {
+        "type": "total",
+        "summary": "52-24-6",
+        "displayValue": "52-24-6, 110 PTS"
+       },
+       {
+        "type": "home",
+        "summary": "26-13-2",
+        "displayValue": "26-13-2, 0 PTS"
+       }
+      ],
+      "team": {
+       "id": "26",
+       "abbreviation": "FLA",
+       "displayName": "Florida Panthers",
+       "name": "Panthers",
+       "color": "e51937",
+       "logos": [
+        {
+         "href": "https://a.espncdn.com/i/teamlogos/nhl/500/fla.png",
+         "width": 500,
+         "height": 500,
+         "alt": "",
+         "rel": [
+          "full",
+          "default"
+         ],
+         "lastUpdated": "2024-07-02T15:51Z"
+        }
+       ]
+      }
+     },
+     {
+      "id": "6",
+      "homeAway": "away",
+      "winner": false,
+      "score": "1",
+      "linescores": [
+       {
+        "displayValue": "1"
+       },
+       {
+        "displayValue": "0"
+       },
+       {
+        "displayValue": "0"
+       }
+      ],
+      "record": [
+       {
+        "type": "total",
+        "summary": "49-27-6",
+        "displayValue": "49-27-6, 104 PTS"
+       },
+       {
+        "type": "road",
+        "summary": "21-18-2",
+        "displayValue": "21-18-2, 0 PTS"
+       }
+      ],
+      "team": {
+       "id": "6",
+       "abbreviation": "EDM",
+       "displayName": "Edmonton Oilers",
+       "name": "Oilers",
+       "color": "00205b",
+       "logos": [
+        {
+         "href": "https://a.espncdn.com/i/teamlogos/nhl/500/edm.png",
+         "width": 500,
+         "height": 500,
+         "alt": "",
+         "rel": [
+          "full",
+          "default"
+         ],
+         "lastUpdated": "2024-07-02T15:51Z"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ "boxscore": {
+  "teams": [
+   {
+    "team": {
+     "id": "6",
+     "abbreviation": "EDM"
+    },
+    "homeAway": "away",
+    "statistics": [
+     {
+      "name": "blockedShots",
+      "abbreviation": "BS",
+      "displayValue": "13",
+      "label": "Blocked Shots"
+     },
+     {
+      "name": "hits",
+      "abbreviation": "HT",
+      "displayValue": "21",
+      "label": "Hits"
+     },
+     {
+      "name": "takeaways",
+      "abbreviation": "TK",
+      "displayValue": "7",
+      "label": "Takeaways"
+     },
+     {
+      "name": "shotsTotal",
+      "abbreviation": "S",
+      "displayValue": "24",
+      "label": "Shots"
+     },
+     {
+      "name": "powerPlayGoals",
+      "abbreviation": "PPG",
+      "displayValue": "0",
+      "label": "Power Play Goals"
+     },
+     {
+      "name": "powerPlayOpportunities",
+      "abbreviation": "PPO",
+      "displayValue": "1",
+      "label": "Power Play Opportunities"
+     }
+    ]
+   },
+   {
+    "team": {
+     "id": "26",
+     "abbreviation": "FLA"
+    },
+    "homeAway": "home",
+    "statistics": [
+     {
+      "name": "blockedShots",
+      "abbreviation": "BS",
+      "displayValue": "17",
+      "label": "Blocked Shots"
+     },
+     {
+      "name": "hits",
+      "abbreviation": "HT",
+      "displayValue": "32",
+      "label": "Hits"
+     },
+     {
+      "name": "takeaways",
+      "abbreviation": "TK",
+      "displayValue": "12",
+      "label": "Takeaways"
+     },
+     {
+      "name": "shotsTotal",
+      "abbreviation": "S",
+      "displayValue": "21",
+      "label": "Shots"
+     },
+     {
+      "name": "powerPlayGoals",
+      "abbreviation": "PPG",
+      "displayValue": "0",
+      "label": "Power Play Goals"
+     },
+     {
+      "name": "powerPlayOpportunities",
+      "abbreviation": "PPO",
+      "displayValue": "2",
+      "label": "Power Play Opportunities"
+     }
+    ]
+   }
+  ],
+  "players": [
+   {
+    "team": {
+     "id": "6",
+     "abbreviation": "EDM"
+    },
+    "statistics": [
+     {
+      "name": "forwards",
+      "labels": [
+       "BS",
+       "HT",
+       "TK",
+       "+/-",
+       "TOI",
+       "PPTOI",
+       "SHTOI",
+       "ESTOI",
+       "SHFT",
+       "G",
+       "YTDG",
+       "A",
+       "S",
+       "SM",
+       "SOG",
+       "FW",
+       "FL",
+       "FO%",
+       "GV",
+       "PN",
+       "PIM"
+      ],
+      "athletes": [
+       {
+        "stats": [
+         "1",
+         "0",
+         "0",
+         "1",
+         "12:08",
+         "0:00",
+         "2:08",
+         "10:00",
+         "18",
+         "0",
+         "2",
+         "0",
+         "1",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0.0",
+         "0",
+         "0",
+         "0"
+        ],
+        "athlete": {
+         "displayName": "Connor Brown",
+         "shortName": "C. Brown",
+         "position": {
+          "$ref": "http://sports.core.api.espn.pvt/v2/sports/hockey/leagues/nhl/positions/3?lang=en&region=us",
+          "id": "3",
+          "name": "Right Wing",
+          "displayName": "Right Wing",
+          "abbreviation": "RW",
+          "leaf": true,
+          "parent": {
+           "$ref": "http://sports.core.api.espn.pvt/v2/sports/hockey/leagues/nhl/positions/20?lang=en&region=us"
+          }
+         }
+        }
+       },
+       {
+        "stats": [
+         "0",
+         "0",
+         "3",
+         "-1",
+         "22:22",
+         "2:00",
+         "0:00",
+         "20:22",
+         "26",
+         "0",
+         "10",
+         "0",
+         "0",
+         "2",
+         "0",
+         "16",
+         "7",
+         "69.6",
+         "2",
+         "0",
+         "0"
+        ],
+        "athlete": {
+         "displayName": "Leon Draisaitl",
+         "shortName": "L. Draisaitl",
+         "position": {
+          "$ref": "http://sports.core.api.espn.pvt/v2/sports/hockey/leagues/nhl/positions/1?lang=en&region=us",
+          "id": "1",
+          "name": "Center",
+          "displayName": "Center",
+          "abbreviation": "C",
+          "leaf": true,
+          "parent": {
+           "$ref": "http://sports.core.api.espn.pvt/v2/sports/hockey/leagues/nhl/positions/20?lang=en&region=us"
+          }
+         }
+        }
+       }
+      ]
+     },
+     {
+      "name": "defenses",
+      "labels": [
+       "BS",
+       "HT",
+       "TK",
+       "+/-",
+       "TOI",
+       "PPTOI",
+       "SHTOI",
+       "ESTOI",
+       "SHFT",
+       "G",
+       "YTDG",
+       "A",
+       "S",
+       "SM",
+       "SOG",
+       "FW",
+       "FL",
+       "FO%",
+       "GV",
+       "PN",
+       "PIM"
+      ],
+      "athletes": [
+       {
+        "stats": [
+         "3",
+         "1",
+         "0",
+         "0",
+         "27:43",
+         "2:00",
+         "0:20",
+         "25:23",
+         "26",
+         "0",
+         "6",
+         "0",
+         "5",
+         "4",
+         "0",
+         "0",
+         "0",
+         "0.0",
+         "2",
+         "1",
+         "2"
+        ],
+        "athlete": {
+         "displayName": "Evan Bouchard",
+         "shortName": "E. Bouchard",
+         "position": {
+          "$ref": "http://sports.core.api.espn.pvt/v2/sports/hockey/leagues/nhl/positions/4?lang=en&region=us",
+          "id": "4",
+          "name": "Defense",
+          "displayName": "Defense",
+          "abbreviation": "D",
+          "leaf": true,
+          "parent": {
+           "$ref": "http://sports.core.api.espn.pvt/v2/sports/hockey/leagues/nhl/positions/27?lang=en&region=us"
+          }
+         }
+        }
+       },
+       {
+        "stats": [
+         "1",
+         "0",
+         "0",
+         "0",
+         "14:37",
+         "0:00",
+         "1:50",
+         "12:47",
+         "22",
+         "0",
+         "2",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0",
+         "0.0",
+         "0",
+         "0",
+         "0"
+        ],
+        "athlete": {
+         "displayName": "Philip Broberg",
+         "shortName": "P. Broberg",
+         "position": {
+          "$ref": "http://sports.core.api.espn.pvt/v2/sports/hockey/leagues/nhl/positions/4?lang=en&region=us",
+          "id": "4",
+          "name": "Defense",
+          "displayName": "Defense",
+          "abbreviation": "D",
+          "leaf": true,
+          "parent": {
+           "$ref": "http://sports.core.api.espn.pvt/v2/sports/hockey/leagues/nhl/positions/27?lang=en&region=us"
+          }
+         }
+        }
+       }
+      ]
+     },
+     {
+      "name": "skaters",
+      "labels": [
+       "BS",
+       "HT",
+       "TK",
+       "+/-",
+       "TOI",
+       "PPTOI",
+       "SHTOI",
+       "ESTOI",
+       "SHFT",
+       "G",
+       "YTDG",
+       "A",
+       "S",
+       "SM",
+       "SOG",
+       "FW",
+       "FL",
+       "FO%",
+       "GV",
+       "PN",
+       "PIM"
+      ],
+      "athletes": []
+     },
+     {
+      "name": "goalies",
+      "labels": [
+       "GA",
+       "SA",
+       "SOS",
+       "SOSA",
+       "SV",
+       "SV%",
+       "ESSV",
+       "PPSV",
+       "SHSV",
+       "TOI",
+       "YTDG",
+       "PIM"
+      ],
+      "athletes": [
+       {
+        "stats": [
+         "2",
+         "21",
+         "0",
+         "0",
+         "19",
+         ".905",
+         "16",
+         "3",
+         "0",
+         "58:51",
+         "0",
+         "0"
+        ],
+        "athlete": {
+         "displayName": "Stuart Skinner",
+         "shortName": "S. Skinner",
+         "position": {
+          "$ref": "http://sports.core.api.espn.pvt/v2/sports/hockey/leagues/nhl/positions/5?lang=en&region=us",
+          "id": "5",
+          "name": "Goaltender",
+          "displayName": "Goaltender",
+          "abbreviation": "G",
+          "leaf": false
+         }
+        }
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "team": {
+     "id": "26",
+     "abbreviation": "FLA"
+    },
+    "statistics": [
+     {
+      "name": "forwards",
+      "labels": [
+       "BS",
+       "HT",
+       "TK",
+       "+/-",
+       "TOI",
+       "PPTOI",
+       "SHTOI",
+       "ESTOI",
+       "SHFT",
+       "G",
+       "YTDG",
+       "A",
+       "S",
+       "SM",
+       "SOG",
+       "FW",
+       "FL",
+       "FO%",
+       "GV",
+       "PN",
+       "PIM"
+      ],
+      "athletes": [
+       {
+        "stats": [
+         "1",
+         "1",
+         "3",
+         "1",
+         "20:21",
+         "1:59",
+         "0:35",
+         "17:47",
+         "26",
+         "0",
+         "8",
+         "0",
+         "4",
+         "0",
+         "0",
+         "10",
+         "2",
+         "83.3",
+         "0",
+         "0",
+         "0"
+        ],
+        "athlete": {
+         "displayName": "Aleksander Barkov",
+         "shortName": "A. Barkov",
+         "position": {
+          "$ref": "http://sports.core.api.espn.pvt/v2/sports/hockey/leagues/nhl/positions/1?lang=en&region=us",
+          "id": "1",
+          "name": "Center",
+          "displayName": "Center",
+          "abbreviation": "C",
+          "leaf": true,
+          "parent": {
+           "$ref": "http://sports.core.api.espn.pvt/v2/sports/hockey/leagues/nhl/positions/20?lang=en&region=us"
+          }
+         }
+        }
+       },
+       {
+        "stats": [
+         "1",
+         "3",
+         "0",
+         "1",
+         "17:50",
+         "2:01",
+         "0:00",
+         "15:49",
+         "26",
+         "0",
+         "7",
+         "0",
+         "3",
+         "3",
+         "0",
+         "3",
+         "5",
+         "37.5",
+         "2",
+         "0",
+         "0"
+        ],
+        "athlete": {
+         "displayName": "Sam Bennett",
+         "shortName": "S. Bennett",
+         "position": {
+          "$ref": "http://sports.core.api.espn.pvt/v2/sports/hockey/leagues/nhl/positions/1?lang=en&region=us",
+          "id": "1",
+          "name": "Center",
+          "displayName": "Center",
+          "abbreviation": "C",
+          "leaf": true,
+          "parent": {
+           "$ref": "http://sports.core.api.espn.pvt/v2/sports/hockey/leagues/nhl/positions/20?lang=en&region=us"
+          }
+         }
+        }
+       }
+      ]
+     },
+     {
+      "name": "defenses",
+      "labels": [
+       "BS",
+       "HT",
+       "TK",
+       "+/-",
+       "TOI",
+       "PPTOI",
+       "SHTOI",
+       "ESTOI",
+       "SHFT",
+       "G",
+       "YTDG",
+       "A",
+       "S",
+       "SM",
+       "SOG",
+       "FW",
+       "FL",
+       "FO%",
+       "GV",
+       "PN",
+       "PIM"
+      ],
+      "athletes": [
+       {
+        "stats": [
+         "2",
+         "2",
+         "0",
+         "-1",
+         "23:04",
+         "0:37",
+         "1:25",
+         "21:02",
+         "24",
+         "0",
+         "1",
+         "0",
+         "0",
+         "1",
+         "0",
+         "0",
+         "0",
+         "0.0",
+         "0",
+         "0",
+         "0"
+        ],
+        "athlete": {
+         "displayName": "Aaron Ekblad",
+         "shortName": "A. Ekblad",
+         "position": {
+          "$ref": "http://sports.core.api.espn.pvt/v2/sports/hockey/leagues/nhl/positions/4?lang=en&region=us",
+          "id": "4",
+          "name": "Defense",
+          "displayName": "Defense",
+          "abbreviation": "D",
+          "leaf": true,
+          "parent": {
+           "$ref": "http://sports.core.api.espn.pvt/v2/sports/hockey/leagues/nhl/positions/27?lang=en&region=us"
+          }
+         }
+        }
+       },
+       {
+        "stats": [
+         "0",
+         "5",
+         "0",
+         "1",
+         "16:37",
+         "2:01",
+         "0:00",
+         "14:36",
+         "21",
+         "0",
+         "2",
+         "0",
+         "0",
+         "1",
+         "0",
+         "0",
+         "0",
+         "0.0",
+         "0",
+         "0",
+         "0"
+        ],
+        "athlete": {
+         "displayName": "Oliver Ekman-Larsson",
+         "shortName": "O. Ekman-Larsson",
+         "position": {
+          "$ref": "http://sports.core.api.espn.pvt/v2/sports/hockey/leagues/nhl/positions/4?lang=en&region=us",
+          "id": "4",
+          "name": "Defense",
+          "displayName": "Defense",
+          "abbreviation": "D",
+          "leaf": true,
+          "parent": {
+           "$ref": "http://sports.core.api.espn.pvt/v2/sports/hockey/leagues/nhl/positions/27?lang=en&region=us"
+          }
+         }
+        }
+       }
+      ]
+     },
+     {
+      "name": "skaters",
+      "labels": [
+       "BS",
+       "HT",
+       "TK",
+       "+/-",
+       "TOI",
+       "PPTOI",
+       "SHTOI",
+       "ESTOI",
+       "SHFT",
+       "G",
+       "YTDG",
+       "A",
+       "S",
+       "SM",
+       "SOG",
+       "FW",
+       "FL",
+       "FO%",
+       "GV",
+       "PN",
+       "PIM"
+      ],
+      "athletes": []
+     },
+     {
+      "name": "goalies",
+      "labels": [
+       "GA",
+       "SA",
+       "SOS",
+       "SOSA",
+       "SV",
+       "SV%",
+       "ESSV",
+       "PPSV",
+       "SHSV",
+       "TOI",
+       "YTDG",
+       "PIM"
+      ],
+      "athletes": [
+       {
+        "stats": [
+         "1",
+         "24",
+         "0",
+         "0",
+         "23",
+         ".958",
+         "21",
+         "2",
+         "0",
+         "60:00",
+         "0",
+         "0"
+        ],
+        "athlete": {
+         "displayName": "Sergei Bobrovsky",
+         "shortName": "S. Bobrovsky",
+         "position": {
+          "$ref": "http://sports.core.api.espn.pvt/v2/sports/hockey/leagues/nhl/positions/5?lang=en&region=us",
+          "id": "5",
+          "name": "Goaltender",
+          "displayName": "Goaltender",
+          "abbreviation": "G",
+          "leaf": false
+         }
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "plays": [
+  {
+   "text": "Carter Verhaeghe Goal (11) Tip-In, assists: Evan Rodrigues (8), Anton Lundell (14)",
+   "period": {
+    "number": 1,
+    "displayValue": "1st"
+   },
+   "clock": {
+    "displayValue": "4:27"
+   },
+   "awayScore": 0,
+   "homeScore": 1,
+   "scoringPlay": true,
+   "type": {
+    "id": "505",
+    "text": "Goal",
+    "abbreviation": "goal"
+   },
+   "team": {
+    "id": "26"
+   }
+  },
+  {
+   "text": "Mattias Janmark Goal (4) Wrist Shot, assists: Cody Ceci (3)",
+   "period": {
+    "number": 1,
+    "displayValue": "1st"
+   },
+   "clock": {
+    "displayValue": "6:44"
+   },
+   "awayScore": 1,
+   "homeScore": 1,
+   "scoringPlay": true,
+   "type": {
+    "id": "505",
+    "text": "Goal",
+    "abbreviation": "goal"
+   },
+   "team": {
+    "id": "6"
+   }
+  },
+  {
+   "text": "Start of 1st Period",
+   "period": {
+    "number": 1,
+    "displayValue": "1st"
+   },
+   "clock": {
+    "displayValue": "0:00"
+   },
+   "awayScore": 0,
+   "homeScore": 0,
+   "scoringPlay": false,
+   "type": {
+    "id": "518",
+    "text": "Period Start",
+    "abbreviation": "period-start"
+   },
+   "team": {
+    "id": null
+   }
+  }
+ ],
+ "gameInfo": {
+  "venue": {
+   "fullName": "Amerant Bank Arena",
+   "address": {
+    "city": "Sunrise",
+    "state": "FL",
+    "country": "USA"
+   }
+  },
+  "attendance": 19939
+ }
+}
