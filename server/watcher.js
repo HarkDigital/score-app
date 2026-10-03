@@ -7,6 +7,7 @@
 import { leagueById, dayUrls, parseScoreboard, fallbackUrl, addDays, ymd } from '../espn.js';
 import {
   contentState, activityPlan, activityPayload, gameAlerts, gameMemo, wantsAlert, followsGame, startDue, startPayload, SCHEDULE_LEAD,
+  isAndroid, activityKey, androidCardMessage, androidStartMessage, androidAlertMessage,
 } from './live.js';
 import { prune } from './store.js';
 
@@ -49,7 +50,7 @@ export function pollDelay(games, nowMs) {
   return 15 * MIN;
 }
 
-export function createWatcher({ store, apns, fetchJson: getJson = fetchJson, log = console.log, now = () => Date.now() }) {
+export function createWatcher({ store, apns, fcm = null, fetchJson: getJson = fetchJson, log = console.log, now = () => Date.now() }) {
   const nextFetch = new Map();
   let running = false;
 
@@ -70,6 +71,16 @@ export function createWatcher({ store, apns, fetchJson: getJson = fetchJson, log
     return { ok: result.status === 200, dead: result.dead };
   }
 
+  // The Android app's messages, through Firebase (or logged without a key).
+  async function sendAndroid(token, message) {
+    if (!fcm) {
+      log(`dry run android ${message.data.type} ${token.slice(0, 8)}… ${JSON.stringify(message.data)}`);
+      return { ok: true, dead: false };
+    }
+    const result = await fcm.send(token, message);
+    return { ok: result.ok, dead: result.dead };
+  }
+
   async function handleGame(league, game) {
     const { data } = store;
     const key = `${league.id}:${game.id}`;
@@ -77,13 +88,17 @@ export function createWatcher({ store, apns, fetchJson: getJson = fetchJson, log
     data.games[key] = gameMemo(game, league, now());
     const nowSec = Math.floor(now() / 1000);
 
-    for (const [token, card] of Object.entries(data.activities)) {
+    for (const [key, card] of Object.entries(data.activities)) {
       if (card.league !== league.id || card.eventId !== game.id) continue;
       const state = contentState(game, league);
       const plan = activityPlan(card.last, state);
       if (!plan) continue;
-      const result = await push('activity', token, card.env, activityPayload(state, plan, nowSec), plan.priority);
-      if (result.dead || (plan.end && result.ok)) delete data.activities[token];
+      // Entries from before Android keep their token as the key only.
+      const token = card.token ?? key;
+      const result = isAndroid(card)
+        ? await sendAndroid(token, androidCardMessage(card, state, plan))
+        : await push('activity', token, card.env, activityPayload(state, plan, nowSec), plan.priority);
+      if (result.dead || (plan.end && result.ok)) delete data.activities[key];
       else if (result.ok) card.last = state;
     }
 
@@ -96,6 +111,17 @@ export function createWatcher({ store, apns, fetchJson: getJson = fetchJson, log
         continue;
       }
       if (!startDue(game, nowSec)) continue;
+      if (isAndroid(entry)) {
+        // Android has no card token of its own: the phone's token now gets
+        // this game's updates like a card it put up itself.
+        const result = await sendAndroid(entry.token, androidStartMessage(entry.card, game, league));
+        if (result.ok) {
+          const card = { platform: 'android', token: entry.token, env: entry.env, league: league.id, eventId: game.id, start: entry.start };
+          data.activities[activityKey(card)] = { ...card, createdAt: now(), last: contentState(game, league) };
+        }
+        if (result.ok || result.dead) delete data.scheduled[id];
+        continue;
+      }
       const result = await push('activity', entry.token, entry.env, startPayload(entry.card, game, league, nowSec), 10);
       if (result.ok || result.dead) delete data.scheduled[id];
     }
@@ -107,7 +133,9 @@ export function createWatcher({ store, apns, fetchJson: getJson = fetchJson, log
         const mark = `${token}|${key}|${kind}|${payload.aps.alert.body}`;
         if (data.sent[mark]) continue;
         data.sent[mark] = now();
-        const result = await push('alert', token, device.env, payload);
+        const result = isAndroid(device)
+          ? await sendAndroid(token, androidAlertMessage(payload))
+          : await push('alert', token, device.env, payload);
         if (result.dead) delete data.devices[token];
       }
     }

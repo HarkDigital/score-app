@@ -24,6 +24,20 @@
 
         </activity>
 
+        <!-- The push server's card updates and team alerts (Firebase). -->
+        <service
+            android:name=".FcmService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- A Lock Screen card swiped away. -->
+        <receiver
+            android:name=".CardDismissedReceiver"
+            android:exported="false" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -40,4 +54,6 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- The site's haptic taps (navigator.vibrate) on button presses. -->
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- Lock Screen cards and team alerts (asked for on Android 13 and later). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 </manifest>

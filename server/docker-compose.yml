@@ -15,11 +15,12 @@ services:
       DATA_DIR: /data
       APNS_KEY_PATH: /secrets/apns.p8
       APNS_BUNDLE_ID: digital.hark.scores
+      FCM_ACCOUNT_PATH: /secrets/fcm.json # Android; a dry run without it
     env_file: .env # APNS_KEY_ID and APNS_TEAM_ID
     volumes:
       - ./app:/app:ro
       - ./data:/data
-      - ./secrets/apns.p8:/secrets/apns.p8:ro
+      - ./secrets:/secrets:ro
     mem_limit: 256m
     logging:
       driver: json-file

@@ -7,7 +7,9 @@ import {
   summaryUrl, scheduleUrls, parseSummary, parseSchedule, lockScreenCard, canShowOnLockScreen, LOCK_LEAD_MINUTES,
 } from './details.js';
 import { ICONS, getJson, TROUBLE, oddsHtml, logoHtml, emptyState, errorState, formatClock, esc } from './ui.js';
-import { inApp, nativeInfo, showOnLockScreen, scheduleOnLockScreen, removeFromLockScreen, enableAlerts } from './native.js';
+import {
+  inApp, appPlatform, nativeInfo, showOnLockScreen, scheduleOnLockScreen, removeFromLockScreen, enableAlerts,
+} from './native.js';
 
 export const gameHref = (leagueId, id) => `#/game/${leagueId}/${encodeURIComponent(id)}`;
 export const teamHref = (leagueId, id) => `#/team/${leagueId}/${encodeURIComponent(id)}`;
@@ -36,7 +38,7 @@ const page = {
 };
 const root = () => document.getElementById('page');
 
-// iPhone app only: what the app says about Live Activities and alerts, and
+// The apps only: what the app says about Lock Screen cards and alerts, and
 // the state of the game page's Lock Screen card and the team page's bell.
 const native = { info: null, busy: false, lockError: '', alertNote: '', alertsOpen: false };
 
@@ -238,7 +240,7 @@ function gameHtml(game, league, id) {
   return sections.join('');
 }
 
-// iPhone app only: a toggle on every game page that hasn't finished. A game
+// The apps only: a toggle on every game page that hasn't finished. A game
 // that's on or starts within 15 minutes goes on the Lock Screen and in the
 // Dynamic Island now; a later one is scheduled, and the push server puts it
 // up 15 minutes before the start. Several games can be up at once.
@@ -258,10 +260,14 @@ function lockHtml(game, league, id) {
   if (!showing && !scheduled && (game.state === 'post' || TROUBLE.test(game.statusName) || (!now && !info.canSchedule))) return '';
   const on = showing || scheduled;
   let sub;
+  // Android has no Dynamic Island: the card is a live notification.
+  const where = appPlatform() === 'android'
+    ? 'Live score on your Lock Screen and in your notifications.'
+    : 'Live score on your Lock Screen and in the Dynamic Island.';
   if (native.lockError) sub = native.lockError;
-  else if (showing) sub = 'Live score on your Lock Screen and in the Dynamic Island.';
+  else if (showing) sub = where;
   else if (scheduled) sub = `Appears on your Lock Screen ${LOCK_LEAD_MINUTES} minutes before the start.`;
-  else if (now) sub = 'Live score on your Lock Screen and in the Dynamic Island.';
+  else if (now) sub = where;
   else sub = `Turn on and it appears ${LOCK_LEAD_MINUTES} minutes before the start.`;
   return `
     <button class="card ext-link lock-card${on ? ' on' : ''}" role="switch" aria-checked="${on}" data-lock${native.busy ? ' disabled' : ''}>
@@ -286,7 +292,8 @@ async function toggleLock() {
   else result = await scheduleOnLockScreen(lockScreenCard(data, route.league, route.id));
   native.busy = false;
   if (!result?.ok) {
-    native.lockError = showing || scheduled ? "Couldn't turn it off. Try again." : "Couldn't add it. Check that Live Activities are on for Phade Scores in Settings.";
+    const setting = appPlatform() === 'android' ? 'notifications are' : 'Live Activities are';
+    native.lockError = showing || scheduled ? "Couldn't turn it off. Try again." : `Couldn't add it. Check that ${setting} on for Phade Scores in Settings.`;
   }
   native.info = await nativeInfo();
   render();
@@ -465,7 +472,7 @@ function teamHtml(data, league) {
   return head + list('Live', live, 'in') + list('Upcoming', upcoming, 'pre') + list('Results', results);
 }
 
-// iPhone app only: per followed team, alerts when its games start, when
+// The apps only: per followed team, alerts when its games start, when
 // either side scores and when they end. The bell opens the three switches.
 function alertsButton(league, team, following) {
   if (!inApp() || !following) return '';

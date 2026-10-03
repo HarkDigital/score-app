@@ -1,0 +1,62 @@
+package digital.hark.scores;
+
+import androidx.annotation.NonNull;
+import com.google.firebase.messaging.FirebaseMessagingService;
+import com.google.firebase.messaging.RemoteMessage;
+import java.util.Map;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+// The push server's messages (server/live.js android*Message), which wake the
+// app even when it isn't open:
+//   update / end: a card's latest or final state {league, eventId, state}
+//   start:        a scheduled card's time has come {card, state}
+//   alert:        a team alert {title, body, route}
+// Runs on a background thread, so logos can download here.
+public class FcmService extends FirebaseMessagingService {
+
+    @Override
+    public void onNewToken(@NonNull String token) {
+        Store.setToken(this, token);
+        // The server keys everything by token: tell it again under the new one.
+        Push.WORK.execute(() -> Push.syncAll(getApplicationContext(), token));
+    }
+
+    @Override
+    public void onMessageReceived(@NonNull RemoteMessage message) {
+        Map<String, String> data = message.getData();
+        String type = data.get("type");
+        if (type == null) return;
+        try {
+            switch (type) {
+                case "update":
+                case "end": {
+                    String league = data.get("league");
+                    String eventId = data.get("eventId");
+                    boolean shown = LiveCards.update(this, league, eventId, new JSONObject(data.get("state")), "end".equals(type));
+                    if (!shown) stop(league, eventId);
+                    break;
+                }
+                case "start": {
+                    JSONObject card = new JSONObject(data.get("card"));
+                    if (!LiveCards.start(this, card, new JSONObject(data.get("state")))) stop(card.optString("league"), card.optString("eventId"));
+                    break;
+                }
+                case "alert":
+                    Alerts.show(this, data.get("title"), data.get("body"), data.get("route"));
+                    break;
+                default:
+                    break;
+            }
+        } catch (JSONException | NullPointerException ignored) {
+            // a message from a newer server
+        }
+    }
+
+    // An update for a card this phone no longer has (turned off while the
+    // server was unreachable): ask the server to stop.
+    private void stop(String league, String eventId) {
+        String token = Store.token(this);
+        if (token != null && league != null && eventId != null) Push.forget(getApplicationContext(), token, league, eventId);
+    }
+}

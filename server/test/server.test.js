@@ -111,7 +111,7 @@ test('requests are validated', () => {
   assert.equal(parseActivity({ token: TOKEN, env: 'staging', league: 'nfl', eventId: '1' }), null);
   assert.equal(parseActivity({ token: TOKEN, env: 'sandbox', league: 'nfl', eventId: '1; drop' }), null);
   assert.deepEqual(parseDevice({ env: 'sandbox', teams: [{ league: 'nfl', id: 21, start: true, score: true }] }),
-    { env: 'sandbox', teams: [{ league: 'nfl', id: '21', start: true, score: true, end: false }] });
+    { platform: 'ios', env: 'sandbox', teams: [{ league: 'nfl', id: '21', start: true, score: true, end: false }] });
   // An early build sends bare teams: starts and finals.
   assert.deepEqual(parseDevice({ env: 'sandbox', teams: [{ league: 'nfl', id: '21' }] }).teams[0], { league: 'nfl', id: '21', start: true, score: false, end: true });
   assert.deepEqual(parseDevice({ env: 'sandbox', teams: [{ league: 'nfl', id: '21', start: false }] }).teams, [], 'all switches off is no team');
