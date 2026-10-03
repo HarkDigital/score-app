@@ -1,5 +1,5 @@
 // The iPhone app's native features: the lock-screen card (a Live Activity),
-// team alerts and haptics. The app's ViewController installs a message handler,
+// team alerts and haptics (the Android app only has haptics). The app's ViewController installs a message handler,
 // window.webkit.messageHandlers.phadeScores, whose postMessage returns a
 // promise. On the website it doesn't exist, every call here resolves to null,
 // and the pages show none of these controls. No Capacitor JS involved.
@@ -38,9 +38,20 @@ export const enableAlerts = () => call('enableAlerts');
 // to the push server with its device token.
 export const setAlertTeams = (teams) => call('setAlertTeams', { teams });
 
+// The Android app is the same site in a WebView with no bridge; it adds
+// "PhadeScoresAndroid" to its user agent (capacitor.config.json).
+export const inAndroidApp = () => /PhadeScoresAndroid/.test(navigator.userAgent);
+
+// Android's haptics: a short buzz (ms) per style.
+const BUZZ = { selection: 6, light: 10, medium: 18 };
+
 // A tap of the haptic engine: 'selection' (tabs, pickers, switches), 'light'
 // (buttons) or 'medium' (pull to refresh arming). Fire and forget; silent on
-// the website and in app builds before 7, which don't know the action.
+// the website and in iPhone builds before 7, which don't know the action.
 export function haptic(style = 'light') {
+  if (inAndroidApp()) {
+    navigator.vibrate?.(BUZZ[style] ?? BUZZ.light);
+    return;
+  }
   call('haptic', { style });
 }

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Phade's near-black, behind everything until the site paints. -->
+    <color name="background">#0A0A0A</color>
+    <color name="colorPrimary">#0A0A0A</color>
+    <color name="colorPrimaryDark">#0A0A0A</color>
+    <color name="colorAccent">#46BB93</color>
+</resources>

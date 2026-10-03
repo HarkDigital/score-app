@@ -6,3 +6,7 @@ server/data/
 server/.env
 server/secrets/
 *.p8
+
+# Built Android app for testers (npm run android:apk)
+dist/
+*.jks

@@ -2,7 +2,7 @@
   "name": "score-app",
   "version": "1.0.0",
   "private": true,
-  "description": "Ad-free live scores, as a home-screen web app and an iPhone app.",
+  "description": "Ad-free live scores, as a home-screen web app and iPhone and Android apps.",
   "type": "module",
   "scripts": {
     "start": "npx --yes serve -l 8080 .",
@@ -10,9 +10,14 @@
     "ios:sync": "cap sync ios",
     "ios:open": "cap open ios",
     "ios:bump": "node scripts/bump-build.js",
-    "push:deploy": "bash server/deploy.sh"
+    "push:deploy": "bash server/deploy.sh",
+    "android:sync": "cap sync android",
+    "android:open": "cap open android",
+    "android:icons": "node scripts/android-icons.js",
+    "android:apk": "node scripts/android-apk.js"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.2",
     "@capacitor/core": "^8.5.2",
     "@capacitor/ios": "^8.5.2"
   },

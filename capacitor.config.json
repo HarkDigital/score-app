@@ -5,11 +5,23 @@
   "backgroundColor": "#0a0a0a",
   "server": {
     "url": "https://harkdigital.github.io/score-app/",
-    "allowNavigation": ["harkdigital.github.io"],
+    "allowNavigation": [
+      "harkdigital.github.io"
+    ],
     "errorPath": "index.html"
   },
   "ios": {
     "contentInset": "never",
     "backgroundColor": "#0a0a0a"
+  },
+  "android": {
+    "backgroundColor": "#0a0a0a",
+    "appendUserAgent": "PhadeScoresAndroid"
+  },
+  "plugins": {
+    "SystemBars": {
+      "style": "DARK",
+      "initialViewportFitValueHint": "cover"
+    }
   }
 }
