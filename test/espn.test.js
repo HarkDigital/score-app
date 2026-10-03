@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import {
   LEAGUES, scoreboardUrl, parseScoreboard, groupGames, refreshDelay,
   statusLabel, formatStart, dayLabel, weekLabel, weekInfo, adjacentWeek, teamColor, fallbackUrl, parseOdds,
-  lineSteamUrl,
+  lineSteamUrl, leagueFilter, dayUrls, mergeGames,
 } from '../espn.js';
 
 const league = (id) => LEAGUES.find((l) => l.id === id);
@@ -33,6 +33,42 @@ test('weekly leagues ask for the current week unless one is picked', () => {
   const byDate = new URL(scoreboardUrl(league('nfl'), { date: new Date(2026, 9, 4), byDate: true }));
   assert.equal(byDate.searchParams.get('dates'), '20261004');
   assert.equal(byDate.searchParams.get('week'), null);
+});
+
+test('college football filters: Top 25, FBS, FCS and every conference', () => {
+  const ncaaf = league('ncaaf');
+  const groups = (id, opts = {}) => new URL(scoreboardUrl(ncaaf, { ...opts, groups: leagueFilter(ncaaf, id).groups })).searchParams.get('groups');
+  // The default is the league's own board, All FBS.
+  assert.equal(leagueFilter(ncaaf).id, '80');
+  assert.equal(leagueFilter(ncaaf, 'gone').id, '80');
+  assert.equal(groups('80'), '80');
+  assert.equal(groups('81'), '81');
+  assert.equal(groups('8'), '8');
+  // Top 25 is ESPN's board with no groups at all.
+  assert.equal(groups('top25'), null);
+  const week = new URL(scoreboardUrl(ncaaf, { week: { seasonType: 2, week: 5 }, groups: '5' }));
+  assert.deepEqual([week.searchParams.get('groups'), week.searchParams.get('week'), week.searchParams.get('limit')], ['5', '5', '300']);
+  // Sections for the select, conferences sorted, ids unique.
+  assert.deepEqual(ncaaf.filters.map((s) => s.label), ['', 'FBS conferences', 'FCS conferences']);
+  const options = ncaaf.filters.flatMap((s) => s.options);
+  assert.equal(new Set(options.map((o) => o.id)).size, options.length);
+  const fcs = ncaaf.filters[2].options;
+  assert.ok(fcs.every((o) => o.division === '81'));
+  assert.deepEqual(fcs.map((o) => o.label), [...fcs.map((o) => o.label)].sort((a, b) => a.localeCompare(b)));
+  assert.equal(options.find((o) => o.label === 'SEC').groups, '8');
+  // Other leagues have none.
+  assert.equal(leagueFilter(league('nfl'), '8'), null);
+  assert.equal(new URL(scoreboardUrl(league('nfl'), {})).searchParams.get('groups'), null);
+});
+
+test('a day of every college football game reads the FBS and FCS boards', () => {
+  const date = new Date(2026, 9, 3);
+  assert.deepEqual(dayUrls(league('ncaaf'), date).map((u) => new URL(u).searchParams.get('groups')), ['80', '81']);
+  assert.ok(dayUrls(league('ncaaf'), date).every((u) => new URL(u).searchParams.get('dates') === '20261003'));
+  assert.equal(dayUrls(league('nfl'), date).length, 1);
+  // A game between an FBS and an FCS team is on both boards; it shows once.
+  const g = (id) => ({ id });
+  assert.deepEqual(mergeGames([{ games: [g('1'), g('2')] }, { games: [g('2'), g('3')] }]).map((x) => x.id), ['1', '2', '3']);
 });
 
 test('team colors are normalized and anything odd is ignored', () => {

@@ -1,8 +1,10 @@
 import {
-  LEAGUES, leagueById, scoreboardUrl, parseScoreboard, groupGames, refreshDelay,
+  LEAGUES, leagueById, leagueFilter, scoreboardUrl, dayUrls, mergeGames, parseScoreboard, groupGames, refreshDelay,
   statusLabel, dayLabel, addDays, weekLabel, weekInfo, adjacentWeek,
 } from './espn.js';
-import { standingsUrl, parseStandings, rankingsUrl, parseRankings, teamsFromStandings } from './standings.js';
+import {
+  standingsUrl, filterStandingsGroup, teamListUrls, parseStandings, rankingsUrl, parseRankings, teamsFromStandings,
+} from './standings.js';
 import {
   loadFollowed, saveFollowed, isFollowed, toggleFollowed, followedLeagues, countFollowed, gamesForTeams,
   alertsFor, setAlerts, alertTeams,
@@ -18,12 +20,15 @@ import { inApp, setAlertTeams } from './native.js';
 
 const MINE = { id: 'mine', label: 'My Teams', mine: true };
 const LEAGUE_KEY = 'scores.league';
+const FILTER_KEY = 'scores.filters';
 const storage = (() => { try { return window.localStorage; } catch { return null; } })();
 
 let followed = loadFollowed(storage);
+const startLeague = initialLeague();
 
 const view = {
-  league: initialLeague(),
+  league: startLeague,
+  filter: savedFilter(startLeague),  // college football's conference or division, else null
   mode: 'scores',  // 'scores' | 'standings' | 'rankings'
   dayOffset: 0,    // days from today, so "Today" survives midnight
   week: null,      // weekly leagues: null means the current week
@@ -76,17 +81,17 @@ async function fetchView() {
   const { league, mode } = view;
   const date = addDays(new Date(), view.dayOffset);
   if (league.mine) return fetchMyTeams(date);
-  if (mode === 'standings') return parseStandings(await getJson(standingsUrl(league)), league);
+  if (mode === 'standings') return parseStandings(await getJson(standingsUrl(league, filterStandingsGroup(view.filter))), league);
   if (mode === 'rankings') return parseRankings(await getJson(rankingsUrl(league)));
-  return parseScoreboard(await getJson(scoreboardUrl(league, { date, week: view.week })), league);
+  return parseScoreboard(await getJson(scoreboardUrl(league, { date, week: view.week, groups: view.filter?.groups })), league);
 }
 
 // One scoreboard per league that has a followed team, filtered to their games.
 async function fetchMyTeams(date) {
   const leagues = followedLeagues(followed).map(leagueById);
   const results = await Promise.allSettled(leagues.map(async (league) => {
-    const board = parseScoreboard(await getJson(scoreboardUrl(league, { date, byDate: true })), league);
-    return gamesForTeams(board.games, followed, league.id).map((game) => ({ ...game, league }));
+    const boards = await Promise.all(dayUrls(league, date).map(async (url) => parseScoreboard(await getJson(url), league)));
+    return gamesForTeams(mergeGames(boards), followed, league.id).map((game) => ({ ...game, league }));
   }));
   const failed = leagues.filter((_, i) => results[i].status === 'rejected');
   if (leagues.length && failed.length === leagues.length) throw results[0].reason;
@@ -136,7 +141,7 @@ function renderTabs() {
 
 function renderModes() {
   const { league, mode } = view;
-  const key = `${league.id}|${mode}|${followed.map((t) => `${t.league}:${t.id}`).join(',')}`;
+  const key = `${league.id}|${mode}|${view.filter?.id}|${followed.map((t) => `${t.league}:${t.id}`).join(',')}`;
   if (rendered.modes === key) return;
   rendered.modes = key;
   if (league.mine) {
@@ -154,7 +159,24 @@ function renderModes() {
   els.modes.innerHTML = `
     <div class="segmented" role="tablist" aria-label="View">
       ${modes.map(([id, label]) => `<button role="tab" data-mode="${id}" aria-selected="${mode === id}">${label}</button>`).join('')}
-    </div>`;
+    </div>
+    ${view.filter && mode !== 'rankings' ? filterHtml(league, view.filter) : ''}`;
+}
+
+// College football's conference picker: a native select, so the phone shows
+// its own wheel. Sections are FBS and FCS.
+function filterHtml(league, current) {
+  const option = (o) => `<option value="${esc(o.id)}"${o.id === current.id ? ' selected' : ''}>${esc(o.label)}</option>`;
+  return `
+    <label class="filter">
+      <span class="filter-label">Showing</span>
+      <select data-filter aria-label="Conference">
+        ${league.filters.map((s) => (s.label
+          ? `<optgroup label="${esc(s.label)}">${s.options.map(option).join('')}</optgroup>`
+          : s.options.map(option).join(''))).join('')}
+      </select>
+      <span class="filter-chevron" aria-hidden="true">${ICONS.down}</span>
+    </label>`;
 }
 
 const HALF = 3;               // days either side of the selected one
@@ -309,7 +331,8 @@ function gamesHtml(games) {
     }
     return emptyState({
       icon: ICONS.calendar,
-      title: `No ${league.label} games`,
+      // "No SEC games", "No FCS games", "No Top 25 games".
+      title: `No ${view.filter ? view.filter.label.replace(/^All /, '') : league.label} games`,
       text: league.weekly ? 'Nothing scheduled this week. Try another week.' : `Nothing scheduled ${dayPhrase(view.dayOffset)}. Try another day.`,
     });
   }
@@ -480,6 +503,23 @@ function initialLeague() {
   return leagueById(saved) ?? (followed.length ? MINE : LEAGUES[0]);
 }
 
+// The filter last picked for each league that has them: { ncaaf: '8' }.
+function savedFilters() {
+  try { return JSON.parse(readStorage(FILTER_KEY)) ?? {}; } catch { return {}; }
+}
+
+function savedFilter(league) {
+  return leagueFilter(league, savedFilters()[league.id]);
+}
+
+function selectFilter(id) {
+  const filter = leagueFilter(view.league, id);
+  if (!filter || filter.id === view.filter?.id) return;
+  writeStorage(FILTER_KEY, JSON.stringify({ ...savedFilters(), [view.league.id]: filter.id }));
+  // Same week, other games.
+  changeView({ filter });
+}
+
 // ---- Team picker ----
 
 const picker = { open: false, league: null, teams: new Map(), failed: new Set(), query: '', changed: false, opener: null };
@@ -565,8 +605,10 @@ async function loadTeams(league) {
   if (picker.teams.has(league.id)) return;
   picker.failed.delete(league.id);
   try {
-    // ESPN's teams list blocks browsers (no CORS header); standings list every team.
-    picker.teams.set(league.id, teamsFromStandings(parseStandings(await getJson(standingsUrl(league)), league)));
+    // ESPN's teams list blocks browsers (no CORS header); standings list every
+    // team (college football's in two: FBS and FCS).
+    const tables = await Promise.all(teamListUrls(league).map(async (url) => parseStandings(await getJson(url), league)));
+    picker.teams.set(league.id, teamsFromStandings({ groups: tables.flatMap((t) => t.groups) }));
   } catch {
     picker.failed.add(league.id);
   }
@@ -594,7 +636,7 @@ function selectLeague(id) {
   writeStorage(LEAGUE_KEY, league.id);
   // Stay on Standings when switching leagues; Rankings only where polls exist.
   const mode = league.mine || (view.mode === 'rankings' && !league.rankings) ? 'scores' : view.mode;
-  changeView({ league, mode, dayOffset: 0, week: null, poll: 0 });
+  changeView({ league, filter: league.mine ? null : savedFilter(league), mode, dayOffset: 0, week: null, poll: 0 });
   els.tabs.querySelector(`[data-league="${league.id}"]`)?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
 }
 
@@ -631,6 +673,10 @@ initPullToRefresh({ refresh: refreshNow, enabled: () => !picker.open });
 
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') closePicker();
+});
+
+document.addEventListener('change', (event) => {
+  if (event.target.matches('select[data-filter]')) selectFilter(event.target.value);
 });
 
 // Don't poll in the background; catch up as soon as the app is looked at again.

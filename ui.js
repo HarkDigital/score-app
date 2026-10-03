@@ -13,6 +13,7 @@ export const ICONS = {
   starLarge: icon(30, STAR_PATH),
   left: icon(16, stroke('M15 5l-7 7 7 7')),
   right: icon(16, stroke('M9 5l7 7-7 7')),
+  down: icon(16, stroke('M5 9l7 7 7-7')),
   plus: icon(16, stroke('M12 5v14M5 12h14')),
   check: icon(16, stroke('M5 12.5l4.5 4.5L19 7.5')),
   calendar: icon(30, stroke('M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM4 10h16M8 3v4M16 3v4')),

@@ -4,7 +4,7 @@
 // ends. Scoreboards are parsed with the app's own espn.js, so the server's
 // scores and statuses read exactly like the app's.
 
-import { leagueById, scoreboardUrl, parseScoreboard, fallbackUrl, addDays, ymd } from '../espn.js';
+import { leagueById, dayUrls, parseScoreboard, fallbackUrl, addDays, ymd } from '../espn.js';
 import { contentState, activityPlan, activityPayload, gameAlerts, gameMemo, wantsAlert, followsGame, startDue, startPayload } from './live.js';
 import { prune } from './store.js';
 
@@ -129,9 +129,12 @@ export function createWatcher({ store, apns, fetchJson: getJson = fetchJson, log
           .filter((a) => a.league === id && a.start).map((a) => a.start * 1000);
         const games = new Map();
         try {
+          // College football: the FBS and the FCS boards.
           for (const day of scoreDays(now(), starts)) {
-            const board = parseScoreboard(await getJson(scoreboardUrl(league, { date: day, byDate: true })), league);
-            for (const g of board.games) games.set(g.id, g);
+            for (const url of dayUrls(league, day)) {
+              const board = parseScoreboard(await getJson(url), league);
+              for (const g of board.games) if (!games.has(g.id)) games.set(g.id, g);
+            }
           }
         } catch (err) {
           log(`espn ${id}: ${err.message}`);
