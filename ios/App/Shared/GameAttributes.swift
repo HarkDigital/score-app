@@ -13,6 +13,8 @@ struct GameAttributes: ActivityAttributes {
         var name: String
         /// ESPN's team color as "#rrggbb", or nil.
         var color: String?
+        /// ESPN's logo URL; the app saves the image for the card (TeamLogos).
+        var logo: String?
     }
 
     struct ContentState: Codable, Hashable {

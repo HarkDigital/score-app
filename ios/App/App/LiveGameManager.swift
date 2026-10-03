@@ -58,6 +58,10 @@ final class LiveGameManager {
             for await activity in Activity<GameAttributes>.activityUpdates {
                 watch(activity)
                 forgetScheduled(league: activity.attributes.league, eventId: activity.attributes.eventId)
+                // Started by the server: make sure its logos are saved, then
+                // redraw it with them.
+                await TeamLogos.fetch([activity.attributes.away.logo, activity.attributes.home.logo])
+                await activity.update(activity.content)
             }
         }
         if #available(iOS 17.2, *) {
@@ -79,6 +83,7 @@ final class LiveGameManager {
 
     func start(_ attributes: GameAttributes, state: GameAttributes.ContentState) async throws {
         if isShowing(league: attributes.league, eventId: attributes.eventId) { return }
+        await TeamLogos.fetch([attributes.away.logo, attributes.home.logo])
         let activity = try Activity.request(
             attributes: attributes,
             content: ActivityContent(state: state, staleDate: nil),
@@ -99,6 +104,10 @@ final class LiveGameManager {
             token = startToken
         }
         guard let token else { return false }
+        // Saved now, while the app is open, so the card has them when the
+        // server puts it up.
+        let logos = ["away", "home"].map { (card[$0] as? [String: Any])?["logo"] as? String }
+        await TeamLogos.fetch(logos)
         forgetScheduled(league: league, eventId: eventId)
         scheduled.append(card)
         await PushServer.schedule(card: card, startToken: token)

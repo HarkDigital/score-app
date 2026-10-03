@@ -7,7 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2A9719EEA73356AF3C89C718 /* TeamLogos.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2FCF94A607CF6B81E955E50 /* TeamLogos.swift */; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
+		30EC46DA05A4BD27CDCB28CF /* TeamLogos+Fetch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117358EB051D58F3B55747B0 /* TeamLogos+Fetch.swift */; };
 		4CF4B3DD67C0203E44BF12FC /* LiveGameActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07F26180E10335C10B7D0657 /* LiveGameActivity.swift */; };
 		4D22ABE92AF431CB00220026 /* CapApp-SPM in Frameworks */ = {isa = PBXBuildFile; productRef = 4D22ABE82AF431CB00220026 /* CapApp-SPM */; };
 		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
@@ -22,6 +24,7 @@
 		687B23748BF430CF51B98310 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 788171CF92305B401BDD6A9E /* Foundation.framework */; };
 		9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9582B6822FE993A50072D4E8 /* SceneDelegate.swift */; };
 		9582B6862FE993A70072D4E8 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9582B6852FE993A70072D4E8 /* ViewController.swift */; };
+		A3A27BD02924B3B67BB46E87 /* TeamLogos.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2FCF94A607CF6B81E955E50 /* TeamLogos.swift */; };
 		CBB30BBBB992233056046366 /* LiveGame.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B27E1A72A21ED387C267816B /* LiveGame.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		ED7CF00701CF430B607F9772 /* PushManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE4ADE72349C28783BE8DAE5 /* PushManager.swift */; };
 		F3A4444DEA819B8F9F2D0CC7 /* GameAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D230136437648D56E96486 /* GameAttributes.swift */; };
@@ -54,6 +57,7 @@
 
 /* Begin PBXFileReference section */
 		07F26180E10335C10B7D0657 /* LiveGameActivity.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveGameActivity.swift; sourceTree = "<group>"; };
+		117358EB051D58F3B55747B0 /* TeamLogos+Fetch.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "TeamLogos+Fetch.swift"; sourceTree = "<group>"; };
 		12D230136437648D56E96486 /* GameAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GameAttributes.swift; sourceTree = "<group>"; };
 		191EECBD56D863D1B1731C45 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
@@ -74,7 +78,9 @@
 		B27E1A72A21ED387C267816B /* LiveGame.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = LiveGame.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9651ECB16DB4ADF4718D0F5 /* App.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		CE4ADE72349C28783BE8DAE5 /* PushManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PushManager.swift; sourceTree = "<group>"; };
+		E2FCF94A607CF6B81E955E50 /* TeamLogos.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TeamLogos.swift; sourceTree = "<group>"; };
 		F731079659A668714277C2BB /* LiveGameManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveGameManager.swift; sourceTree = "<group>"; };
+		FA05088A10B23E604A289EBC /* LiveGame.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = LiveGame.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -102,6 +108,7 @@
 			children = (
 				07F26180E10335C10B7D0657 /* LiveGameActivity.swift */,
 				191EECBD56D863D1B1731C45 /* Info.plist */,
+				FA05088A10B23E604A289EBC /* LiveGame.entitlements */,
 			);
 			name = LiveGame;
 			path = LiveGame;
@@ -146,6 +153,7 @@
 				CE4ADE72349C28783BE8DAE5 /* PushManager.swift */,
 				4BED70E97C26C5161D7E9627 /* NativeBridge.swift */,
 				B9651ECB16DB4ADF4718D0F5 /* App.entitlements */,
+				117358EB051D58F3B55747B0 /* TeamLogos+Fetch.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -154,6 +162,7 @@
 			isa = PBXGroup;
 			children = (
 				12D230136437648D56E96486 /* GameAttributes.swift */,
+				E2FCF94A607CF6B81E955E50 /* TeamLogos.swift */,
 			);
 			name = Shared;
 			path = Shared;
@@ -291,6 +300,8 @@
 				ED7CF00701CF430B607F9772 /* PushManager.swift in Sources */,
 				F88B372F8E4519664160CD34 /* NativeBridge.swift in Sources */,
 				5645404002CB94EC7D67E57A /* GameAttributes.swift in Sources */,
+				A3A27BD02924B3B67BB46E87 /* TeamLogos.swift in Sources */,
+				30EC46DA05A4BD27CDCB28CF /* TeamLogos+Fetch.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -300,6 +311,7 @@
 			files = (
 				4CF4B3DD67C0203E44BF12FC /* LiveGameActivity.swift in Sources */,
 				F3A4444DEA819B8F9F2D0CC7 /* GameAttributes.swift in Sources */,
+				2A9719EEA73356AF3C89C718 /* TeamLogos.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -339,8 +351,9 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = LiveGame/LiveGame.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 72U2ZL3GVM;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = LiveGame/Info.plist;
@@ -478,7 +491,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 72U2ZL3GVM;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
@@ -502,7 +515,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 72U2ZL3GVM;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
@@ -524,8 +537,9 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = LiveGame/LiveGame.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 72U2ZL3GVM;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = LiveGame/Info.plist;

@@ -132,7 +132,8 @@ test('lock-screen card: away and home by side, scores, and a status only when it
   assert.equal(card.eventId, '401547417');
   assert.equal(card.league, 'nfl');
   assert.equal(card.homeFirst, false);
-  assert.deepEqual(card.away, { abbr: away.abbr, name: away.shortName, color: away.color });
+  assert.deepEqual(card.away, { abbr: away.abbr, name: away.shortName, color: away.color, logo: away.logo });
+  assert.match(card.home.logo, /^https:\/\/a\.espncdn\.com\//);
   assert.equal(card.home.abbr, home.abbr);
   assert.equal(card.state.away, away.score);
   assert.equal(card.state.home, home.score);

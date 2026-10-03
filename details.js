@@ -90,7 +90,8 @@ export function lockScreenCard(game, league, eventId) {
   const home = game.teams.find((t) => t.homeAway === 'home') ?? game.teams[league.homeFirst ? 0 : 1];
   const away = game.teams.find((t) => t.homeAway === 'away') ?? game.teams[league.homeFirst ? 1 : 0];
   if (!home || !away) return null;
-  const team = (t) => ({ abbr: t.abbr || t.shortName, name: t.shortName || t.name, color: t.color ?? null });
+  // logo: the app saves it for the card (a Live Activity can't load images).
+  const team = (t) => ({ abbr: t.abbr || t.shortName, name: t.shortName || t.name, color: t.color ?? null, logo: t.logo || null });
   const scheduled = game.state === 'pre' && game.statusName === 'STATUS_SCHEDULED';
   return {
     league: league.id,
