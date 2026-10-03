@@ -1,0 +1,476 @@
+{
+ "team": {
+  "id": "150",
+  "abbreviation": "DUKE",
+  "displayName": "Duke Blue Devils",
+  "color": "00539b",
+  "logo": "https://a.espncdn.com/i/teamlogos/ncaa/500/150.png",
+  "recordSummary": "35-3",
+  "standingSummary": "1st in ACC"
+ },
+ "requestedSeason": {
+  "year": 2026,
+  "type": 2,
+  "name": "Regular Season",
+  "displayName": "2025-26"
+ },
+ "season": {
+  "year": 2026,
+  "type": 4,
+  "name": "Off Season",
+  "displayName": "2025-26",
+  "half": 1
+ },
+ "events": [
+  {
+   "id": "401851179",
+   "date": "2026-03-12T23:00Z",
+   "week": {
+    "number": 19,
+    "text": "Week 19"
+   },
+   "seasonType": {
+    "id": "2",
+    "type": 2,
+    "name": "Regular Season",
+    "abbreviation": "reg"
+   },
+   "timeValid": true,
+   "competitions": [
+    {
+     "id": "401851179",
+     "date": "2026-03-12T23:00Z",
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 2,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      }
+     },
+     "broadcasts": [
+      {
+       "type": {
+        "id": "1",
+        "shortName": "TV"
+       },
+       "market": {
+        "id": "1",
+        "type": "National"
+       },
+       "media": {
+        "shortName": "ESPN"
+       },
+       "lang": "en",
+       "region": "us",
+       "partnered": false
+      }
+     ],
+     "timeValid": true,
+     "competitors": [
+      {
+       "id": "150",
+       "homeAway": "home",
+       "winner": true,
+       "score": {
+        "value": 80.0,
+        "displayValue": "80"
+       },
+       "record": [
+        {
+         "id": "1",
+         "abbreviation": "Game",
+         "displayName": "Record Year To Date",
+         "shortDisplayName": "YTD",
+         "description": "Overall Record",
+         "type": "total",
+         "displayValue": "30-2"
+        },
+        {
+         "id": "9009",
+         "displayName": "CONF",
+         "shortDisplayName": "CONF",
+         "description": "Conference Record",
+         "type": "vsconf",
+         "displayValue": "17-1"
+        }
+       ],
+       "team": {
+        "id": "150",
+        "abbreviation": "DUKE",
+        "displayName": "Duke Blue Devils",
+        "shortDisplayName": "Duke",
+        "logos": [
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/ncaa/500/150.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "default"
+          ],
+          "lastUpdated": "2025-12-19T22:33Z"
+         }
+        ]
+       }
+      },
+      {
+       "id": "52",
+       "homeAway": "away",
+       "winner": false,
+       "score": {
+        "value": 79.0,
+        "displayValue": "79"
+       },
+       "record": [
+        {
+         "id": "1",
+         "abbreviation": "Game",
+         "displayName": "Record Year To Date",
+         "shortDisplayName": "YTD",
+         "description": "Overall Record",
+         "type": "total",
+         "displayValue": "18-15"
+        },
+        {
+         "id": "9009",
+         "displayName": "CONF",
+         "shortDisplayName": "CONF",
+         "description": "Conference Record",
+         "type": "vsconf",
+         "displayValue": "10-8"
+        }
+       ],
+       "team": {
+        "id": "52",
+        "abbreviation": "FSU",
+        "displayName": "Florida State Seminoles",
+        "shortDisplayName": "Florida St",
+        "logos": [
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/ncaa/500/52.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "default"
+          ],
+          "lastUpdated": "2025-12-19T22:33Z"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401851182",
+   "date": "2026-03-14T01:35Z",
+   "week": {
+    "number": 19,
+    "text": "Week 19"
+   },
+   "seasonType": {
+    "id": "2",
+    "type": 2,
+    "name": "Regular Season",
+    "abbreviation": "reg"
+   },
+   "timeValid": true,
+   "competitions": [
+    {
+     "id": "401851182",
+     "date": "2026-03-14T01:35Z",
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 2,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      }
+     },
+     "broadcasts": [
+      {
+       "type": {
+        "id": "1",
+        "shortName": "TV"
+       },
+       "market": {
+        "id": "1",
+        "type": "National"
+       },
+       "media": {
+        "shortName": "ESPN2"
+       },
+       "lang": "en",
+       "region": "us",
+       "partnered": false
+      }
+     ],
+     "timeValid": true,
+     "competitors": [
+      {
+       "id": "150",
+       "homeAway": "home",
+       "winner": true,
+       "score": {
+        "value": 73.0,
+        "displayValue": "73"
+       },
+       "record": [
+        {
+         "id": "1",
+         "abbreviation": "Game",
+         "displayName": "Record Year To Date",
+         "shortDisplayName": "YTD",
+         "description": "Overall Record",
+         "type": "total",
+         "displayValue": "31-2"
+        },
+        {
+         "id": "9009",
+         "displayName": "CONF",
+         "shortDisplayName": "CONF",
+         "description": "Conference Record",
+         "type": "vsconf",
+         "displayValue": "17-1"
+        }
+       ],
+       "team": {
+        "id": "150",
+        "abbreviation": "DUKE",
+        "displayName": "Duke Blue Devils",
+        "shortDisplayName": "Duke",
+        "logos": [
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/ncaa/500/150.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "default"
+          ],
+          "lastUpdated": "2025-12-19T22:33Z"
+         }
+        ]
+       }
+      },
+      {
+       "id": "228",
+       "homeAway": "away",
+       "winner": false,
+       "score": {
+        "value": 61.0,
+        "displayValue": "61"
+       },
+       "record": [
+        {
+         "id": "1",
+         "abbreviation": "Game",
+         "displayName": "Record Year To Date",
+         "shortDisplayName": "YTD",
+         "description": "Overall Record",
+         "type": "total",
+         "displayValue": "24-10"
+        },
+        {
+         "id": "9009",
+         "displayName": "CONF",
+         "shortDisplayName": "CONF",
+         "description": "Conference Record",
+         "type": "vsconf",
+         "displayValue": "12-6"
+        }
+       ],
+       "team": {
+        "id": "228",
+        "abbreviation": "CLEM",
+        "displayName": "Clemson Tigers",
+        "shortDisplayName": "Clemson",
+        "logos": [
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/ncaa/500/228.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "default"
+          ],
+          "lastUpdated": "2025-12-19T22:33Z"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401851183",
+   "date": "2026-03-15T00:40Z",
+   "week": {
+    "number": 19,
+    "text": "Week 19"
+   },
+   "seasonType": {
+    "id": "2",
+    "type": 2,
+    "name": "Regular Season",
+    "abbreviation": "reg"
+   },
+   "timeValid": true,
+   "competitions": [
+    {
+     "id": "401851183",
+     "date": "2026-03-15T00:40Z",
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 2,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      }
+     },
+     "broadcasts": [
+      {
+       "type": {
+        "id": "1",
+        "shortName": "TV"
+       },
+       "market": {
+        "id": "1",
+        "type": "National"
+       },
+       "media": {
+        "shortName": "ESPN"
+       },
+       "lang": "en",
+       "region": "us",
+       "partnered": false
+      }
+     ],
+     "timeValid": true,
+     "competitors": [
+      {
+       "id": "150",
+       "homeAway": "home",
+       "winner": true,
+       "score": {
+        "value": 74.0,
+        "displayValue": "74"
+       },
+       "record": [
+        {
+         "id": "1",
+         "abbreviation": "Game",
+         "displayName": "Record Year To Date",
+         "shortDisplayName": "YTD",
+         "description": "Overall Record",
+         "type": "total",
+         "displayValue": "32-2"
+        },
+        {
+         "id": "9009",
+         "displayName": "CONF",
+         "shortDisplayName": "CONF",
+         "description": "Conference Record",
+         "type": "vsconf",
+         "displayValue": "17-1"
+        }
+       ],
+       "team": {
+        "id": "150",
+        "abbreviation": "DUKE",
+        "displayName": "Duke Blue Devils",
+        "shortDisplayName": "Duke",
+        "logos": [
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/ncaa/500/150.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "default"
+          ],
+          "lastUpdated": "2025-12-19T22:33Z"
+         }
+        ]
+       }
+      },
+      {
+       "id": "258",
+       "homeAway": "away",
+       "winner": false,
+       "score": {
+        "value": 70.0,
+        "displayValue": "70"
+       },
+       "record": [
+        {
+         "id": "1",
+         "abbreviation": "Game",
+         "displayName": "Record Year To Date",
+         "shortDisplayName": "YTD",
+         "description": "Overall Record",
+         "type": "total",
+         "displayValue": "29-5"
+        },
+        {
+         "id": "9009",
+         "displayName": "CONF",
+         "shortDisplayName": "CONF",
+         "description": "Conference Record",
+         "type": "vsconf",
+         "displayValue": "15-3"
+        }
+       ],
+       "team": {
+        "id": "258",
+        "abbreviation": "UVA",
+        "displayName": "Virginia Cavaliers",
+        "shortDisplayName": "Virginia",
+        "logos": [
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/ncaa/500/258.png",
+          "width": 500,
+          "height": 500,
+          "alt": "",
+          "rel": [
+           "full",
+           "default"
+          ],
+          "lastUpdated": "2025-12-19T22:33Z"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

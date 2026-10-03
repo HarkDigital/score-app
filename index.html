@@ -24,9 +24,13 @@
 <body>
   <header class="top">
     <div class="top-inner">
+      <button id="back" class="back-btn" aria-label="Back" hidden>
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <h1 id="page-title" class="page-title"></h1>
       <div class="brand">
         <img src="icons/icon.svg" alt="" width="30" height="30">
-        <h1>Scores</h1>
+        <span class="brand-name">Scores</span>
       </div>
       <button id="refresh" class="icon-btn" aria-label="Refresh">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v4h-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -42,6 +46,7 @@
     <div id="content"></div>
     <p class="credit">Scores, standings and rankings from ESPN.</p>
   </main>
+  <section id="page" class="page"></section>
   <div id="sheet-root"></div>
 </body>
 </html>

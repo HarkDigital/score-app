@@ -1,0 +1,144 @@
+{
+ "header": {
+  "competitions": [
+   {
+    "id": "401862897",
+    "date": "2026-05-30T16:00Z",
+    "status": {
+     "type": {
+      "id": "47",
+      "name": "STATUS_FINAL_PEN",
+      "state": "post",
+      "completed": true,
+      "description": "Final Score - After Penalties",
+      "detail": "FT-Pens",
+      "shortDetail": "FT-Pens"
+     }
+    },
+    "broadcasts": [
+     {
+      "type": {
+       "id": "1",
+       "shortName": "TV"
+      },
+      "market": {
+       "id": "1",
+       "type": "National"
+      },
+      "media": {
+       "shortName": "CBS"
+      },
+      "lang": "en",
+      "region": "us",
+      "isNational": true
+     },
+     {
+      "type": {
+       "id": "4",
+       "shortName": "STREAMING"
+      },
+      "market": {},
+      "media": {
+       "shortName": "Paramount+"
+      },
+      "lang": "en",
+      "region": "us",
+      "isNational": false
+     }
+    ],
+    "competitors": [
+     {
+      "id": "160",
+      "homeAway": "home",
+      "winner": true,
+      "score": "1",
+      "linescores": [
+       {
+        "displayValue": "0"
+       },
+       {
+        "displayValue": "2"
+       },
+       {
+        "displayValue": "-1"
+       },
+       {
+        "displayValue": "0"
+       },
+       {
+        "displayValue": "4"
+       }
+      ],
+      "record": [],
+      "team": {
+       "id": "160",
+       "abbreviation": "PSG",
+       "displayName": "Paris Saint-Germain",
+       "shortDisplayName": "PSG",
+       "name": "Paris Saint-Germain",
+       "color": "011F68",
+       "logos": [
+        {
+         "href": "https://a.espncdn.com/i/teamlogos/soccer/500/160.png",
+         "width": 500,
+         "height": 500,
+         "alt": "",
+         "rel": [
+          "full",
+          "default"
+         ],
+         "lastUpdated": "2019-05-08T16:07Z"
+        }
+       ]
+      }
+     },
+     {
+      "id": "359",
+      "homeAway": "away",
+      "winner": false,
+      "score": "1",
+      "linescores": [
+       {
+        "displayValue": "1"
+       },
+       {
+        "displayValue": "1"
+       },
+       {
+        "displayValue": "-1"
+       },
+       {
+        "displayValue": "0"
+       },
+       {
+        "displayValue": "3"
+       }
+      ],
+      "record": [],
+      "team": {
+       "id": "359",
+       "abbreviation": "ARS",
+       "displayName": "Arsenal",
+       "shortDisplayName": "Arsenal",
+       "name": "Arsenal",
+       "color": "e20520",
+       "logos": [
+        {
+         "href": "https://a.espncdn.com/i/teamlogos/soccer/500/359.png",
+         "width": 500,
+         "height": 500,
+         "alt": "",
+         "rel": [
+          "full",
+          "default"
+         ],
+         "lastUpdated": "2019-05-08T16:07Z"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+}

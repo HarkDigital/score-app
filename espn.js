@@ -49,7 +49,7 @@ export function parseScoreboard(data, league) {
   };
 }
 
-function parseGame(event, league) {
+export function parseGame(event, league) {
   const comp = event.competitions?.[0];
   if (!comp) return null;
   const type = (comp.status ?? event.status)?.type ?? {};
@@ -68,7 +68,8 @@ function parseGame(event, league) {
     teams: (league.homeFirst ? [home, away] : [away, home])
       .filter(Boolean)
       .map((c) => parseTeam(c, state, situation)),
-    broadcast: [...new Set((comp.broadcasts ?? []).flatMap((b) => b.names ?? []))].join(', '),
+    // Scoreboards list names; team schedules list media.
+    broadcast: [...new Set((comp.broadcasts ?? []).flatMap((b) => b.names ?? [b.media?.shortName]).filter(Boolean))].join(', '),
     detail: situationText(situation),
     note: comp.notes?.[0]?.headline ?? '',
     // Once a game is under way ESPN's entry is a stale pre-game line or nothing.

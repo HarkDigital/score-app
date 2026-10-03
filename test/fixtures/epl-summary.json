@@ -1,0 +1,335 @@
+{
+ "header": {
+  "competitions": [
+   {
+    "id": "740966",
+    "date": "2026-05-24T15:00Z",
+    "status": {
+     "type": {
+      "id": "28",
+      "name": "STATUS_FULL_TIME",
+      "state": "post",
+      "completed": true,
+      "description": "Full Time",
+      "detail": "FT",
+      "shortDetail": "FT"
+     }
+    },
+    "broadcasts": [
+     {
+      "type": {
+       "id": "1",
+       "shortName": "TV"
+      },
+      "market": {},
+      "media": {
+       "shortName": "NBCSN"
+      },
+      "lang": "en",
+      "region": "us",
+      "isNational": false
+     },
+     {
+      "type": {
+       "id": "4",
+       "shortName": "STREAMING"
+      },
+      "market": {},
+      "media": {
+       "shortName": "Peacock"
+      },
+      "lang": "en",
+      "region": "us",
+      "isNational": false
+     }
+    ],
+    "competitors": [
+     {
+      "id": "331",
+      "homeAway": "home",
+      "winner": false,
+      "score": "0",
+      "linescores": [
+       {
+        "displayValue": "0"
+       },
+       {
+        "displayValue": "0"
+       }
+      ],
+      "record": [
+       {
+        "type": "total",
+        "summary": "14-11-13",
+        "displayValue": "14-11-13"
+       },
+       {
+        "type": "points",
+        "summary": "53",
+        "displayValue": "53"
+       }
+      ],
+      "team": {
+       "id": "331",
+       "abbreviation": "BHA",
+       "displayName": "Brighton & Hove Albion",
+       "shortDisplayName": "Brighton",
+       "name": "Brighton & Hove Albion",
+       "color": "0606fa",
+       "logos": [
+        {
+         "href": "https://a.espncdn.com/i/teamlogos/soccer/500/331.png",
+         "width": 500,
+         "height": 500,
+         "alt": "",
+         "rel": [
+          "full",
+          "default"
+         ],
+         "lastUpdated": "2024-01-04T17:49Z"
+        }
+       ]
+      }
+     },
+     {
+      "id": "360",
+      "homeAway": "away",
+      "winner": true,
+      "score": "3",
+      "linescores": [
+       {
+        "displayValue": "2"
+       },
+       {
+        "displayValue": "1"
+       }
+      ],
+      "record": [
+       {
+        "type": "total",
+        "summary": "20-11-7",
+        "displayValue": "20-11-7"
+       },
+       {
+        "type": "points",
+        "summary": "71",
+        "displayValue": "71"
+       }
+      ],
+      "team": {
+       "id": "360",
+       "abbreviation": "MAN",
+       "displayName": "Manchester United",
+       "shortDisplayName": "Man United",
+       "name": "Manchester United",
+       "color": "da020e",
+       "logos": [
+        {
+         "href": "https://a.espncdn.com/i/teamlogos/soccer/500/360.png",
+         "width": 500,
+         "height": 500,
+         "alt": "",
+         "rel": [
+          "full",
+          "default"
+         ],
+         "lastUpdated": "2019-05-08T16:07Z"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ "boxscore": {
+  "teams": [
+   {
+    "team": {
+     "id": "331",
+     "abbreviation": "BHA"
+    },
+    "homeAway": "home",
+    "statistics": [
+     {
+      "name": "foulsCommitted",
+      "displayValue": "11",
+      "label": "Fouls"
+     },
+     {
+      "name": "yellowCards",
+      "displayValue": "0",
+      "label": "Yellow Cards"
+     },
+     {
+      "name": "redCards",
+      "displayValue": "0",
+      "label": "Red Cards"
+     },
+     {
+      "name": "offsides",
+      "displayValue": "1",
+      "label": "Offsides"
+     },
+     {
+      "name": "wonCorners",
+      "displayValue": "0",
+      "label": "Corner Kicks"
+     },
+     {
+      "name": "saves",
+      "displayValue": "5",
+      "label": "Saves"
+     }
+    ]
+   },
+   {
+    "team": {
+     "id": "360",
+     "abbreviation": "MAN"
+    },
+    "homeAway": "away",
+    "statistics": [
+     {
+      "name": "foulsCommitted",
+      "displayValue": "8",
+      "label": "Fouls"
+     },
+     {
+      "name": "yellowCards",
+      "displayValue": "1",
+      "label": "Yellow Cards"
+     },
+     {
+      "name": "redCards",
+      "displayValue": "0",
+      "label": "Red Cards"
+     },
+     {
+      "name": "offsides",
+      "displayValue": "0",
+      "label": "Offsides"
+     },
+     {
+      "name": "wonCorners",
+      "displayValue": "3",
+      "label": "Corner Kicks"
+     },
+     {
+      "name": "saves",
+      "displayValue": "2",
+      "label": "Saves"
+     }
+    ]
+   }
+  ]
+ },
+ "keyEvents": [
+  {
+   "type": {
+    "id": "137",
+    "text": "Goal - Header",
+    "type": "goal---header"
+   },
+   "clock": {
+    "value": 1973.0,
+    "displayValue": "33'"
+   },
+   "team": {
+    "id": "360",
+    "displayName": "Manchester United"
+   },
+   "scoringPlay": true,
+   "shortText": "Patrick Dorgu Goal - Header",
+   "period": {
+    "number": 1
+   },
+   "participants": [
+    {
+     "athlete": {
+      "id": "366781",
+      "displayName": "Patrick Dorgu"
+     }
+    },
+    {
+     "athlete": {
+      "id": "124091",
+      "displayName": "Bruno Fernandes"
+     }
+    }
+   ]
+  },
+  {
+   "type": {
+    "id": "70",
+    "text": "Goal",
+    "type": "goal"
+   },
+   "clock": {
+    "value": 2590.0,
+    "displayValue": "44'"
+   },
+   "team": {
+    "id": "360",
+    "displayName": "Manchester United"
+   },
+   "scoringPlay": true,
+   "shortText": "Bryan Mbeumo Goal",
+   "period": {
+    "number": 1
+   },
+   "participants": [
+    {
+     "athlete": {
+      "id": "271170",
+      "displayName": "Bryan Mbeumo"
+     }
+    },
+    {
+     "athlete": {
+      "id": "291630",
+      "displayName": "Amad Diallo"
+     }
+    }
+   ]
+  },
+  {
+   "type": {
+    "id": "94",
+    "text": "Yellow Card",
+    "type": "yellow-card"
+   },
+   "clock": {
+    "value": 2700.0,
+    "displayValue": "45'+3'"
+   },
+   "team": {
+    "id": "360",
+    "displayName": "Manchester United"
+   },
+   "scoringPlay": false,
+   "shortText": "Kobbie Mainoo Yellow Card",
+   "period": {
+    "number": 1
+   },
+   "participants": [
+    {
+     "athlete": {
+      "id": "328466",
+      "displayName": "Kobbie Mainoo"
+     }
+    }
+   ]
+  }
+ ],
+ "gameInfo": {
+  "venue": {
+   "fullName": "American Express Stadium",
+   "address": {
+    "city": "Falmer",
+    "country": "England"
+   }
+  },
+  "attendance": 31729
+ }
+}
