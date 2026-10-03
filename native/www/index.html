@@ -55,8 +55,9 @@
     <button type="button" id="retry">Try again</button>
   </div>
   <script>
+    // replace, not href: the app's back swipe must never land on this page.
     document.getElementById('retry').addEventListener('click', function () {
-      window.location.href = 'https://harkdigital.github.io/score-app/';
+      window.location.replace('https://harkdigital.github.io/score-app/');
     });
   </script>
 </body>

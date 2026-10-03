@@ -31,31 +31,59 @@ const page = {
 };
 const root = () => document.getElementById('page');
 
+// The last few pages, so going back (button or swipe) shows the page as it
+// was straight away, then refreshes it if it's stale.
+const recent = new Map();
+const RECENT = 8;
+const stale = () => !page.updatedAt || Date.now() - page.updatedAt > 10_000;
+
+function remember() {
+  const { route, data, updatedAt, side } = page;
+  if (!route || !data) return;
+  recent.delete(route.key);
+  recent.set(route.key, { data, updatedAt, side });
+  if (recent.size > RECENT) recent.delete(recent.keys().next().value);
+}
+
+// Drop the timer and any request in flight for the page that's going away.
+function leave() {
+  clearTimeout(page.timer);
+  page.requestId++;
+  remember();
+  if (page.loading) {
+    page.loading = false;
+    app.setLoading(false);
+  }
+}
+
 export const pageOpen = () => Boolean(page.route);
 
+// True when the page rendered with content, so its scroll can be restored.
 export function showPage(route) {
-  if (page.route?.key === route.key) return;
-  clearTimeout(page.timer);
-  Object.assign(page, { route, data: null, error: null, updatedAt: null, side: 0 });
+  if (page.route?.key === route.key) return Boolean(page.data);
+  leave();
+  const seen = recent.get(route.key);
+  Object.assign(page, { route, data: null, error: null, updatedAt: null, side: 0 }, seen);
   render();
-  load();
+  if (stale()) load();
+  else schedule();
+  return Boolean(page.data);
 }
 
 export function hidePage() {
-  clearTimeout(page.timer);
-  page.requestId++;
+  leave();
   page.route = null;
   root().innerHTML = '';
 }
 
 export function refreshPage() {
-  if (page.route) load();
+  return page.route ? load() : Promise.resolve();
 }
 
 export function pageVisible(visible) {
   if (!page.route) return;
   if (!visible) clearTimeout(page.timer);
-  else if (!page.updatedAt || Date.now() - page.updatedAt > 10_000) load();
+  else if (stale()) load();
   else schedule();
 }
 
