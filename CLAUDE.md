@@ -1,6 +1,6 @@
 # Scores
 
-Ad-free live scores, standings, rankings, box scores and team pages for NFL, NBA, MLB, NHL, NCAAF, NCAAM, WNBA, MLS, Premier League and Champions League. A static single-page app (no build step, no dependencies, no backend) that reads ESPN's public JSON feeds straight from the browser. Owner: Mike (HarkDigital). The goal is an iOS app; see "iOS" below.
+Ad-free live scores, standings, rankings, box scores and team pages for NFL, NBA, MLB, NHL, NCAAF, NCAAM, WNBA, MLS, Premier League and Champions League. A static single-page app (no build step, no runtime dependencies, no backend) that reads ESPN's public JSON feeds straight from the browser, wrapped as the iPhone app "Phade Scores" for TestFlight (see "iOS app" below). Owner: Mike (HarkDigital).
 
 ## Run, test, deploy
 
@@ -26,6 +26,7 @@ npm test    # node --test, unit tests for the data layer (Node 18+)
 | `ui.js` | Shared: icons, `getJson` (with host fallback), team logos and fallback badges, empty states, odds row, `esc` |
 | `styles.css` | All styles (Phade design language, see below) |
 | `test/` | `node --test` suites; `test/fixtures/` are trimmed REAL ESPN responses |
+| `capacitor.config.json`, `native/www/`, `ios/` | The iPhone app shell (see "iOS app" below) |
 
 All parsing lives in the data modules (`espn.js`, `standings.js`, `details.js`, `myteams.js`), which are pure and tested. Keep UI files free of feed-shape knowledge.
 
@@ -70,11 +71,17 @@ The feeds are unofficial and undocumented. Before changing a parser, check the s
 - `localStorage` keys: `scores.league` (last tab), `scores.myTeams` (followed teams `{league, id, name, abbr, logo, color}`). Wrap every storage access in try/catch.
 - Chrome (tabs, mode switch, day strip) re-renders only when its inputs change, so a refresh never steals focus or scroll.
 
-## iOS (the goal; not started)
+## iOS app ("Phade Scores", TestFlight)
 
-- Plan: a thin Capacitor shell like Phade's (`server.url` pointing at the Pages site, `contentInset: "never"`, dark `backgroundColor`, StatusBar overlay). The web side is ready: `viewport-fit=cover`, safe-area padding, `black-translucent` status bar, dark overscroll, 16px search input (no iOS focus zoom). Needs Mike's Mac and Xcode, a bundle ID and his Apple Developer account.
-- Lock-screen scores = iOS Live Activities: needs the native shell, a Widget Extension (ActivityKit/SwiftUI), a Capacitor plugin bridge, and a small always-on server that polls ESPN and pushes updates through APNs (a locked phone can't poll). Not buildable from a Linux cloud session.
-- App Store risks to keep in mind: guideline 4.2 (thin web wrappers) and 5.2 (ESPN's unofficial data and team logos are third-party IP; Phade keeps a logo kill switch). A licensed data provider may be needed for the store version.
+- A thin Capacitor 8 shell (`ios/`, Swift Package Manager, no CocoaPods) that loads the live Pages site: `capacitor.config.json` sets `server.url` to `https://harkdigital.github.io/score-app/`. Capacitor iOS loads the full URL including the path (`appStartServerURL`). Bundle ID `digital.hark.scores`, Phade's team (`DEVELOPMENT_TEAM = 72U2ZL3GVM`, automatic signing), display name "Phade Scores", iPhone and iPad (`TARGETED_DEVICE_FAMILY = "1,2"`, keep all four iPad orientations or App Store validation fails).
+- **Web changes ship by merging to `main`**, no new build. A new TestFlight build is only for native changes (icon, splash, name, `Info.plist`, `capacitor.config.json`); raise `CURRENT_PROJECT_VERSION` before every upload. Mike's step-by-step is in README.md ("iPhone app (TestFlight)").
+- **No Capacitor plugins and no Capacitor JS in the web app** (it has no bundler). The shell's look is plain `Info.plist`: `UIStatusBarStyle` = `UIStatusBarStyleLightContent` (CAPBridgeViewController reads it), `UIUserInterfaceStyle` = `Dark`, `ITSAppUsesNonExemptEncryption` = false. `ios.contentInset` is `"never"` because the CSS already pads for the safe area (Phade's lesson: `"always"` insets the header twice). `LaunchScreen.storyboard` has a `#0a0a0a` background.
+- **`native/www/index.html` is required**: Capacitor refuses to start without a bundled `index.html` even when `server.url` is set, and `server.errorPath` shows the same page when the site can't load (a "Can't reach Scores" page with Try again). `webDir` must never be `.` (it would copy the whole repo, `ios/` included, into the app). `npm run ios:sync` copies it and the config into `ios/App/App/` (both gitignored), so Mike runs it after every pull.
+- **Icon and splash** are rendered from `icons/icon.svg` with Playwright and real Poppins (fonts fetched through Node, see "Verifying in a browser"): `AppIcon.appiconset/AppIcon-512@2x.png` is 1024x1024 RGB with no alpha (App Store rule), the three `Splash.imageset` PNGs are 2732x2732 with the rounded icon at 440px on `#0a0a0a`. The web icons in `icons/` come from the same render.
+- `cap add ios` and `cap sync ios` run fine on Linux (SPM, no `pod install`); building, signing, archiving and uploading need Mike's Mac and Xcode. `npm audit` flags a moderate `uuid` advisory in the CLI's Xcode-project tooling (dev only, never shipped).
+- GitHub Pages also publishes `ios/`, `native/` and `capacitor.config.json` (they're in the repo root). Harmless: a Team ID isn't secret.
+- **Lock-screen scores (not built)** = iOS Live Activities: a Widget Extension (ActivityKit/SwiftUI), a small Capacitor plugin bridge, and an always-on server that polls ESPN and pushes updates through APNs (a locked phone can't poll).
+- **Before the App Store**: privacy manifest and App Privacy answers, 13-inch iPad screenshots, likely "Gambling: Yes" in the age rating because of the betting lines (Phade's 2.3.6 rejection), and guideline 4.2 (thin web wrapper) and 5.2 (ESPN data and team logos are third-party IP) risks. A licensed data provider may be needed for the store version.
 
 ## Working with Mike
 

@@ -2,10 +2,19 @@
   "name": "score-app",
   "version": "1.0.0",
   "private": true,
-  "description": "Ad-free live scores, as a home-screen web app.",
+  "description": "Ad-free live scores, as a home-screen web app and an iPhone app.",
   "type": "module",
   "scripts": {
     "start": "npx --yes serve -l 8080 .",
-    "test": "node --test"
+    "test": "node --test",
+    "ios:sync": "cap sync ios",
+    "ios:open": "cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/ios": "^8.5.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.2"
   }
 }
