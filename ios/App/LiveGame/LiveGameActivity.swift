@@ -255,32 +255,35 @@ struct CompactSide: View {
     let score: String?
     var trailing = false
 
-    // Logo and score when there's room. When iOS squeezes the island (another
-    // app's Live Activity running too), the score alone, which matters more
-    // than the logo; a game not yet started keeps a smaller logo.
+    // Logo and score, shrinking a step at a time when iOS squeezes the island
+    // (another app's Live Activity running too, which on newer iPhones halves
+    // it): a smaller logo and tighter spacing first, then smaller still. The
+    // score alone is the last resort; a game not yet started keeps its logo.
     var body: some View {
         ViewThatFits(in: .horizontal) {
-            full
+            side(logo: 20, spacing: 5, font: .caption)
+            side(logo: 16, spacing: 3, font: .caption)
+            side(logo: 13, spacing: 2, font: .caption2)
             if let score {
-                scoreText(score)
+                scoreText(score, font: .caption2)
             } else {
-                TeamBadge(team: team, size: 16)
+                TeamBadge(team: team, size: 13)
             }
         }
         .foregroundStyle(.white)
     }
 
-    private var full: some View {
-        HStack(spacing: 5) {
-            if trailing, let score { scoreText(score) }
-            TeamBadge(team: team, size: 20)
-            if !trailing, let score { scoreText(score) }
+    private func side(logo: CGFloat, spacing: CGFloat, font: Font) -> some View {
+        HStack(spacing: spacing) {
+            if trailing, let score { scoreText(score, font: font) }
+            TeamBadge(team: team, size: logo)
+            if !trailing, let score { scoreText(score, font: font) }
         }
     }
 
-    private func scoreText(_ score: String) -> some View {
+    private func scoreText(_ score: String, font: Font) -> some View {
         Text(score)
-            .font(.caption.weight(.bold))
+            .font(font.weight(.bold))
             .monospacedDigit()
             .lineLimit(1)
             .fixedSize()
