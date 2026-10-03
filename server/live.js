@@ -54,32 +54,72 @@ export function activityPayload(state, plan, nowSec) {
   return { aps };
 }
 
-// The alert a game's change of state sends to people following either team,
-// or null. Only a change the server saw happen counts, so a restart or a new
-// follower never gets a late "starting now".
-export function alertKind(prev, game) {
-  if (!prev || prev === game.state) return null;
-  if (game.state === 'in' && prev === 'pre') return 'start';
-  if (game.state === 'post') return TROUBLE.test(game.statusName) ? 'off' : 'final';
-  return null;
+// What the server remembers of a game between polls, to see what changed.
+export function gameMemo(game, league, now) {
+  const { away, home } = sides(game, league);
+  return { state: game.state, statusName: game.statusName, away: away?.score ?? '', home: home?.score ?? '', at: now };
 }
 
-export function alertPayload(kind, game, league) {
+// Basketball scores every few seconds, so its "score" alert is the score at
+// each break (end of a quarter or half) instead of every basket.
+const BREAKS = new Set(['STATUS_END_PERIOD', 'STATUS_HALFTIME']);
+const isBasketball = (league) => league.path.startsWith('basketball/');
+
+// The alerts a game's change sends, from what the server saw last time (null
+// the first time: first sight is never a change, so a restart or a new
+// follower never gets a late "starting now"). Each is { kind, payload }, and
+// kind is the follower's switch it answers to: start, score or end.
+export function gameAlerts(prev, game, league) {
+  if (!prev) return [];
+  const alerts = [];
+  const say = (kind, body) => alerts.push({ kind, payload: alertPayload(game, league, body) });
   const { away, home } = sides(game, league);
-  const title = league.homeFirst ? `${home.name} vs ${away.name}` : `${away.name} @ ${home.name}`;
   // Soccer reads home first, everything else away first.
   const [a, b] = league.homeFirst ? [home, away] : [away, home];
-  let body;
-  if (kind === 'start') body = 'Starting now.';
-  else if (kind === 'off') body = game.statusText || 'Postponed.';
-  else body = `${game.statusText || 'Final'}: ${a.name} ${a.score}, ${b.name} ${b.score}`;
+  const line = `${a.name} ${a.score}, ${b.name} ${b.score}`;
+
+  if (game.state === 'in' && prev.state === 'pre') say('start', 'Starting now.');
+  if (game.state === 'post' && prev.state !== 'post') {
+    if (TROUBLE.test(game.statusName)) say('end', game.statusText || 'Postponed.');
+    else say('end', `${game.statusText || 'Final'}: ${line}`);
+  }
+  if (game.state === 'in' && prev.state === 'in') {
+    if (isBasketball(league)) {
+      if (BREAKS.has(game.statusName) && prev.statusName !== game.statusName) say('score', `${game.statusText}: ${line}`);
+    } else {
+      const up = (side, was) => Number(side?.score) > Number(was);
+      const awayUp = up(away, prev.away);
+      const homeUp = up(home, prev.home);
+      if (awayUp !== homeUp) {
+        const scorer = awayUp ? away : home;
+        const goal = league.path.startsWith('soccer/') || league.path.startsWith('hockey/');
+        say('score', `${scorer.name} ${goal ? 'goal' : 'score'}: ${line}`);
+      } else if (awayUp && homeUp) {
+        say('score', `Score update: ${line}`);
+      }
+    }
+  }
+  return alerts;
+}
+
+function alertPayload(game, league, body) {
+  const { away, home } = sides(game, league);
+  const title = league.homeFirst ? `${home.name} vs ${away.name}` : `${away.name} @ ${home.name}`;
   return {
     aps: { alert: { title, body }, sound: 'default', 'thread-id': `${league.id}-${game.id}` },
     route: `#/game/${league.id}/${game.id}`,
   };
 }
 
-// Followed teams in a league whose game this is.
+// Whether a device follows a team in this game with this alert switched on.
+// Teams stored before the switches existed mean starts and finals.
+export function wantsAlert(device, leagueId, game, kind) {
+  const ids = new Set(game.teams.map((t) => String(t.id)));
+  const on = (t) => (['start', 'score', 'end'].some((k) => k in t) ? t[kind] === true : kind !== 'score');
+  return device.teams.some((t) => t.league === leagueId && ids.has(t.id) && on(t));
+}
+
+// Whether a device follows a team in this game at all (for polling).
 export function followsGame(device, leagueId, game) {
   const ids = new Set(game.teams.map((t) => String(t.id)));
   return device.teams.some((t) => t.league === leagueId && ids.has(t.id));
@@ -113,7 +153,15 @@ export function parseDevice(body) {
   const list = [];
   for (const t of teams) {
     if (!leagueById(t?.league) || !TEAM.test(String(t?.id ?? ''))) return null;
-    list.push({ league: t.league, id: String(t.id) });
+    // A team without switches comes from an early build: starts and finals.
+    const legacy = !['start', 'score', 'end'].some((k) => k in t);
+    list.push({
+      league: t.league,
+      id: String(t.id),
+      start: legacy || t.start === true,
+      score: !legacy && t.score === true,
+      end: legacy || t.end === true,
+    });
   }
-  return { env, teams: list };
+  return { env, teams: list.filter((t) => t.start || t.score || t.end) };
 }

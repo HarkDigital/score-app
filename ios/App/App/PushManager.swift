@@ -15,8 +15,9 @@ final class PushManager: NSObject, NotificationHandlerProtocol {
 
     private let teamsKey = "alertTeams"
     private var deviceToken: String?
-    private var teams: [[String: String]] {
-        get { UserDefaults.standard.array(forKey: teamsKey) as? [[String: String]] ?? [] }
+    /// [{league, id, start, score, end}], as the web app sent them.
+    private var teams: [[String: Any]] {
+        get { UserDefaults.standard.array(forKey: teamsKey) as? [[String: Any]] ?? [] }
         set { UserDefaults.standard.set(newValue, forKey: teamsKey) }
     }
 
@@ -40,8 +41,8 @@ final class PushManager: NSObject, NotificationHandlerProtocol {
         return result
     }
 
-    func setTeams(_ list: [[String: String]]) {
-        let changed = list != teams
+    func setTeams(_ list: [[String: Any]]) {
+        let changed = !(list as NSArray).isEqual(to: teams)
         teams = list
         if deviceToken == nil {
             // The first token arrives from registerForRemoteNotifications.

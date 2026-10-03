@@ -41,9 +41,12 @@ final class NativeBridge: NSObject, WKScriptMessageHandlerWithReply {
         case "enableAlerts":
             return await PushManager.shared.requestAuthorization()
         case "setAlertTeams":
-            let teams = (body["teams"] as? [[String: Any]] ?? []).compactMap { team -> [String: String]? in
+            // [{league, id, start, score, end}]: which alerts each team wants.
+            let teams = (body["teams"] as? [[String: Any]] ?? []).compactMap { team -> [String: Any]? in
                 guard let league = team["league"] as? String, let id = team["id"] as? String else { return nil }
-                return ["league": league, "id": id]
+                var entry: [String: Any] = ["league": league, "id": id]
+                for kind in ["start", "score", "end"] { entry[kind] = (team[kind] as? Bool) ?? false }
+                return entry
             }
             PushManager.shared.setTeams(teams)
             return ["ok": true]

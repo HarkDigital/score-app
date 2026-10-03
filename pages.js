@@ -34,7 +34,7 @@ const root = () => document.getElementById('page');
 
 // iPhone app only: what the app says about Live Activities and alerts, and
 // the state of the game page's Lock Screen card and the team page's bell.
-const native = { info: null, busy: false, lockError: '', alertNote: '' };
+const native = { info: null, busy: false, lockError: '', alertNote: '', alertsOpen: false };
 
 function refreshNative() {
   if (!inApp()) return;
@@ -77,7 +77,7 @@ export function showPage(route) {
   leave();
   const seen = recent.get(route.key);
   Object.assign(page, { route, data: null, error: null, updatedAt: null, side: 0 }, seen);
-  Object.assign(native, { lockError: '', alertNote: '' });
+  Object.assign(native, { lockError: '', alertNote: '', alertsOpen: false });
   refreshNative();
   render();
   if (stale()) load();
@@ -176,7 +176,7 @@ function loadingHtml(kind) {
 function gameHtml(game, league, id) {
   const odds = game.odds && !TROUBLE.test(game.statusName) ? `<div class="card page-odds">${oddsHtml(game.odds, league)}${moneylinesHtml(game)}</div>` : '';
   const sections = [
-    matchupHtml(game, league),
+    matchupHtml(game, league, id),
     odds,
     lineScoreHtml(game),
     scoringHtml(game, league),
@@ -186,8 +186,6 @@ function gameHtml(game, league, id) {
   if (game.state === 'pre' && sections.length <= 2) {
     sections.push(emptyState({ icon: ICONS.clipboard, title: 'Box score at kickoff', text: 'Player and team stats show up here once the game starts.' }));
   }
-  // The line history sits under the lines (or the matchup once they're gone).
-  sections.splice(odds ? 2 : 1, 0, lineSteamHtml(league, id));
   sections.splice(1, 0, lockHtml(game, league, id));
   return sections.join('');
 }
@@ -229,19 +227,18 @@ async function toggleLock() {
 }
 
 // LineSteam (linesteam.com) charts every FanDuel line move for its five
-// leagues. Opens outside the app.
+// leagues: its mark in a circle, top right of the matchup card. Opens
+// outside the app.
 function lineSteamHtml(league, id) {
   const url = lineSteamUrl(league, id);
   if (!url) return '';
   return `
-    <a class="card ext-link" href="${esc(url)}" target="_blank" rel="noopener">
-      <span class="ext-icon">${ICONS.chart}</span>
-      <span class="ext-text"><span class="ext-title">Line movement</span><span class="ext-sub">FanDuel's spread, total and moneyline history on LineSteam</span></span>
-      <span class="ext-arrow">${ICONS.external}</span>
+    <a class="ls-badge" href="${esc(url)}" target="_blank" rel="noopener" aria-label="Line movement on LineSteam" title="Line movement on LineSteam">
+      <span class="ls-circle"><img src="icons/linesteam-mark.png" alt="" width="24" height="21"></span>
     </a>`;
 }
 
-function matchupHtml(game, league) {
+function matchupHtml(game, league, id) {
   const live = game.state === 'in';
   const done = game.state === 'post';
   let status;
@@ -263,6 +260,7 @@ function matchupHtml(game, league) {
   const meta = [game.venue, game.broadcast, game.attendance && `Attendance ${game.attendance}`].filter(Boolean);
   return `
     <div class="card matchup${live ? ' live' : ''}">
+      ${lineSteamHtml(league, id)}
       <div class="matchup-status">${status}</div>
       <div class="matchup-teams">${a ? side(a) : ''}${middle}${b ? side(b) : ''}</div>
       ${meta.length ? `<div class="matchup-meta">${meta.map(esc).join(' · ')}</div>` : ''}
@@ -383,8 +381,9 @@ function teamHtml(data, league) {
         <button class="pill-btn follow-btn${following ? ' on' : ''}" data-follow aria-pressed="${following}">
           ${following ? `${ICONS.check} Following` : `${ICONS.plus} Follow`}
         </button>
-        ${alertsHtml(league, team, following)}
+        ${alertsButton(league, team, following)}
       </div>
+      ${following && native.alertsOpen ? alertsPanel(league, team) : ''}
       ${native.alertNote ? `<p class="sub alert-note">${esc(native.alertNote)}</p>` : ''}
     </div>`;
   if (!games.length) {
@@ -397,20 +396,39 @@ function teamHtml(data, league) {
   return head + list('Live', live, 'in') + list('Upcoming', upcoming, 'pre') + list('Results', results);
 }
 
-// iPhone app only: alerts when this followed team's games start and end.
-function alertsHtml(league, team, following) {
+// iPhone app only: per followed team, alerts when its games start, when
+// either side scores and when they end. The bell opens the three switches.
+function alertsButton(league, team, following) {
   if (!inApp() || !following) return '';
-  const on = app.hasAlerts(league.id, team.id);
+  const on = Object.values(app.alertsFor(league.id, team.id)).some(Boolean);
   return `
-    <button class="pill-btn alert-btn${on ? ' on' : ''}" data-alerts aria-pressed="${on}" aria-label="Game alerts">
-      ${on ? ICONS.bell : ICONS.bellOff} ${on ? 'Alerts on' : 'Alerts off'}
+    <button class="pill-btn alert-btn${on ? ' on' : ''}" data-alerts aria-expanded="${native.alertsOpen}">
+      ${on ? ICONS.bell : ICONS.bellOff} ${on ? 'Alerts on' : 'Alerts'}
     </button>`;
 }
 
-async function toggleAlerts() {
+function alertsPanel(league, team) {
+  const on = app.alertsFor(league.id, team.id);
+  const basketball = league.path.startsWith('basketball/');
+  const rows = [
+    ['start', 'Game starts', 'When a game gets underway'],
+    ['score', 'Scores', basketball ? 'The score at the end of each quarter or half' : 'Every time either team scores'],
+    ['end', 'Final score', 'When a game ends'],
+  ];
+  return `
+    <div class="alert-panel" role="group" aria-label="${esc(team.name)} alerts">
+      ${rows.map(([kind, title, sub]) => `
+        <button class="alert-row" role="switch" aria-checked="${on[kind]}" data-alert-kind="${kind}">
+          <span class="alert-text"><span class="alert-title">${title}</span><span class="alert-sub">${sub}</span></span>
+          <span class="switch" aria-hidden="true"></span>
+        </button>`).join('')}
+    </div>`;
+}
+
+async function toggleAlertKind(kind) {
   const { data, route } = page;
   if (!data?.team) return;
-  const on = !app.hasAlerts(route.league.id, data.team.id);
+  const on = !app.alertsFor(route.league.id, data.team.id)[kind];
   if (on) {
     const status = await enableAlerts();
     if (!['authorized', 'provisional', 'ephemeral'].includes(status)) {
@@ -420,7 +438,7 @@ async function toggleAlerts() {
     }
   }
   native.alertNote = '';
-  app.setAlerts(route.league.id, data.team.id, on);
+  app.setAlerts(route.league.id, data.team.id, { [kind]: on });
   render();
 }
 
@@ -452,10 +470,14 @@ function scheduleRow(game, league) {
 
 document.addEventListener('click', (event) => {
   if (!page.route) return;
-  const target = event.target.closest('[data-side], [data-follow], [data-lock], [data-alerts]');
+  const target = event.target.closest('[data-side], [data-follow], [data-lock], [data-alerts], [data-alert-kind]');
   if (!target || !root().contains(target) || target.disabled) return;
   if (target.hasAttribute('data-lock')) toggleLock();
-  else if (target.hasAttribute('data-alerts')) toggleAlerts();
+  else if (target.dataset.alertKind) toggleAlertKind(target.dataset.alertKind);
+  else if (target.hasAttribute('data-alerts')) {
+    native.alertsOpen = !native.alertsOpen;
+    render();
+  }
   else if (target.dataset.side !== undefined) {
     page.side = Number(target.dataset.side);
     render();

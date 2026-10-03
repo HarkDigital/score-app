@@ -9,7 +9,7 @@ Keeps the iPhone app's Lock Screen cards (Live Activities) current and sends tea
 ## What it does
 
 - **Cards**: the app registers a card's push token with the game (`POST /v1/activities`). The server fetches that league's scoreboard (every 15s while a watched game is live or about to start, 2 minutes before that, 15 minutes when nothing is close) and pushes the score, clock and down/distance whenever they change: priority 10 for score and state changes, 5 for clock-only changes. The final push ends the card and leaves it up for two hours.
-- **Alerts**: the app registers its device token with the followed teams that have alerts on (`PUT /v1/devices/:token`). When the server sees one of their games go from scheduled to live it sends "Starting now."; live to final sends the final score; a postponement sends ESPN's status. Only a change the server saw counts, so a restart or a new follower never gets a stale "starting now".
+- **Alerts**: the app registers its device token with the followed teams that have alerts on, each with its switches (`PUT /v1/devices/:token`, teams `[{league, id, start, score, end}]`). `start`: the game goes from scheduled to live ("Starting now."). `score`: either side's score goes up ("Bills score: Chiefs 17, Bills 28", "Arsenal goal: ..."); in basketball, the score at each break instead ("Halftime: ..."). `end`: the final score, or ESPN's status for a postponement. Only a change the server saw counts, so a restart or a new follower never gets a stale alert.
 - Dead tokens (Apple says 410 or BadDeviceToken) are dropped. Cards are forgotten after 12 hours (iOS ends them after 8).
 
 ## Deploying changes

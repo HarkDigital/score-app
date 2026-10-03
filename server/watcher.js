@@ -5,7 +5,7 @@
 // scores and statuses read exactly like the app's.
 
 import { leagueById, scoreboardUrl, parseScoreboard, fallbackUrl, addDays, ymd } from '../espn.js';
-import { contentState, activityPlan, activityPayload, alertKind, alertPayload, followsGame } from './live.js';
+import { contentState, activityPlan, activityPayload, gameAlerts, gameMemo, wantsAlert, followsGame } from './live.js';
 import { prune } from './store.js';
 
 const MIN = 60_000;
@@ -71,8 +71,8 @@ export function createWatcher({ store, apns, fetchJson: getJson = fetchJson, log
   async function handleGame(league, game) {
     const { data } = store;
     const key = `${league.id}:${game.id}`;
-    const prev = data.games[key]?.state;
-    data.games[key] = { state: game.state, at: now() };
+    const prev = data.games[key] ?? null;
+    data.games[key] = gameMemo(game, league, now());
     const nowSec = Math.floor(now() / 1000);
 
     for (const [token, card] of Object.entries(data.activities)) {
@@ -85,15 +85,16 @@ export function createWatcher({ store, apns, fetchJson: getJson = fetchJson, log
       else if (result.ok) card.last = state;
     }
 
-    const kind = alertKind(prev, game);
-    if (!kind) return;
-    for (const [token, device] of Object.entries(data.devices)) {
-      if (!followsGame(device, league.id, game)) continue;
-      const mark = `${token}|${key}|${kind}`;
-      if (data.sent[mark]) continue;
-      data.sent[mark] = now();
-      const result = await push('alert', token, device.env, alertPayload(kind, game, league));
-      if (result.dead) delete data.devices[token];
+    for (const { kind, payload } of gameAlerts(prev, game, league)) {
+      for (const [token, device] of Object.entries(data.devices)) {
+        if (!wantsAlert(device, league.id, game, kind)) continue;
+        // One of each per game state, even if ESPN flickers.
+        const mark = `${token}|${key}|${kind}|${payload.aps.alert.body}`;
+        if (data.sent[mark]) continue;
+        data.sent[mark] = now();
+        const result = await push('alert', token, device.env, payload);
+        if (result.dead) delete data.devices[token];
+      }
     }
   }
 

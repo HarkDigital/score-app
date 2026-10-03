@@ -5,7 +5,7 @@ import {
 import { standingsUrl, parseStandings, rankingsUrl, parseRankings, teamsFromStandings } from './standings.js';
 import {
   loadFollowed, saveFollowed, isFollowed, toggleFollowed, followedLeagues, countFollowed, gamesForTeams,
-  hasAlerts, setAlerts, alertTeams,
+  alertsFor, setAlerts, alertTeams,
 } from './myteams.js';
 import {
   ICONS, getJson, TROUBLE, oddsHtml, failedLogos, logoHtml, fallbackLogo, emptyState, errorState, fullDate, formatClock, esc,
@@ -721,9 +721,9 @@ initPages({
     syncAlerts();
     followsChanged = true;
   },
-  hasAlerts: (leagueId, teamId) => hasAlerts(followed, leagueId, teamId),
-  setAlerts(leagueId, teamId, on) {
-    followed = setAlerts(followed, leagueId, teamId, on);
+  alertsFor: (leagueId, teamId) => alertsFor(followed, leagueId, teamId),
+  setAlerts(leagueId, teamId, kinds) {
+    followed = setAlerts(followed, leagueId, teamId, kinds);
     saveFollowed(storage, followed);
     syncAlerts();
   },

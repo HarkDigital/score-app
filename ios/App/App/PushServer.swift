@@ -35,8 +35,8 @@ enum PushServer {
         await send("DELETE", "v1/activities/\(token)", nil)
     }
 
-    /// teams: [{league, id}]. Empty forgets the device.
-    static func registerDevice(token: String, teams: [[String: String]]) async {
+    /// teams: [{league, id, start, score, end}]. Empty forgets the device.
+    static func registerDevice(token: String, teams: [[String: Any]]) async {
         await send("PUT", "v1/devices/\(token)", ["env": environment, "teams": teams])
     }
 

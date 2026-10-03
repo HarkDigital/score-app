@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { leagueById, parseScoreboard } from '../../espn.js';
 import {
-  contentState, activityPlan, activityPayload, alertKind, alertPayload, parseActivity, parseDevice,
+  contentState, activityPlan, activityPayload, gameAlerts, gameMemo, wantsAlert, parseActivity, parseDevice,
 } from '../live.js';
 import { providerToken, tokenIsDead } from '../apns.js';
 import { createWatcher, pollDelay } from '../watcher.js';
@@ -53,25 +53,53 @@ test('the final push ends the card and leaves it up for two hours', () => {
   assert.equal(live.aps['stale-date'], 1_000 + 900);
 });
 
-test('alerts fire on a change the server saw, never on first sight', () => {
+const nba = leagueById('nba');
+const memo = (game, league, changes = {}) => ({ ...gameMemo(game, league, 0), ...changes });
+const bodies = (alerts) => alerts.map((a) => `${a.kind}: ${a.payload.aps.alert.body}`);
+
+test('start and end alerts fire on a change the server saw, never on first sight', () => {
   const live = game(nflBoard, '402');
-  const final = game(nflBoard, '401');
-  assert.equal(alertKind(undefined, live), null);
-  assert.equal(alertKind('in', live), null);
-  assert.equal(alertKind('pre', live), 'start');
-  assert.equal(alertKind('in', final), 'final');
-  assert.equal(alertKind('pre', { ...final, statusName: 'STATUS_POSTPONED', statusText: 'Postponed' }), 'off');
+  assert.deepEqual(gameAlerts(null, live, nfl), []);
+  assert.deepEqual(gameAlerts(memo(live, nfl), live, nfl), [], 'no change, no alert');
+  assert.deepEqual(bodies(gameAlerts(memo(live, nfl, { state: 'pre', away: '', home: '' }), live, nfl)), ['start: Starting now.']);
+  const final = game(nflBoard, '403');
+  assert.deepEqual(bodies(gameAlerts(memo(final, nfl, { state: 'in' }), final, nfl)), ['end: Final/OT: Jets 26, Vikings 23']);
+  const off = { ...final, statusName: 'STATUS_POSTPONED', statusText: 'Postponed' };
+  assert.deepEqual(bodies(gameAlerts(memo(off, nfl, { state: 'pre' }), off, nfl)), ['end: Postponed']);
+  // Soccer reads home first.
+  const soccer = gameAlerts(memo(game(eplBoard, '701'), epl, { state: 'in' }), game(eplBoard, '701'), epl);
+  assert.equal(soccer[0].payload.aps.alert.title, 'Man City vs Liverpool');
+  assert.equal(soccer[0].payload.aps.alert.body, 'FT: Man City 2, Liverpool 2');
+  assert.equal(soccer[0].payload.route, '#/game/epl/701');
 });
 
-test('alert text reads like the scoreboard, with a link to the game', () => {
-  const final = alertPayload('final', game(nflBoard, '403'), nfl);
-  assert.equal(final.aps.alert.title, 'Jets @ Vikings');
-  assert.equal(final.aps.alert.body, 'Final/OT: Jets 26, Vikings 23');
-  assert.equal(final.route, '#/game/nfl/403');
-  const soccer = alertPayload('final', game(eplBoard, '701'), epl);
-  assert.equal(soccer.aps.alert.title, 'Man City vs Liverpool');
-  assert.equal(soccer.aps.alert.body, 'FT: Man City 2, Liverpool 2');
-  assert.ok(!/—/.test(final.aps.alert.body + soccer.aps.alert.body));
+test('a score alert names who scored, and only fires on a score going up', () => {
+  const live = game(nflBoard, '402'); // KC 17 @ BUF 21
+  assert.deepEqual(bodies(gameAlerts(memo(live, nfl, { home: '14' }), live, nfl)), ['score: Bills score: Chiefs 17, Bills 21']);
+  assert.deepEqual(bodies(gameAlerts(memo(live, nfl, { away: '10', home: '14' }), live, nfl)), ['score: Score update: Chiefs 17, Bills 21']);
+  assert.deepEqual(gameAlerts(memo(live, nfl, { home: '24' }), live, nfl), [], 'a score taken off is not news');
+  const ars = game(eplBoard, '702'); // Arsenal 1, Chelsea 0
+  assert.deepEqual(bodies(gameAlerts(memo(ars, epl, { home: '0' }), ars, epl)), ['score: Arsenal goal: Arsenal 1, Chelsea 0']);
+  assert.ok(!bodies(gameAlerts(memo(live, nfl, { home: '14' }), live, nfl)).some((b) => b.includes('—')));
+});
+
+test('basketball sends the score at each break, not every basket', () => {
+  const live = game(nflBoard, '402');
+  const hoops = { ...live, statusName: 'STATUS_IN_PROGRESS', statusText: '6:12 - 2nd' };
+  assert.deepEqual(gameAlerts(memo(hoops, nba, { home: '10' }), hoops, nba), [], 'baskets are not alerts');
+  const half = { ...live, statusName: 'STATUS_HALFTIME', statusText: 'Halftime' };
+  assert.deepEqual(bodies(gameAlerts(memo(hoops, nba), half, nba)), ['score: Halftime: Chiefs 17, Bills 21']);
+  assert.deepEqual(gameAlerts(memo(half, nba), half, nba), [], 'once per break');
+});
+
+test('alerts go only to followers with that switch on', () => {
+  const live = game(nflBoard, '402'); // KC (12) @ BUF (2)
+  const device = { teams: [{ league: 'nfl', id: '2', start: true, score: false, end: true }] };
+  assert.ok(wantsAlert(device, 'nfl', live, 'start'));
+  assert.ok(!wantsAlert(device, 'nfl', live, 'score'));
+  assert.ok(!wantsAlert(device, 'nba', live, 'start'), 'same id in another league');
+  assert.ok(wantsAlert({ teams: [{ league: 'nfl', id: '12' }] }, 'nfl', live, 'end'), 'stored before the switches: starts and finals');
+  assert.ok(!wantsAlert({ teams: [{ league: 'nfl', id: '12' }] }, 'nfl', live, 'score'));
 });
 
 test('requests are validated', () => {
@@ -81,7 +109,11 @@ test('requests are validated', () => {
   assert.equal(parseActivity({ token: 'nope', env: 'production', league: 'nfl', eventId: '1' }), null);
   assert.equal(parseActivity({ token: TOKEN, env: 'staging', league: 'nfl', eventId: '1' }), null);
   assert.equal(parseActivity({ token: TOKEN, env: 'sandbox', league: 'nfl', eventId: '1; drop' }), null);
-  assert.deepEqual(parseDevice({ env: 'sandbox', teams: [{ league: 'nfl', id: 21 }] }), { env: 'sandbox', teams: [{ league: 'nfl', id: '21' }] });
+  assert.deepEqual(parseDevice({ env: 'sandbox', teams: [{ league: 'nfl', id: 21, start: true, score: true }] }),
+    { env: 'sandbox', teams: [{ league: 'nfl', id: '21', start: true, score: true, end: false }] });
+  // An early build sends bare teams: starts and finals.
+  assert.deepEqual(parseDevice({ env: 'sandbox', teams: [{ league: 'nfl', id: '21' }] }).teams[0], { league: 'nfl', id: '21', start: true, score: false, end: true });
+  assert.deepEqual(parseDevice({ env: 'sandbox', teams: [{ league: 'nfl', id: '21', start: false }] }).teams, [], 'all switches off is no team');
   assert.equal(parseDevice({ env: 'sandbox', teams: [{ league: 'nfl', id: '<x>' }] }), null);
 });
 
@@ -148,9 +180,13 @@ test('a card gets its first state, then only changes, then the final ends it', a
   assert.deepEqual(h.store.data.activities, {}, 'an ended card is forgotten');
 });
 
-test('followers get one start and one final alert', async () => {
+test('followers get the alerts they switched on, once each', async () => {
   // Following Buffalo (id 2), whose game against KC is 402.
-  const h = harness({ devices: { [TOKEN]: { env: 'production', teams: [{ league: 'nfl', id: '2' }] } } });
+  const other = 'cd'.repeat(32);
+  const h = harness({ devices: {
+    [TOKEN]: { env: 'production', teams: [{ league: 'nfl', id: '2', start: true, score: false, end: true }] },
+    [other]: { env: 'production', teams: [{ league: 'nfl', id: '2', start: false, score: true, end: false }] },
+  } });
   h.setBoard((b) => { b.events.find((e) => e.id === '402').competitions[0].status.type.state = 'pre'; });
   await h.watcher.tick();
   assert.equal(h.sent.length, 0, 'first sight is not a change');
@@ -161,6 +197,17 @@ test('followers get one start and one final alert', async () => {
   h.later(20_000);
   await h.watcher.tick();
   assert.deepEqual(h.sent.map((s) => s.payload.aps.alert.body), ['Starting now.']);
+  assert.equal(h.sent[0].token, TOKEN, 'only the follower with starts on');
+
+  // Buffalo scores: only the follower with scores on hears about it.
+  h.setBoard((b) => {
+    const buf = b.events.find((e) => e.id === '402').competitions[0].competitors.find((c) => c.homeAway === 'home');
+    buf.score = '28';
+  });
+  h.later(20_000);
+  await h.watcher.tick();
+  assert.deepEqual(h.sent.slice(1).map((s) => [s.token === other, s.payload.aps.alert.body]), [[true, 'Bills score: Chiefs 17, Bills 28']]);
+  h.sent.splice(1);
 
   h.setBoard((b) => {
     const t = b.events.find((e) => e.id === '402').competitions[0].status.type;
@@ -169,6 +216,7 @@ test('followers get one start and one final alert', async () => {
   h.later(20_000);
   await h.watcher.tick();
   assert.equal(h.sent.length, 2);
-  assert.equal(h.sent[1].payload.aps.alert.body, 'Final: Chiefs 17, Bills 21');
+  assert.equal(h.sent[1].payload.aps.alert.body, 'Final: Chiefs 17, Bills 28');
+  assert.equal(h.sent[1].token, TOKEN);
   assert.equal(h.sent[1].payload.route, '#/game/nfl/402');
 });
