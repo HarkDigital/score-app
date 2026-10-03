@@ -1,0 +1,206 @@
+{
+  "leagues": [
+    {
+      "abbreviation": "ENG.1",
+      "calendarType": "day",
+      "calendar": [
+        "2026-08-15T07:00Z",
+        "2026-10-03T07:00Z"
+      ]
+    }
+  ],
+  "season": {
+    "type": 13481,
+    "year": 2026
+  },
+  "day": {
+    "date": "2026-10-03"
+  },
+  "events": [
+    {
+      "id": "701",
+      "date": "2026-10-03T11:30Z",
+      "competitions": [
+        {
+          "date": "2026-10-03T11:30Z",
+          "status": {
+            "type": {
+              "name": "STATUS_FULL_TIME",
+              "state": "post",
+              "completed": true,
+              "shortDetail": "FT",
+              "detail": "FT"
+            }
+          },
+          "broadcasts": [
+            {
+              "market": "national",
+              "names": [
+                "USA Net"
+              ]
+            }
+          ],
+          "competitors": [
+            {
+              "homeAway": "home",
+              "team": {
+                "id": "382",
+                "abbreviation": "MNC",
+                "shortDisplayName": "Man City",
+                "displayName": "Manchester City",
+                "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/scoreboard/mnc.png"
+              },
+              "score": "2",
+              "winner": false,
+              "records": [
+                {
+                  "summary": "4-1-2"
+                }
+              ]
+            },
+            {
+              "homeAway": "away",
+              "team": {
+                "id": "364",
+                "abbreviation": "LIV",
+                "shortDisplayName": "Liverpool",
+                "displayName": "Liverpool",
+                "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/scoreboard/liv.png"
+              },
+              "score": "2",
+              "winner": false,
+              "records": [
+                {
+                  "summary": "5-1-1"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "702",
+      "date": "2026-10-03T14:00Z",
+      "competitions": [
+        {
+          "date": "2026-10-03T14:00Z",
+          "status": {
+            "clock": 4020,
+            "displayClock": "67'",
+            "period": 2,
+            "type": {
+              "name": "STATUS_SECOND_HALF",
+              "state": "in",
+              "completed": false,
+              "shortDetail": "67'",
+              "detail": "67'"
+            }
+          },
+          "broadcasts": [
+            {
+              "market": "national",
+              "names": [
+                "Peacock"
+              ]
+            }
+          ],
+          "competitors": [
+            {
+              "homeAway": "home",
+              "team": {
+                "id": "359",
+                "abbreviation": "ARS",
+                "shortDisplayName": "Arsenal",
+                "displayName": "Arsenal",
+                "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/scoreboard/ars.png"
+              },
+              "score": "1",
+              "records": [
+                {
+                  "summary": "5-2-0"
+                }
+              ]
+            },
+            {
+              "homeAway": "away",
+              "team": {
+                "id": "363",
+                "abbreviation": "CHE",
+                "shortDisplayName": "Chelsea",
+                "displayName": "Chelsea",
+                "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/scoreboard/che.png"
+              },
+              "score": "0",
+              "records": [
+                {
+                  "summary": "3-2-2"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "703",
+      "date": "2026-10-03T16:30Z",
+      "competitions": [
+        {
+          "date": "2026-10-03T16:30Z",
+          "status": {
+            "type": {
+              "name": "STATUS_SCHEDULED",
+              "state": "pre",
+              "completed": false,
+              "shortDetail": "Sat, October 3rd at 12:30 PM EDT",
+              "detail": "Sat, October 3rd at 12:30 PM EDT"
+            }
+          },
+          "broadcasts": [
+            {
+              "market": "national",
+              "names": [
+                "NBC"
+              ]
+            }
+          ],
+          "competitors": [
+            {
+              "homeAway": "home",
+              "team": {
+                "id": "367",
+                "abbreviation": "TOT",
+                "shortDisplayName": "Spurs",
+                "displayName": "Tottenham Hotspur",
+                "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/scoreboard/tot.png"
+              },
+              "score": "0",
+              "records": [
+                {
+                  "summary": "3-3-1"
+                }
+              ]
+            },
+            {
+              "homeAway": "away",
+              "team": {
+                "id": "361",
+                "abbreviation": "NEW",
+                "shortDisplayName": "Newcastle",
+                "displayName": "Newcastle United",
+                "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/scoreboard/new.png"
+              },
+              "score": "0",
+              "records": [
+                {
+                  "summary": "3-1-3"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

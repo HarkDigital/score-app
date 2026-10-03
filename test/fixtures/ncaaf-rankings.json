@@ -1,0 +1,694 @@
+{
+ "rankings": [
+  {
+   "id": "1",
+   "name": "AP Top 25",
+   "shortName": "AP Poll",
+   "type": "ap",
+   "occurrence": {
+    "number": 4,
+    "type": "week",
+    "last": false,
+    "value": "4",
+    "displayValue": "Week 4"
+   },
+   "headline": "2026 NCAA Football Rankings - AP Poll Week 4",
+   "ranks": [
+    {
+     "current": 1,
+     "previous": 1,
+     "points": 1706.0,
+     "firstPlaceVotes": 58,
+     "trend": "-",
+     "team": {
+      "id": "251",
+      "location": "Texas",
+      "name": "Longhorns",
+      "nickname": "Texas",
+      "abbreviation": "TEX"
+     },
+     "recordSummary": "3-0"
+    },
+    {
+     "current": 2,
+     "previous": 2,
+     "points": 1580.0,
+     "firstPlaceVotes": 3,
+     "trend": "-",
+     "team": {
+      "id": "61",
+      "location": "Georgia",
+      "name": "Bulldogs",
+      "nickname": "Georgia",
+      "abbreviation": "UGA"
+     },
+     "recordSummary": "3-0"
+    },
+    {
+     "current": 3,
+     "previous": 3,
+     "points": 1517.0,
+     "firstPlaceVotes": 0,
+     "trend": "-",
+     "team": {
+      "id": "87",
+      "location": "Notre Dame",
+      "name": "Fighting Irish",
+      "nickname": "Notre Dame",
+      "abbreviation": "ND"
+     },
+     "recordSummary": "3-0"
+    },
+    {
+     "current": 4,
+     "previous": 8,
+     "points": 1488.0,
+     "firstPlaceVotes": 3,
+     "trend": "+4",
+     "team": {
+      "id": "145",
+      "location": "Ole Miss",
+      "name": "Rebels",
+      "nickname": "Ole Miss",
+      "abbreviation": "MISS"
+     },
+     "recordSummary": "3-0"
+    },
+    {
+     "current": 5,
+     "previous": 4,
+     "points": 1467.0,
+     "firstPlaceVotes": 4,
+     "trend": "-1",
+     "team": {
+      "id": "84",
+      "location": "Indiana",
+      "name": "Hoosiers",
+      "nickname": "Indiana",
+      "abbreviation": "IU"
+     },
+     "recordSummary": "3-0"
+    }
+   ],
+   "others": [
+    {
+     "current": 0,
+     "previous": 0,
+     "points": 107.0,
+     "firstPlaceVotes": 0,
+     "trend": "+26",
+     "team": {
+      "id": "264",
+      "location": "Washington",
+      "name": "Huskies",
+      "nickname": "Washington",
+      "abbreviation": "WASH"
+     },
+     "recordSummary": "0-0"
+    },
+    {
+     "current": 0,
+     "previous": 0,
+     "points": 98.0,
+     "firstPlaceVotes": 0,
+     "trend": "+26",
+     "team": {
+      "id": "96",
+      "location": "Kentucky",
+      "name": "Wildcats",
+      "nickname": "Kentucky",
+      "abbreviation": "UK"
+     },
+     "recordSummary": "0-0"
+    },
+    {
+     "current": 0,
+     "previous": 0,
+     "points": 93.0,
+     "firstPlaceVotes": 0,
+     "trend": "+26",
+     "team": {
+      "id": "277",
+      "location": "West Virginia",
+      "name": "Mountaineers",
+      "nickname": "West Virginia",
+      "abbreviation": "WVU"
+     },
+     "recordSummary": "0-0"
+    }
+   ]
+  },
+  {
+   "id": "2",
+   "name": "AFCA Coaches Poll",
+   "shortName": "AFCA Coaches Poll",
+   "type": "usa",
+   "occurrence": {
+    "number": 4,
+    "type": "week",
+    "last": false,
+    "value": "4",
+    "displayValue": "Week 4"
+   },
+   "headline": "2026 NCAA Football Rankings - AFCA Coaches Poll Week 4",
+   "ranks": [
+    {
+     "current": 1,
+     "previous": 1,
+     "points": 1807.0,
+     "firstPlaceVotes": 46,
+     "trend": "-",
+     "team": {
+      "id": "251",
+      "location": "Texas",
+      "name": "Longhorns",
+      "nickname": "Texas",
+      "abbreviation": "TEX"
+     },
+     "recordSummary": "3-0"
+    },
+    {
+     "current": 2,
+     "previous": 2,
+     "points": 1742.0,
+     "firstPlaceVotes": 16,
+     "trend": "-",
+     "team": {
+      "id": "61",
+      "location": "Georgia",
+      "name": "Bulldogs",
+      "nickname": "Georgia",
+      "abbreviation": "UGA"
+     },
+     "recordSummary": "3-0"
+    },
+    {
+     "current": 3,
+     "previous": 3,
+     "points": 1636.0,
+     "firstPlaceVotes": 2,
+     "trend": "-",
+     "team": {
+      "id": "87",
+      "location": "Notre Dame",
+      "name": "Fighting Irish",
+      "nickname": "Notre Dame",
+      "abbreviation": "ND"
+     },
+     "recordSummary": "3-0"
+    },
+    {
+     "current": 4,
+     "previous": 4,
+     "points": 1613.0,
+     "firstPlaceVotes": 9,
+     "trend": "-",
+     "team": {
+      "id": "84",
+      "location": "Indiana",
+      "name": "Hoosiers",
+      "nickname": "Indiana",
+      "abbreviation": "IU"
+     },
+     "recordSummary": "3-0"
+    },
+    {
+     "current": 5,
+     "previous": 5,
+     "points": 1552.0,
+     "firstPlaceVotes": 1,
+     "trend": "-",
+     "team": {
+      "id": "2390",
+      "location": "Miami",
+      "name": "Hurricanes",
+      "nickname": "Miami",
+      "abbreviation": "MIA"
+     },
+     "recordSummary": "3-0"
+    }
+   ],
+   "others": [
+    {
+     "current": 0,
+     "previous": 23,
+     "points": 116.0,
+     "firstPlaceVotes": 0,
+     "trend": "+23",
+     "team": {
+      "id": "248",
+      "location": "Houston",
+      "name": "Cougars",
+      "nickname": "Houston",
+      "abbreviation": "HOU"
+     },
+     "recordSummary": "0-0"
+    },
+    {
+     "current": 0,
+     "previous": 0,
+     "points": 114.0,
+     "firstPlaceVotes": 0,
+     "trend": "+26",
+     "team": {
+      "id": "344",
+      "location": "Mississippi State",
+      "name": "Bulldogs",
+      "nickname": "Mississippi St",
+      "abbreviation": "MSST"
+     },
+     "recordSummary": "0-0"
+    },
+    {
+     "current": 0,
+     "previous": 0,
+     "points": 70.0,
+     "firstPlaceVotes": 0,
+     "trend": "+26",
+     "team": {
+      "id": "150",
+      "location": "Duke",
+      "name": "Blue Devils",
+      "nickname": "Duke",
+      "abbreviation": "DUKE"
+     },
+     "recordSummary": "0-0"
+    }
+   ]
+  },
+  {
+   "id": "20",
+   "name": "FCS Coaches Poll",
+   "shortName": "FCS Coaches Poll",
+   "type": "fcs",
+   "occurrence": {
+    "number": 4,
+    "type": "week",
+    "last": false,
+    "value": "4",
+    "displayValue": "Week 4"
+   },
+   "headline": "2026 NCAA Football Rankings - FCS Coaches Poll Week 4",
+   "ranks": [
+    {
+     "current": 1,
+     "previous": 1,
+     "points": 649.0,
+     "firstPlaceVotes": 25,
+     "trend": "-",
+     "team": {
+      "id": "147",
+      "location": "Montana State",
+      "name": "Bobcats",
+      "nickname": "Montana St",
+      "abbreviation": "MTST"
+     },
+     "recordSummary": "4-0"
+    },
+    {
+     "current": 2,
+     "previous": 3,
+     "points": 598.0,
+     "firstPlaceVotes": 0,
+     "trend": "+1",
+     "team": {
+      "id": "2571",
+      "location": "South Dakota State",
+      "name": "Jackrabbits",
+      "nickname": "S Dakota St",
+      "abbreviation": "SDST"
+     },
+     "recordSummary": "3-1"
+    },
+    {
+     "current": 3,
+     "previous": 5,
+     "points": 566.0,
+     "firstPlaceVotes": 0,
+     "trend": "+2",
+     "team": {
+      "id": "2627",
+      "location": "Tarleton State",
+      "name": "Texans",
+      "nickname": "Tarleton St",
+      "abbreviation": "TAR"
+     },
+     "recordSummary": "4-0"
+    },
+    {
+     "current": 4,
+     "previous": 4,
+     "points": 561.0,
+     "firstPlaceVotes": 1,
+     "trend": "-",
+     "team": {
+      "id": "2287",
+      "location": "Illinois State",
+      "name": "Redbirds",
+      "nickname": "Illinois St",
+      "abbreviation": "ILST"
+     },
+     "recordSummary": "4-0"
+    },
+    {
+     "current": 4,
+     "previous": 2,
+     "points": 561.0,
+     "firstPlaceVotes": 0,
+     "trend": "-2",
+     "team": {
+      "id": "149",
+      "location": "Montana",
+      "name": "Grizzlies",
+      "nickname": "Montana",
+      "abbreviation": "MONT"
+     },
+     "recordSummary": "3-1"
+    }
+   ],
+   "others": [
+    {
+     "current": 0,
+     "previous": 25,
+     "points": 45.0,
+     "firstPlaceVotes": 0,
+     "trend": "+25",
+     "team": {
+      "id": "79",
+      "location": "Southern Illinois",
+      "name": "Salukis",
+      "nickname": "S Illinois",
+      "abbreviation": "SIU"
+     },
+     "recordSummary": "0-0"
+    },
+    {
+     "current": 0,
+     "previous": 0,
+     "points": 41.0,
+     "firstPlaceVotes": 0,
+     "trend": "+26",
+     "team": {
+      "id": "2097",
+      "location": "Campbell",
+      "name": "Fighting Camels",
+      "nickname": "Campbell",
+      "abbreviation": "CAM"
+     },
+     "recordSummary": "0-0"
+    },
+    {
+     "current": 0,
+     "previous": 0,
+     "points": 39.0,
+     "firstPlaceVotes": 0,
+     "trend": "+26",
+     "team": {
+      "id": "2296",
+      "location": "Jackson State",
+      "name": "Tigers",
+      "nickname": "Jackson St",
+      "abbreviation": "JKST"
+     },
+     "recordSummary": "0-0"
+    }
+   ]
+  },
+  {
+   "id": "11",
+   "name": "AFCA Division II Coaches Poll",
+   "shortName": "AFCA Div II",
+   "type": "afca",
+   "occurrence": {
+    "number": 4,
+    "type": "week",
+    "last": false,
+    "value": "4",
+    "displayValue": "Week 4"
+   },
+   "headline": "2026 NCAA Football Rankings - AFCA Div II Week 4",
+   "ranks": [
+    {
+     "current": 1,
+     "previous": 1,
+     "points": 775.0,
+     "firstPlaceVotes": 31,
+     "trend": "-",
+     "team": {
+      "id": "2222",
+      "location": "Ferris State",
+      "name": "Bulldogs",
+      "nickname": "Ferris St",
+      "abbreviation": "FRST"
+     },
+     "recordSummary": "3-0"
+    },
+    {
+     "current": 2,
+     "previous": 2,
+     "points": 744.0,
+     "firstPlaceVotes": 0,
+     "trend": "-",
+     "team": {
+      "id": "2264",
+      "location": "Harding University",
+      "name": "Bisons",
+      "nickname": "Harding",
+      "abbreviation": "HAR"
+     },
+     "recordSummary": "3-0"
+    },
+    {
+     "current": 3,
+     "previous": 3,
+     "points": 702.0,
+     "firstPlaceVotes": 0,
+     "trend": "-",
+     "team": {
+      "id": "2315",
+      "location": "Kutztown",
+      "name": "Golden Bears",
+      "nickname": "Kutztown",
+      "abbreviation": "KUT"
+     },
+     "recordSummary": "3-0"
+    },
+    {
+     "current": 4,
+     "previous": 4,
+     "points": 668.0,
+     "firstPlaceVotes": 0,
+     "trend": "-",
+     "team": {
+      "id": "2364",
+      "location": "Minnesota State Mankato",
+      "name": "Mavericks",
+      "nickname": "Minnesota St",
+      "abbreviation": "MNST"
+     },
+     "recordSummary": "4-0"
+    },
+    {
+     "current": 5,
+     "previous": 5,
+     "points": 652.0,
+     "firstPlaceVotes": 0,
+     "trend": "-",
+     "team": {
+      "id": "2570",
+      "location": "CSU Pueblo",
+      "name": "ThunderWolves",
+      "nickname": "CSU Pueblo",
+      "abbreviation": "CSUP"
+     },
+     "recordSummary": "4-0"
+    }
+   ],
+   "others": [
+    {
+     "current": 0,
+     "previous": 0,
+     "points": 51.0,
+     "firstPlaceVotes": 0,
+     "trend": "+26",
+     "team": {
+      "id": "2271",
+      "location": "Henderson State",
+      "name": "Reddies",
+      "nickname": "Henderson St",
+      "abbreviation": "HEN"
+     },
+     "recordSummary": "0-0"
+    },
+    {
+     "current": 0,
+     "previous": 0,
+     "points": 39.0,
+     "firstPlaceVotes": 0,
+     "trend": "+26",
+     "team": {
+      "id": "2974",
+      "location": "Shepherd",
+      "name": "Rams",
+      "nickname": "Shepherd",
+      "abbreviation": "SHEP"
+     },
+     "recordSummary": "0-0"
+    },
+    {
+     "current": 0,
+     "previous": 18,
+     "points": 34.0,
+     "firstPlaceVotes": 0,
+     "trend": "+18",
+     "team": {
+      "id": "2695",
+      "location": "West Alabama",
+      "name": "Tigers",
+      "nickname": "West Alabama",
+      "abbreviation": "WES"
+     },
+     "recordSummary": "0-0"
+    }
+   ]
+  },
+  {
+   "id": "12",
+   "name": "AFCA Division III Coaches Poll",
+   "shortName": "AFCA Div III",
+   "type": "afca",
+   "occurrence": {
+    "number": 4,
+    "type": "week",
+    "last": false,
+    "value": "4",
+    "displayValue": "Week 4"
+   },
+   "headline": "2026 NCAA Football Rankings - AFCA Div III Week 4",
+   "ranks": [
+    {
+     "current": 1,
+     "previous": 1,
+     "points": 1316.0,
+     "firstPlaceVotes": 46,
+     "trend": "-",
+     "team": {
+      "id": "3071",
+      "location": "North Central College",
+      "name": "Cardinals",
+      "nickname": "N Central (IL)",
+      "abbreviation": "NOR"
+     },
+     "recordSummary": "3-0"
+    },
+    {
+     "current": 2,
+     "previous": 2,
+     "points": 1242.0,
+     "firstPlaceVotes": 0,
+     "trend": "-",
+     "team": {
+      "id": "396",
+      "location": "Wheaton",
+      "name": "Thunder",
+      "nickname": "Wheaton (IL)",
+      "abbreviation": "WHE"
+     },
+     "recordSummary": "3-0"
+    },
+    {
+     "current": 3,
+     "previous": 4,
+     "points": 1216.0,
+     "firstPlaceVotes": 7,
+     "trend": "+1",
+     "team": {
+      "id": "2723",
+      "location": "Wisconsin-River Falls",
+      "name": "Falcons",
+      "nickname": "UW-River Falls",
+      "abbreviation": "WIRF"
+     },
+     "recordSummary": "3-0"
+    },
+    {
+     "current": 4,
+     "previous": 3,
+     "points": 1183.0,
+     "firstPlaceVotes": 0,
+     "trend": "-1",
+     "team": {
+      "id": "272",
+      "location": "Wisconsin-Platteville",
+      "name": "Pioneers",
+      "nickname": "UW-Platteville",
+      "abbreviation": "WIPL"
+     },
+     "recordSummary": "3-0"
+    },
+    {
+     "current": 5,
+     "previous": 5,
+     "points": 1104.0,
+     "firstPlaceVotes": 0,
+     "trend": "-",
+     "team": {
+      "id": "2600",
+      "location": "Saint John's (MN)",
+      "name": "Johnnies",
+      "nickname": "St Johns (MN)",
+      "abbreviation": "SJMN"
+     },
+     "recordSummary": "2-0"
+    }
+   ],
+   "others": [
+    {
+     "current": 0,
+     "previous": 0,
+     "points": 82.0,
+     "firstPlaceVotes": 0,
+     "trend": "+26",
+     "team": {
+      "id": "2516",
+      "location": "Randolph-Macon",
+      "name": "Yellow Jackets",
+      "nickname": "Randolph Macon",
+      "abbreviation": "RAN"
+     },
+     "recordSummary": "0-0"
+    },
+    {
+     "current": 0,
+     "previous": 15,
+     "points": 69.0,
+     "firstPlaceVotes": 0,
+     "trend": "+15",
+     "team": {
+      "id": "118",
+      "location": "Johns Hopkins",
+      "name": "Blue Jays",
+      "nickname": "Johns Hopkins",
+      "abbreviation": "JHU"
+     },
+     "recordSummary": "0-0"
+    },
+    {
+     "current": 0,
+     "previous": 0,
+     "points": 58.0,
+     "firstPlaceVotes": 0,
+     "trend": "+26",
+     "team": {
+      "id": "89",
+      "location": "Wabash College",
+      "name": "Little Giants",
+      "nickname": "Wabash",
+      "abbreviation": "WAB"
+     },
+     "recordSummary": "0-0"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,63 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { LEAGUES, parseScoreboard } from '../espn.js';
+import {
+  loadFollowed, saveFollowed, isFollowed, toggleFollowed, followedLeagues, countFollowed, gamesForTeams,
+} from '../myteams.js';
+
+function memoryStorage(initial = {}) {
+  const data = { ...initial };
+  return {
+    getItem: (key) => (key in data ? data[key] : null),
+    setItem: (key, value) => { data[key] = String(value); },
+    data,
+  };
+}
+
+const chiefs = { id: 12, name: 'Kansas City Chiefs', abbr: 'KC', logo: 'kc.png', color: '#e31837', extra: 'dropped' };
+const arsenal = { id: '359', name: 'Arsenal', abbr: 'ARS', logo: '', color: null };
+
+test('follows survive a reload and tolerate bad or missing storage', () => {
+  const storage = memoryStorage();
+  let list = toggleFollowed([], 'nfl', chiefs);
+  list = toggleFollowed(list, 'epl', arsenal);
+  saveFollowed(storage, list);
+  assert.deepEqual(loadFollowed(storage), [
+    { league: 'nfl', id: '12', name: 'Kansas City Chiefs', abbr: 'KC', logo: 'kc.png', color: '#e31837' },
+    { league: 'epl', id: '359', name: 'Arsenal', abbr: 'ARS', logo: '', color: null },
+  ]);
+  assert.deepEqual(loadFollowed(memoryStorage({ 'scores.myTeams': 'not json' })), []);
+  assert.deepEqual(loadFollowed(memoryStorage({ 'scores.myTeams': '{"a":1}' })), []);
+  assert.deepEqual(loadFollowed(null), []);
+  saveFollowed(null, list); // no throw
+  saveFollowed({ setItem() { throw new Error('quota'); } }, list); // no throw
+});
+
+test('toggling follows and unfollows by league and id', () => {
+  let list = toggleFollowed([], 'nfl', chiefs);
+  assert.ok(isFollowed(list, 'nfl', '12'));
+  assert.ok(isFollowed(list, 'nfl', 12));
+  assert.ok(!isFollowed(list, 'ncaaf', '12')); // same id, different league
+  list = toggleFollowed(list, 'nfl', { id: '12' });
+  assert.deepEqual(list, []);
+});
+
+test('leagues with follows come back in app order, with counts', () => {
+  let list = toggleFollowed([], 'epl', arsenal);
+  list = toggleFollowed(list, 'nfl', chiefs);
+  list = toggleFollowed(list, 'nfl', { id: '2', name: 'Buffalo Bills' });
+  assert.deepEqual(followedLeagues(list), ['nfl', 'epl']);
+  assert.equal(countFollowed(list, 'nfl'), 2);
+  assert.equal(countFollowed(list, 'nba'), 0);
+});
+
+test('a scoreboard is filtered to games with a followed team', () => {
+  const nfl = LEAGUES.find((l) => l.id === 'nfl');
+  const board = parseScoreboard(JSON.parse(readFileSync(new URL('./fixtures/nfl-scoreboard.json', import.meta.url))), nfl);
+  const kc = board.games.find((g) => g.id === '402').teams.find((t) => t.abbr === 'KC');
+  const list = toggleFollowed([], 'nfl', kc);
+  assert.deepEqual(gamesForTeams(board.games, list, 'nfl').map((g) => g.id), ['402']);
+  assert.deepEqual(gamesForTeams(board.games, list, 'nba'), []);
+  assert.deepEqual(gamesForTeams(board.games, [], 'nfl'), []);
+});
