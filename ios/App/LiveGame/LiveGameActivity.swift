@@ -301,6 +301,11 @@ struct TeamBadge: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: size, height: size)
+                // A soft white glow, a tight one and a wide one, so a dark
+                // logo (Iowa's black hawk) shows on the glass card and on the
+                // island's black.
+                .shadow(color: .white.opacity(0.55), radius: max(1, size * 0.04))
+                .shadow(color: .white.opacity(0.35), radius: max(2, size * 0.12))
         } else {
             fallback
         }
