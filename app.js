@@ -14,6 +14,7 @@ import {
   initPages, parseRoute, showPage, hidePage, pageOpen, refreshPage, pageVisible, gameHref, teamHref,
 } from './pages.js';
 import { initPullToRefresh } from './pull.js';
+import { initSwipeNav } from './swipe.js';
 import { inApp, setAlertTeams } from './native.js';
 
 const MINE = { id: 'mine', label: 'My Teams', mine: true };
@@ -628,6 +629,14 @@ document.addEventListener('click', (event) => {
 const refreshNow = () => (pageOpen() ? refreshPage() : load());
 els.refresh.addEventListener('click', refreshNow);
 initPullToRefresh({ refresh: refreshNow, enabled: () => !picker.open });
+initSwipeNav({
+  enabled: () => inApp() && !picker.open,
+  content: () => document.getElementById(pageOpen() ? 'page' : 'main'),
+  canBack: () => pageOpen(),
+  canForward: () => furthest > depth,
+  back: () => goBack(),
+  forward: () => history.forward(),
+});
 
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') closePicker();
@@ -689,15 +698,25 @@ function applyRoute() {
   else schedule();
 }
 
+// Where in the app's own history we are, and how far forward it goes, so a
+// forward swipe only moves when there's somewhere to go.
+let depth = history.state?.depth ?? 0;
+let furthest = depth;
+let traversing = false;
+
 function navigate(href) {
   history.replaceState({ ...history.state, scroll: window.scrollY }, '');
   history.pushState({ depth: (history.state?.depth ?? 0) + 1 }, '', href);
+  depth = history.state.depth;
+  furthest = depth;
   applyRoute();
 }
 
 function goBack() {
   if (history.state?.depth > 0) history.back();
   else {
+    depth = 0;
+    furthest = 0;
     history.replaceState(null, '', location.pathname + location.search);
     applyRoute();
   }
@@ -709,8 +728,21 @@ document.addEventListener('click', (event) => {
   event.preventDefault();
   if (link.getAttribute('href') !== location.hash) navigate(link.getAttribute('href'));
 });
-window.addEventListener('popstate', applyRoute);
-window.addEventListener('hashchange', applyRoute);
+window.addEventListener('popstate', () => {
+  depth = history.state?.depth ?? 0;
+  traversing = true;
+  applyRoute();
+});
+window.addEventListener('hashchange', () => {
+  // A hash set directly (an alert or card opening a game) starts a new
+  // branch of history; a back or forward lands here after its popstate.
+  if (!traversing) {
+    depth = history.state?.depth ?? 0;
+    furthest = depth;
+  }
+  traversing = false;
+  applyRoute();
+});
 els.back.addEventListener('click', goBack);
 
 initPages({

@@ -111,8 +111,8 @@ export function initPullToRefresh({ refresh, enabled }) {
 }
 
 // League pills and wide tables scroll sideways; a drag that starts on one is
-// theirs, even if it wobbles downward first.
-function inSideScroller(node) {
+// theirs, even if it wobbles downward first (swipe.js uses this too).
+export function inSideScroller(node) {
   for (let el = node instanceof Element ? node : node?.parentElement; el && el !== document.body; el = el.parentElement) {
     if (el.scrollWidth > el.clientWidth + 1 && /auto|scroll/.test(getComputedStyle(el).overflowX)) return true;
   }
