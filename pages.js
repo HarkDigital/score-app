@@ -2,7 +2,7 @@
 // scoreboard from links like #/game/nfl/401547417 and #/team/nfl/12, so the
 // back button, swipe-back and shared links all work.
 
-import { leagueById, statusLabel } from './espn.js';
+import { leagueById, statusLabel, lineSteamUrl } from './espn.js';
 import { summaryUrl, scheduleUrls, parseSummary, parseSchedule } from './details.js';
 import { ICONS, getJson, TROUBLE, oddsHtml, logoHtml, emptyState, errorState, formatClock, esc } from './ui.js';
 
@@ -107,7 +107,7 @@ function render() {
   app.setTitle(data ? title(route, data) : '');
   let html;
   if (!data) html = error ? errorState() : loadingHtml(route.kind);
-  else html = route.kind === 'game' ? gameHtml(data, route.league) : teamHtml(data, route.league);
+  else html = route.kind === 'game' ? gameHtml(data, route.league, route.id) : teamHtml(data, route.league);
   const updated = data && page.updatedAt
     ? `<p class="status${error ? ' error' : ''}">${error ? `Couldn't reach ESPN. Showing data from ${esc(formatClock(page.updatedAt))}.` : `Updated ${esc(formatClock(page.updatedAt))}${route.kind === 'game' && data.state === 'in' ? ' · refreshing every 30s' : ''}`}</p>`
     : '';
@@ -128,10 +128,11 @@ function loadingHtml(kind) {
 
 // ---- Game page ----
 
-function gameHtml(game, league) {
+function gameHtml(game, league, id) {
+  const odds = game.odds && !TROUBLE.test(game.statusName) ? `<div class="card page-odds">${oddsHtml(game.odds, league)}${moneylinesHtml(game)}</div>` : '';
   const sections = [
     matchupHtml(game, league),
-    game.odds && !TROUBLE.test(game.statusName) ? `<div class="card page-odds">${oddsHtml(game.odds, league)}${moneylinesHtml(game)}</div>` : '',
+    odds,
     lineScoreHtml(game),
     scoringHtml(game, league),
     playersHtml(game),
@@ -140,7 +141,22 @@ function gameHtml(game, league) {
   if (game.state === 'pre' && sections.length <= 2) {
     sections.push(emptyState({ icon: ICONS.clipboard, title: 'Box score at kickoff', text: 'Player and team stats show up here once the game starts.' }));
   }
+  // The line history sits under the lines (or the matchup once they're gone).
+  sections.splice(odds ? 2 : 1, 0, lineSteamHtml(league, id));
   return sections.join('');
+}
+
+// LineSteam (linesteam.com) charts every FanDuel line move for its five
+// leagues. Opens outside the app.
+function lineSteamHtml(league, id) {
+  const url = lineSteamUrl(league, id);
+  if (!url) return '';
+  return `
+    <a class="card ext-link" href="${esc(url)}" target="_blank" rel="noopener">
+      <span class="ext-icon">${ICONS.chart}</span>
+      <span class="ext-text"><span class="ext-title">Line movement</span><span class="ext-sub">FanDuel's spread, total and moneyline history on LineSteam</span></span>
+      <span class="ext-arrow">${ICONS.external}</span>
+    </a>`;
 }
 
 function matchupHtml(game, league) {

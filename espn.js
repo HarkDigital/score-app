@@ -7,12 +7,14 @@ const BASE = 'https://site.api.espn.com/apis/site/v2/sports';
 // weekly: football is browsed by week rather than by day.
 // homeFirst: soccer lists the home side first; US sports list away first.
 // college: conference standings, and weekly polls (AP, Coaches, CFP).
+// linesteam: the league's slug on linesteam.com, which charts FanDuel line
+// movement for these five; game pages link there.
 export const LEAGUES = [
-  { id: 'nfl', label: 'NFL', path: 'football/nfl', weekly: true },
-  { id: 'nba', label: 'NBA', path: 'basketball/nba' },
-  { id: 'mlb', label: 'MLB', path: 'baseball/mlb' },
-  { id: 'nhl', label: 'NHL', path: 'hockey/nhl' },
-  { id: 'ncaaf', label: 'NCAAF', path: 'football/college-football', weekly: true, college: true, rankings: true, params: { groups: '80', limit: '300' }, standingsParams: { group: '80' } },
+  { id: 'nfl', label: 'NFL', path: 'football/nfl', weekly: true, linesteam: 'nfl' },
+  { id: 'nba', label: 'NBA', path: 'basketball/nba', linesteam: 'nba' },
+  { id: 'mlb', label: 'MLB', path: 'baseball/mlb', linesteam: 'mlb' },
+  { id: 'nhl', label: 'NHL', path: 'hockey/nhl', linesteam: 'nhl' },
+  { id: 'ncaaf', label: 'NCAAF', path: 'football/college-football', weekly: true, college: true, rankings: true, linesteam: 'cfb', params: { groups: '80', limit: '300' }, standingsParams: { group: '80' } },
   { id: 'ncaam', label: 'NCAAM', path: 'basketball/mens-college-basketball', college: true, rankings: true, params: { groups: '50', limit: '400' }, standingsParams: { group: '50' } },
   { id: 'wnba', label: 'WNBA', path: 'basketball/wnba' },
   { id: 'mls', label: 'MLS', path: 'soccer/usa.1', homeFirst: true },
@@ -21,6 +23,13 @@ export const LEAGUES = [
 ];
 
 export const leagueById = (id) => LEAGUES.find((l) => l.id === id);
+
+// LineSteam's page for a game, by ESPN's event id: linesteam.com/espn/... redirects
+// to the game (or to the league's dashboard if LineSteam hasn't matched it yet).
+export function lineSteamUrl(league, eventId) {
+  if (!league?.linesteam || !eventId) return null;
+  return `https://linesteam.com/espn/${league.linesteam}/${encodeURIComponent(eventId)}`;
+}
 
 // byDate: fetch a weekly league by calendar day instead (My Teams mixes
 // leagues on one day, so football can't be browsed by week there).

@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import {
   LEAGUES, scoreboardUrl, parseScoreboard, groupGames, refreshDelay,
   statusLabel, formatStart, dayLabel, weekLabel, weekInfo, adjacentWeek, teamColor, fallbackUrl, parseOdds,
+  lineSteamUrl,
 } from '../espn.js';
 
 const league = (id) => LEAGUES.find((l) => l.id === id);
@@ -265,4 +266,12 @@ test('lines show only before kickoff', () => {
   assert.equal(board('post'), null);
   // The sample feed's games carry no odds at all.
   assert.ok(nfl.games.every((g) => g.odds === null));
+});
+
+test('LineSteam links cover its five leagues, by ESPN event id', () => {
+  assert.equal(lineSteamUrl(league('nfl'), '401872965'), 'https://linesteam.com/espn/nfl/401872965');
+  assert.equal(lineSteamUrl(league('ncaaf'), '401856705'), 'https://linesteam.com/espn/cfb/401856705');
+  assert.deepEqual(LEAGUES.filter((l) => l.linesteam).map((l) => l.id), ['nfl', 'nba', 'mlb', 'nhl', 'ncaaf']);
+  assert.equal(lineSteamUrl(league('epl'), '704512'), null);
+  assert.equal(lineSteamUrl(league('nfl'), ''), null);
 });
