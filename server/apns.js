@@ -52,8 +52,6 @@ export function createApns({ keyPem, keyId, teamId, bundleId, log = console.log 
     s.on('error', (err) => log(`apns ${env} connection error: ${err.message}`));
     s.on('close', () => sessions.delete(env));
     s.on('goaway', () => sessions.delete(env));
-    // Don't keep the process alive for an idle connection.
-    s.unref();
     sessions.set(env, s);
     return s;
   }
