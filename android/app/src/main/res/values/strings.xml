@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Phade Scores</string>
+    <string name="title_activity_main">Phade Scores</string>
+    <string name="package_name">digital.hark.scores</string>
+    <string name="custom_url_scheme">digital.hark.scores</string>
+</resources>

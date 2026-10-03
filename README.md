@@ -80,6 +80,26 @@ The app needs iOS 16 or later. The Lock Screen card and alerts need the push ser
 - **Age rating:** the betting lines will likely mean answering "Gambling: Yes" in the age rating; Phade was rejected under guideline 2.3.6 until it did.
 - **Review risks:** Apple can reject apps that are mostly a website (guideline 4.2) or that use others' data and logos without permission (5.2: ESPN's feed and team logos).
 
+## Android app (testers)
+
+"Phade Scores" for Android is the same thin shell as the iPhone app (the Capacitor project in `android/`, app ID `digital.hark.scores`): it opens the live site, so web changes reach it as soon as they're merged, and it reloads itself when the site has been updated. Back (the gesture or the button) steps back through the app's pages and leaves the app from the first one. Buttons give a short haptic buzz.
+
+Not on Android yet: the Lock Screen card and team alerts (they're iPhone features; Android would need its own notifications and Google's push service).
+
+**Make a build for testers:**
+
+```
+npm run android:apk
+```
+
+That raises the build number, builds a signed APK and puts it at `dist/PhadeScores.apk` (not in git). It needs Android Studio's SDK and Java 21 (`brew install openjdk@21`; Android Studio's own Java is too new for this Gradle).
+
+**Get it onto a tester's phone:** send them the APK (for example a Dropbox link to `dist/PhadeScores.apk`). On the phone, open the file, let the browser or Files app "Install unknown apps" when Android asks, and tap Install. Google Play Protect may warn that the developer is unknown: choose "More details", then "Install anyway". For a new version, run `npm run android:apk` again and send the new file; it installs over the old one. Only needed for changes to the Android shell itself; site changes arrive by themselves.
+
+**The signing key:** `android/keystore/phade-scores-release.jks` and `android/keystore.properties` (passwords) are kept out of git. Back them both up (a password manager is good): every update has to be signed with this key, or phones refuse to install it over the old version. The same key works as the upload key if the app goes on Google Play later (Play Console's internal testing gives testers a Play Store link instead of a file).
+
+Other commands: `npm run android:open` opens the project in Android Studio, `npm run android:sync` copies the Capacitor config into it, and `npm run android:icons` re-renders the launcher icons from the iPhone icon's design.
+
 ## How fresh are the scores?
 
 Scores come from ESPN's public scoreboard feed, which is the same data that powers espn.com's scoreboard. The app polls it on a schedule:
@@ -122,8 +142,11 @@ Start times for upcoming games come from the league schedule and are shown in yo
 | `index.html`, `styles.css`       | Page shell and styles                                                |
 | `manifest.webmanifest`, `icons/` | Home-screen install metadata and icons                               |
 | `test/`                          | Unit tests and feed responses trimmed from real ESPN data            |
-| `capacitor.config.json`          | iPhone app settings: app ID, name, the site it loads                 |
-| `native/www/`                    | Offline page bundled into the iPhone app                             |
+| `capacitor.config.json`          | App settings (iPhone and Android): app ID, name, the site it loads   |
+| `native/www/`                    | Offline page bundled into the apps                                   |
+| `android/`                       | The Android Studio project                                           |
 | `ios/`                           | The Xcode project: the app, and `LiveGame/` for the Lock Screen card |
 | `server/`                        | The push server for Lock Screen cards and alerts (scores.phade.app)  |
 | `scripts/bump-build.js`          | `npm run ios:bump`: next build number for the app and its extension  |
+| `scripts/android-apk.js`         | `npm run android:apk`: a signed APK for testers in `dist/`           |
+| `scripts/android-icons.js`       | `npm run android:icons`: Android launcher icons from the icon design |
