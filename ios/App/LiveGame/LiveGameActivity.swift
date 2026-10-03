@@ -3,9 +3,10 @@ import SwiftUI
 import WidgetKit
 
 // The Lock Screen card and Dynamic Island for one game, in Phade's look:
-// near-black, mint accent, the red live dot, team logos (from the files
-// logos the app saved, falling back to Phade's team-color badges), tabular
-// numbers. Tapping opens the game page in the app.
+// glass on the Lock Screen (near-black in the island), mint accent, the red
+// live dot, team logos (from the files the app saved, falling back to
+// Phade's team-color badges), tabular numbers. Tapping opens the game page
+// in the app.
 
 @main
 struct LiveGameBundle: WidgetBundle {
@@ -17,8 +18,11 @@ struct LiveGameBundle: WidgetBundle {
 struct LiveGameActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: GameAttributes.self) { context in
+            // A see-through tint lets iOS draw its glass behind the card (the
+            // wallpaper shows through, blurred); 30% black keeps the white
+            // score readable on a light wallpaper too.
             LockScreenView(game: Game(context.attributes, context.state))
-                .activityBackgroundTint(Phade.background)
+                .activityBackgroundTint(Phade.background.opacity(0.3))
                 .activitySystemActionForegroundColor(.white)
                 .widgetURL(context.attributes.url)
         } dynamicIsland: { context in

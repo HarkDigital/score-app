@@ -134,9 +134,9 @@ test('dead tokens are recognized', () => {
   assert.ok(!tokenIsDead(429, 'TooManyRequests'));
 });
 
-test('a live game polls every 15s, a quiet day every 15 minutes', () => {
+test('a live game polls every 5s, one about to start every 15s, a quiet day every 15 minutes', () => {
   const now = Date.parse('2026-10-04T16:00:00Z');
-  assert.equal(pollDelay([{ state: 'in' }], now), 15_000);
+  assert.equal(pollDelay([{ state: 'in' }], now), 5_000);
   assert.equal(pollDelay([{ state: 'pre', start: now + 10 * 60_000 }], now), 15_000);
   assert.equal(pollDelay([{ state: 'pre', start: now + 3 * 3_600_000 }], now), 120_000);
   assert.equal(pollDelay([], now), 900_000);

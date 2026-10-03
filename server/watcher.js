@@ -39,7 +39,7 @@ export function scoreDays(nowMs, startsMs) {
 
 // How long until a league's next fetch, from its watched games.
 export function pollDelay(games, nowMs) {
-  if (games.some((g) => g.state === 'in')) return 15_000;
+  if (games.some((g) => g.state === 'in')) return 5_000;
   const untilStart = games.filter((g) => g.state === 'pre').map((g) => g.start - nowMs);
   // About to start, or past its start time and not marked live yet.
   if (untilStart.some((ms) => ms < 15 * MIN && ms > -6 * HOUR)) return 15_000;
@@ -122,8 +122,10 @@ export function createWatcher({ store, apns, fetchJson: getJson = fetchJson, log
         ...Object.values(data.scheduled).map((s) => s.league),
         ...Object.values(data.devices).flatMap((d) => d.teams.map((t) => t.league)),
       ]);
+      let fetched = false;
       for (const id of leagues) {
         if ((nextFetch.get(id) ?? 0) > now()) continue;
+        fetched = true;
         const league = leagueById(id);
         const starts = [...Object.values(data.activities), ...Object.values(data.scheduled)]
           .filter((a) => a.league === id && a.start).map((a) => a.start * 1000);
@@ -145,7 +147,7 @@ export function createWatcher({ store, apns, fetchJson: getJson = fetchJson, log
         for (const game of mine) await handleGame(league, game);
         nextFetch.set(id, now() + pollDelay(mine, now()));
       }
-      store.save();
+      if (fetched) store.save();
     } catch (err) {
       log(`tick failed: ${err.stack ?? err.message}`);
     } finally {

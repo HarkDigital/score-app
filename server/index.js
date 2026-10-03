@@ -41,7 +41,9 @@ if (env.APNS_KEY_PATH && isFile(env.APNS_KEY_PATH) && env.APNS_KEY_ID && env.APN
 }
 
 const watcher = createWatcher({ store, apns, log });
-setInterval(watcher.tick, 5_000);
+// Every second, so a league due every 5s is fetched on time; a tick with
+// nothing due does nothing.
+setInterval(watcher.tick, 1_000);
 watcher.tick();
 
 const MAX = { activities: 5_000, scheduled: 20_000, devices: 50_000 };

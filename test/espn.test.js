@@ -201,7 +201,7 @@ test('refresh is fast while live, slower before kickoff, off otherwise', () => {
   const now = Date.parse('2026-10-04T16:00Z');
   const pre = (iso, extra) => ({ state: 'pre', start: new Date(iso), ...extra });
 
-  assert.equal(refreshDelay(nfl.games, now), 15_000);
+  assert.equal(refreshDelay(nfl.games, now), 5_000);
   assert.equal(refreshDelay([pre('2026-10-04T16:20Z')], now), 30_000);
   // Past its start time but not live yet (e.g. a delay): keep checking.
   assert.equal(refreshDelay([pre('2026-10-04T14:00Z')], now), 30_000);
