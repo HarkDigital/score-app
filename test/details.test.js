@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { leagueById } from '../espn.js';
-import { summaryUrl, scheduleUrls, parseSummary, parseSchedule, periodLabels } from '../details.js';
+import { summaryUrl, scheduleUrls, parseSummary, parseSchedule, periodLabels, lockScreenCard, canShowOnLockScreen } from '../details.js';
 
 // Trimmed from real ESPN game summaries and team schedules (2024-26).
 const fixture = (name) => JSON.parse(readFileSync(new URL(`./fixtures/${name}.json`, import.meta.url)));
@@ -121,4 +121,35 @@ test('schedules from several requests are merged, deduplicated and in date order
   const loss = parseSchedule([{ ...regular, events: regular.events.slice(0, 1).map((e) => ({ ...e, competitions: [{ ...e.competitions[0], competitors: e.competitions[0].competitors.map((c) => ({ ...c, winner: !c.winner })) }] })) }], leagueById('ncaam'), '150');
   assert.equal(loss.games[0].result, 'L');
   assert.deepEqual(parseSchedule([], leagueById('nhl'), '23').games, []);
+});
+
+test('lock-screen card: away and home by side, scores, and a status only when it says something', () => {
+  const nfl = leagueById('nfl');
+  const game = parseSummary(JSON.parse(readFileSync(new URL('./fixtures/nfl-summary.json', import.meta.url))), nfl);
+  const card = lockScreenCard(game, nfl, '401547417');
+  const away = game.teams.find((t) => t.homeAway === 'away');
+  const home = game.teams.find((t) => t.homeAway === 'home');
+  assert.equal(card.eventId, '401547417');
+  assert.equal(card.league, 'nfl');
+  assert.equal(card.homeFirst, false);
+  assert.deepEqual(card.away, { abbr: away.abbr, name: away.shortName, color: away.color });
+  assert.equal(card.home.abbr, home.abbr);
+  assert.equal(card.state.away, away.score);
+  assert.equal(card.state.home, home.score);
+  assert.equal(card.start, Math.floor(game.start.getTime() / 1000));
+  // A scheduled game's status is left to the phone, which shows the local start time.
+  const pre = lockScreenCard({ ...game, state: 'pre', statusName: 'STATUS_SCHEDULED', statusText: '10/4 - 1:00 PM EDT' }, nfl);
+  assert.equal(pre.state.status, '');
+  const late = lockScreenCard({ ...game, state: 'pre', statusName: 'STATUS_DELAYED', statusText: 'Delayed' }, nfl);
+  assert.equal(late.state.status, 'Delayed');
+});
+
+test('lock-screen card is offered for live games and ones starting within six hours', () => {
+  const now = new Date('2026-10-04T16:00:00Z');
+  const pre = (hours) => ({ state: 'pre', statusName: 'STATUS_SCHEDULED', start: new Date(now.getTime() + hours * 3_600_000) });
+  assert.ok(canShowOnLockScreen({ state: 'in' }, now));
+  assert.ok(canShowOnLockScreen(pre(2), now));
+  assert.ok(!canShowOnLockScreen(pre(9), now));
+  assert.ok(!canShowOnLockScreen({ state: 'post' }, now));
+  assert.ok(!canShowOnLockScreen({ ...pre(1), statusName: 'STATUS_POSTPONED' }, now));
 });

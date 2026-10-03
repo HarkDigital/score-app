@@ -82,6 +82,42 @@ export function parseSummary(data, league) {
   };
 }
 
+// What the iPhone app needs to put a game on the Lock Screen (a Live
+// Activity): GameAttributes and its ContentState in the app, so the keys must
+// match. The push server takes over the state from there (server/live.js
+// builds the same ContentState from the scoreboard).
+export function lockScreenCard(game, league, eventId) {
+  const home = game.teams.find((t) => t.homeAway === 'home') ?? game.teams[league.homeFirst ? 0 : 1];
+  const away = game.teams.find((t) => t.homeAway === 'away') ?? game.teams[league.homeFirst ? 1 : 0];
+  if (!home || !away) return null;
+  const team = (t) => ({ abbr: t.abbr || t.shortName, name: t.shortName || t.name, color: t.color ?? null });
+  const scheduled = game.state === 'pre' && game.statusName === 'STATUS_SCHEDULED';
+  return {
+    league: league.id,
+    leagueLabel: league.label,
+    eventId: String(eventId ?? game.id),
+    start: Math.floor(game.start.getTime() / 1000),
+    homeFirst: Boolean(league.homeFirst),
+    away: team(away),
+    home: team(home),
+    state: {
+      away: away.score ?? '',
+      home: home.score ?? '',
+      state: game.state,
+      status: scheduled ? '' : game.statusText,
+      detail: '',
+    },
+  };
+}
+
+// A card is worth offering for a game that's on, or starts within six hours:
+// iOS ends a Live Activity after eight.
+export function canShowOnLockScreen(game, now = new Date()) {
+  if (game.state === 'in') return true;
+  if (game.state !== 'pre' || game.statusName !== 'STATUS_SCHEDULED') return false;
+  return game.start - now < 6 * 3_600_000;
+}
+
 function recordOf(record) {
   if (typeof record === 'string') return record;
   if (!Array.isArray(record)) return '';

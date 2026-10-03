@@ -30,6 +30,22 @@ export function toggleFollowed(list, leagueId, team) {
   return [...list, { league: leagueId, id, name, abbr, logo, color }];
 }
 
+// Team alerts (game starting, final score) are per followed team, sent by
+// the iPhone app's push server. Unfollowing a team drops its alerts with it.
+export function hasAlerts(list, leagueId, teamId) {
+  return list.some((t) => t.league === leagueId && t.id === String(teamId) && t.alerts === true);
+}
+
+export function setAlerts(list, leagueId, teamId, on) {
+  const id = String(teamId);
+  return list.map((t) => (t.league === leagueId && t.id === id ? { ...t, alerts: on } : t));
+}
+
+// What the push server needs: just the league and team ids.
+export function alertTeams(list) {
+  return list.filter((t) => t.alerts === true).map(({ league, id }) => ({ league, id }));
+}
+
 // League ids with at least one followed team, in the app's league order.
 export function followedLeagues(list) {
   return LEAGUES.map((l) => l.id).filter((id) => list.some((t) => t.league === id));

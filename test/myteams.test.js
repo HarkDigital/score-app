@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { LEAGUES, parseScoreboard } from '../espn.js';
 import {
   loadFollowed, saveFollowed, isFollowed, toggleFollowed, followedLeagues, countFollowed, gamesForTeams,
+  hasAlerts, setAlerts, alertTeams,
 } from '../myteams.js';
 
 function memoryStorage(initial = {}) {
@@ -60,4 +61,17 @@ test('a scoreboard is filtered to games with a followed team', () => {
   assert.deepEqual(gamesForTeams(board.games, list, 'nfl').map((g) => g.id), ['402']);
   assert.deepEqual(gamesForTeams(board.games, list, 'nba'), []);
   assert.deepEqual(gamesForTeams(board.games, [], 'nfl'), []);
+});
+
+test('alerts are per followed team and go when the team does', () => {
+  const eagles = { id: '21', name: 'Eagles', abbr: 'PHI' };
+  const phillies = { id: '22', name: 'Phillies', abbr: 'PHI' };
+  let list = toggleFollowed(toggleFollowed([], 'nfl', eagles), 'mlb', phillies);
+  assert.equal(hasAlerts(list, 'nfl', '21'), false, 'off until asked for');
+  list = setAlerts(list, 'nfl', 21, true);
+  assert.equal(hasAlerts(list, 'nfl', '21'), true);
+  assert.equal(hasAlerts(list, 'mlb', '22'), false);
+  assert.deepEqual(alertTeams(list), [{ league: 'nfl', id: '21' }]);
+  list = toggleFollowed(list, 'nfl', eagles);
+  assert.deepEqual(alertTeams(list), []);
 });

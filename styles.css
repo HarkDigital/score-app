@@ -1374,7 +1374,8 @@ a.team-cell:hover .team-name { color: var(--accent); }
 .page-odds .game-odds:first-child { border-top: 0; }
 
 /* Link out to LineSteam's line-movement chart for the game. */
-a.ext-link {
+a.ext-link,
+button.ext-link {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1385,7 +1386,44 @@ a.ext-link {
   text-decoration: none;
 }
 
-a.ext-link:hover { border-color: rgb(70 187 147 / 0.35); }
+a.ext-link:hover,
+button.ext-link:hover { border-color: rgb(70 187 147 / 0.35); }
+
+button.ext-link {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+button.ext-link:disabled { opacity: 0.6; }
+button.ext-link:not(:disabled):active { transform: scale(0.99); }
+
+/* iPhone app: the game on the Lock Screen. */
+.lock-card.on { border-color: rgb(70 187 147 / 0.45); }
+.lock-card.on .ext-title { color: var(--accent); }
+.ext-sub.error { color: var(--live); }
+
+/* Team page: Follow, and in the iPhone app the alerts bell beside it. */
+.team-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.alert-btn { color: var(--gray-400); }
+
+.alert-btn.on {
+  color: var(--accent);
+  border-color: rgb(70 187 147 / 0.35);
+}
+
+.team-head .alert-note {
+  max-width: 320px;
+  margin: 10px auto 0;
+  color: var(--live);
+}
 
 .ext-icon {
   flex: none;
@@ -1636,7 +1674,6 @@ a.ext-link:hover { border-color: rgb(70 187 147 / 0.35); }
 
 .team-head .sub { margin: 0; }
 
-.follow-btn { margin-top: 10px; }
 
 .follow-btn.on {
   border-color: transparent;

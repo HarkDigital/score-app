@@ -3,8 +3,9 @@
 // back button, swipe-back and shared links all work.
 
 import { leagueById, statusLabel, lineSteamUrl } from './espn.js';
-import { summaryUrl, scheduleUrls, parseSummary, parseSchedule } from './details.js';
+import { summaryUrl, scheduleUrls, parseSummary, parseSchedule, lockScreenCard, canShowOnLockScreen } from './details.js';
 import { ICONS, getJson, TROUBLE, oddsHtml, logoHtml, emptyState, errorState, formatClock, esc } from './ui.js';
+import { inApp, nativeInfo, showOnLockScreen, removeFromLockScreen, enableAlerts } from './native.js';
 
 export const gameHref = (leagueId, id) => `#/game/${leagueId}/${encodeURIComponent(id)}`;
 export const teamHref = (leagueId, id) => `#/team/${leagueId}/${encodeURIComponent(id)}`;
@@ -30,6 +31,18 @@ const page = {
   requestId: 0,
 };
 const root = () => document.getElementById('page');
+
+// iPhone app only: what the app says about Live Activities and alerts, and
+// the state of the game page's Lock Screen card and the team page's bell.
+const native = { info: null, busy: false, lockError: '', alertNote: '' };
+
+function refreshNative() {
+  if (!inApp()) return;
+  nativeInfo().then((info) => {
+    native.info = info;
+    if (page.route) render();
+  });
+}
 
 // The last few pages, so going back (button or swipe) shows the page as it
 // was straight away, then refreshes it if it's stale.
@@ -64,6 +77,8 @@ export function showPage(route) {
   leave();
   const seen = recent.get(route.key);
   Object.assign(page, { route, data: null, error: null, updatedAt: null, side: 0 }, seen);
+  Object.assign(native, { lockError: '', alertNote: '' });
+  refreshNative();
   render();
   if (stale()) load();
   else schedule();
@@ -85,6 +100,8 @@ export function pageVisible(visible) {
   if (!visible) clearTimeout(page.timer);
   else if (stale()) load();
   else schedule();
+  // The card may have been swiped off the Lock Screen meanwhile.
+  if (visible) refreshNative();
 }
 
 async function load() {
@@ -171,7 +188,44 @@ function gameHtml(game, league, id) {
   }
   // The line history sits under the lines (or the matchup once they're gone).
   sections.splice(odds ? 2 : 1, 0, lineSteamHtml(league, id));
+  sections.splice(1, 0, lockHtml(game, league, id));
   return sections.join('');
+}
+
+// iPhone app only: put this game's live score on the Lock Screen and in the
+// Dynamic Island (one game at a time; the push server keeps it current).
+function onLockScreen(league, id) {
+  const current = native.info?.current;
+  return current?.league === league.id && current?.eventId === String(id);
+}
+
+function lockHtml(game, league, id) {
+  if (!native.info?.liveActivities) return '';
+  const on = onLockScreen(league, id);
+  if (!on && !canShowOnLockScreen(game)) return '';
+  const sub = native.lockError
+    || (on ? 'Live score on your Lock Screen and in the Dynamic Island. Tap to remove.' : 'Keep the live score on your Lock Screen and in the Dynamic Island.');
+  return `
+    <button class="card ext-link lock-card${on ? ' on' : ''}" data-lock aria-pressed="${on}"${native.busy ? ' disabled' : ''}>
+      <span class="ext-icon">${on ? ICONS.lockCheck : ICONS.lock}</span>
+      <span class="ext-text"><span class="ext-title">${on ? 'On your Lock Screen' : 'Show on Lock Screen'}</span><span class="ext-sub${native.lockError ? ' error' : ''}">${esc(sub)}</span></span>
+    </button>`;
+}
+
+async function toggleLock() {
+  const { data, route } = page;
+  if (!data || native.busy) return;
+  const on = onLockScreen(route.league, route.id);
+  native.busy = true;
+  native.lockError = '';
+  render();
+  const result = on ? await removeFromLockScreen() : await showOnLockScreen(lockScreenCard(data, route.league, route.id));
+  native.busy = false;
+  if (!result?.ok) {
+    native.lockError = on ? "Couldn't remove it. Try again." : "Couldn't add it. Check that Live Activities are on for Phade Scores in Settings.";
+  }
+  native.info = await nativeInfo();
+  render();
 }
 
 // LineSteam (linesteam.com) charts every FanDuel line move for its five
@@ -325,9 +379,13 @@ function teamHtml(data, league) {
       <h2>${esc(team.name)}</h2>
       ${subtitle ? `<p class="sub">${esc(subtitle)}</p>` : ''}
       <p class="sub">${esc(league.label)}${data.season ? ` · ${esc(data.season)}` : ''}</p>
-      <button class="pill-btn follow-btn${following ? ' on' : ''}" data-follow aria-pressed="${following}">
-        ${following ? `${ICONS.check} Following` : `${ICONS.plus} Follow`}
-      </button>
+      <div class="team-actions">
+        <button class="pill-btn follow-btn${following ? ' on' : ''}" data-follow aria-pressed="${following}">
+          ${following ? `${ICONS.check} Following` : `${ICONS.plus} Follow`}
+        </button>
+        ${alertsHtml(league, team, following)}
+      </div>
+      ${native.alertNote ? `<p class="sub alert-note">${esc(native.alertNote)}</p>` : ''}
     </div>`;
   if (!games.length) {
     return head + emptyState({ icon: ICONS.calendar, title: 'No games listed', text: `ESPN has no ${league.label} schedule for this team right now.` });
@@ -337,6 +395,33 @@ function teamHtml(data, league) {
   const results = games.filter((g) => g.state === 'post').reverse();
   const list = (heading, items, cls = '') => (items.length ? section(heading, `<div class="card list-card">${items.map((g) => scheduleRow(g, league)).join('')}</div>`, cls) : '');
   return head + list('Live', live, 'in') + list('Upcoming', upcoming, 'pre') + list('Results', results);
+}
+
+// iPhone app only: alerts when this followed team's games start and end.
+function alertsHtml(league, team, following) {
+  if (!inApp() || !following) return '';
+  const on = app.hasAlerts(league.id, team.id);
+  return `
+    <button class="pill-btn alert-btn${on ? ' on' : ''}" data-alerts aria-pressed="${on}" aria-label="Game alerts">
+      ${on ? ICONS.bell : ICONS.bellOff} ${on ? 'Alerts on' : 'Alerts off'}
+    </button>`;
+}
+
+async function toggleAlerts() {
+  const { data, route } = page;
+  if (!data?.team) return;
+  const on = !app.hasAlerts(route.league.id, data.team.id);
+  if (on) {
+    const status = await enableAlerts();
+    if (!['authorized', 'provisional', 'ephemeral'].includes(status)) {
+      native.alertNote = 'Notifications are off for Phade Scores. Turn them on in Settings, then try again.';
+      render();
+      return;
+    }
+  }
+  native.alertNote = '';
+  app.setAlerts(route.league.id, data.team.id, on);
+  render();
 }
 
 function scheduleRow(game, league) {
@@ -367,9 +452,11 @@ function scheduleRow(game, league) {
 
 document.addEventListener('click', (event) => {
   if (!page.route) return;
-  const target = event.target.closest('[data-side], [data-follow]');
-  if (!target || !root().contains(target)) return;
-  if (target.dataset.side !== undefined) {
+  const target = event.target.closest('[data-side], [data-follow], [data-lock], [data-alerts]');
+  if (!target || !root().contains(target) || target.disabled) return;
+  if (target.hasAttribute('data-lock')) toggleLock();
+  else if (target.hasAttribute('data-alerts')) toggleAlerts();
+  else if (target.dataset.side !== undefined) {
     page.side = Number(target.dataset.side);
     render();
   } else if (target.hasAttribute('data-follow') && page.data?.team) {

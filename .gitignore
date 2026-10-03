@@ -1,2 +1,8 @@
 node_modules/
 .DS_Store
+
+# Push server state and secrets (they live only on the server)
+server/data/
+server/.env
+server/secrets/
+*.p8
