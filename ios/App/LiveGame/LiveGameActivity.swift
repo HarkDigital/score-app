@@ -55,9 +55,10 @@ struct LiveGameActivity: Widget {
             } minimal: {
                 if game.started {
                     Text("\(game.leftScore)-\(game.rightScore)")
-                        .font(.caption2.weight(.bold))
+                        .font(.system(size: 12, weight: .bold))
                         .monospacedDigit()
-                        .minimumScaleFactor(0.6)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
                         .foregroundStyle(game.live ? .white : Phade.gray400)
                 } else {
                     TeamBadge(team: game.left, size: 22)
@@ -250,13 +251,35 @@ struct CompactSide: View {
     let score: String?
     var trailing = false
 
+    // Logo and score when there's room. When iOS squeezes the island (another
+    // app's Live Activity running too), the score alone, which matters more
+    // than the logo; a game not yet started keeps a smaller logo.
     var body: some View {
-        HStack(spacing: 5) {
-            if trailing, let score { Text(score).font(.caption.weight(.bold)).monospacedDigit() }
-            TeamBadge(team: team, size: 20)
-            if !trailing, let score { Text(score).font(.caption.weight(.bold)).monospacedDigit() }
+        ViewThatFits(in: .horizontal) {
+            full
+            if let score {
+                scoreText(score)
+            } else {
+                TeamBadge(team: team, size: 16)
+            }
         }
         .foregroundStyle(.white)
+    }
+
+    private var full: some View {
+        HStack(spacing: 5) {
+            if trailing, let score { scoreText(score) }
+            TeamBadge(team: team, size: 20)
+            if !trailing, let score { scoreText(score) }
+        }
+    }
+
+    private func scoreText(_ score: String) -> some View {
+        Text(score)
+            .font(.caption.weight(.bold))
+            .monospacedDigit()
+            .lineLimit(1)
+            .fixedSize()
     }
 }
 
