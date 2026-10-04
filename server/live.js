@@ -119,6 +119,35 @@ export function wantsAlert(device, leagueId, game, kind) {
   return device.teams.some((t) => t.league === leagueId && ids.has(t.id) && on(t));
 }
 
+// Whether a device wants this game on the Lock Screen: a followed team in it
+// has "every game on the Lock Screen" on.
+export function wantsLock(device, leagueId, game) {
+  const ids = new Set(game.teams.map((t) => String(t.id)));
+  return device.teams.some((t) => t.league === leagueId && ids.has(t.id) && t.lock === true);
+}
+
+// A Lock Screen card made from the scoreboard, for a game the server puts up
+// by itself (a followed team's): what details.js lockScreenCard() makes in
+// the app, without the state.
+export function cardFromGame(game, league) {
+  const { away, home } = sides(game, league);
+  const team = (t) => ({
+    abbr: t.abbr || t.name,
+    name: t.name,
+    color: HEX.test(t.color ?? '') ? t.color : null,
+    logo: LOGO.test(t.logo ?? '') ? t.logo : null,
+  });
+  return {
+    league: league.id,
+    leagueLabel: league.label,
+    eventId: game.id,
+    start: Math.round(game.start.getTime() / 1000),
+    homeFirst: Boolean(league.homeFirst),
+    away: team(away),
+    home: team(home),
+  };
+}
+
 // Whether a device follows a team in this game at all (for polling).
 export function followsGame(device, leagueId, game) {
   const ids = new Set(game.teams.map((t) => String(t.id)));
@@ -180,10 +209,13 @@ export function androidCardMessage(entry, state, plan) {
 
 // A scheduled card going up: the whole card (start in seconds since 1970;
 // from the scoreboard, in case the time moved) and its first state.
-export function androidStartMessage(card, game, league) {
+// auto: put up for a followed team ("every game on the Lock Screen") rather
+// than scheduled from the game page; the phone takes it unless it's up already.
+export function androidStartMessage(card, game, league, { auto = false } = {}) {
   return {
     data: {
       type: 'start',
+      ...(auto ? { auto: '1' } : {}),
       league: card.league,
       eventId: card.eventId,
       card: JSON.stringify({ ...card, start: Math.round(game.start.getTime() / 1000) }),
@@ -285,7 +317,9 @@ export function parseScheduled(body) {
   };
 }
 
-// PUT /v1/devices/:token: {platform, env, teams}. The token is in the path.
+// PUT /v1/devices/:token: {platform, env, teams, startToken}. The token is
+// in the path. startToken: an iPhone's push-to-start token (iOS 17.2+), for
+// followed teams' games on the Lock Screen.
 export function parseDevice(body) {
   const android = body?.platform === 'android';
   const env = android ? 'production' : body?.env;
@@ -295,14 +329,21 @@ export function parseDevice(body) {
   for (const t of teams) {
     if (!leagueById(t?.league) || !TEAM.test(String(t?.id ?? ''))) return null;
     // A team without switches comes from an early build: starts and finals.
-    const legacy = !['start', 'score', 'end'].some((k) => k in t);
+    const legacy = !['start', 'score', 'end', 'lock'].some((k) => k in t);
     list.push({
       league: t.league,
       id: String(t.id),
       start: legacy || t.start === true,
       score: !legacy && t.score === true,
       end: legacy || t.end === true,
+      lock: t.lock === true,
     });
   }
-  return { platform: android ? 'android' : 'ios', env, teams: list.filter((t) => t.start || t.score || t.end) };
+  const startToken = !android && typeof body.startToken === 'string' && APNS_TOKEN.test(body.startToken) ? body.startToken.toLowerCase() : null;
+  return {
+    platform: android ? 'android' : 'ios',
+    env,
+    teams: list.filter((t) => t.start || t.score || t.end || t.lock),
+    ...(startToken ? { startToken } : {}),
+  };
 }

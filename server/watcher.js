@@ -7,7 +7,7 @@
 import { leagueById, dayUrls, parseScoreboard, fallbackUrl, addDays, ymd } from '../espn.js';
 import {
   contentState, activityPlan, activityPayload, gameAlerts, gameMemo, wantsAlert, followsGame, startDue, startPayload, SCHEDULE_LEAD,
-  isAndroid, activityKey, androidCardMessage, androidStartMessage, androidAlertMessage,
+  isAndroid, activityKey, androidCardMessage, androidStartMessage, androidAlertMessage, wantsLock, cardFromGame,
 } from './live.js';
 import { prune } from './store.js';
 
@@ -102,6 +102,38 @@ export function createWatcher({ store, apns, fcm = null, fetchJson: getJson = fe
       else if (result.ok) card.last = state;
     }
 
+    // Followed teams with "every game on the Lock Screen": each game goes up
+    // when a scheduled card would, once per phone (a card swiped away stays
+    // away). Before the scheduled cards, so a game also scheduled by hand
+    // isn't started twice.
+    for (const [token, device] of Object.entries(data.devices)) {
+      if (game.state === 'post' || !wantsLock(device, league.id, game) || !startDue(game, nowSec)) continue;
+      const mark = `${token}|${key}|lock`;
+      if (data.sent[mark]) continue;
+      const card = cardFromGame(game, league);
+      if (isAndroid(device)) {
+        const cardKey = `${token}|${key}`;
+        data.sent[mark] = now();
+        // Already up or scheduled from the game page.
+        if (data.activities[cardKey] || data.scheduled[cardKey]) continue;
+        const result = await sendAndroid(token, androidStartMessage(card, game, league, { auto: true }));
+        if (result.ok) {
+          data.activities[cardKey] = {
+            platform: 'android', token, env: 'production', league: league.id, eventId: game.id,
+            start: card.start, createdAt: now(), last: contentState(game, league),
+          };
+        }
+        if (result.dead) delete data.devices[token];
+      } else {
+        // Before iOS 17.2 (or before its token arrives) an iPhone can't be
+        // started remotely; it's tried again on later polls.
+        if (!device.startToken) continue;
+        data.sent[mark] = now();
+        if (data.scheduled[`${device.startToken}|${key}`]) continue;
+        await push('activity', device.startToken, device.env, startPayload(card, game, league, nowSec), 10);
+      }
+    }
+
     // Scheduled cards go up shortly before the game; the phone then registers
     // the new card's own token and it's updated like any other.
     for (const [id, entry] of Object.entries(data.scheduled)) {
@@ -175,11 +207,13 @@ export function createWatcher({ store, apns, fcm = null, fetchJson: getJson = fe
         }
         const mine = [...games.values()].filter((g) => watched(id, g));
         for (const game of mine) await handleGame(league, game);
-        // Be there when a scheduled card is due, not up to a poll later.
-        const due = Object.values(data.scheduled)
-          .filter((s) => s.league === id && s.start)
-          .map((s) => (s.start - SCHEDULE_LEAD) * 1000)
-          .filter((t) => t > now());
+        // Be there when a scheduled card is due, or a followed team's game
+        // for the Lock Screen, not up to a poll later.
+        const lockGames = mine.filter((g) => g.state === 'pre' && Object.values(data.devices).some((d) => wantsLock(d, id, g)));
+        const due = [
+          ...Object.values(data.scheduled).filter((s) => s.league === id && s.start).map((s) => (s.start - SCHEDULE_LEAD) * 1000),
+          ...lockGames.map((g) => g.start.getTime() - SCHEDULE_LEAD * 1000),
+        ].filter((t) => t > now());
         nextFetch.set(id, Math.min(now() + pollDelay(mine, now()), ...due));
       }
       if (fetched) store.save();

@@ -10,7 +10,8 @@ import org.json.JSONObject;
 // The push server's messages (server/live.js android*Message), which wake the
 // app even when it isn't open:
 //   update / end: a card's latest or final state {league, eventId, state}
-//   start:        a scheduled card's time has come {card, state}
+//   start:        a scheduled card's time has come {card, state}, or a
+//                 followed team's game (auto: "1")
 //   alert:        a team alert {title, body, route}
 // Runs on a background thread, so logos can download here.
 public class FcmService extends FirebaseMessagingService {
@@ -39,7 +40,8 @@ public class FcmService extends FirebaseMessagingService {
                 }
                 case "start": {
                     JSONObject card = new JSONObject(data.get("card"));
-                    if (!LiveCards.start(this, card, new JSONObject(data.get("state")))) stop(card.optString("league"), card.optString("eventId"));
+                    boolean auto = "1".equals(data.get("auto"));
+                    if (!LiveCards.start(this, card, new JSONObject(data.get("state")), auto)) stop(card.optString("league"), card.optString("eventId"));
                     break;
                 }
                 case "alert":

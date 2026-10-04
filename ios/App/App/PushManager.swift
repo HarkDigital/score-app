@@ -15,7 +15,7 @@ final class PushManager: NSObject, NotificationHandlerProtocol {
 
     private let teamsKey = "alertTeams"
     private var deviceToken: String?
-    /// [{league, id, start, score, end}], as the web app sent them.
+    /// [{league, id, start, score, end, lock}], as the web app sent them.
     private var teams: [[String: Any]] {
         get { UserDefaults.standard.array(forKey: teamsKey) as? [[String: Any]] ?? [] }
         set { UserDefaults.standard.set(newValue, forKey: teamsKey) }
@@ -64,10 +64,17 @@ final class PushManager: NSObject, NotificationHandlerProtocol {
         sync()
     }
 
+    /// Registers the teams again, as when the push-to-start token changes.
+    func resync() {
+        sync()
+    }
+
     private func sync() {
         guard let token = deviceToken else { return }
         let list = teams
-        Task { await PushServer.registerDevice(token: token, teams: list) }
+        var startToken: String?
+        if #available(iOS 16.2, *) { startToken = LiveGameManager.shared.pushToStartToken }
+        Task { await PushServer.registerDevice(token: token, teams: list, startToken: startToken) }
     }
 
     // MARK: NotificationHandlerProtocol

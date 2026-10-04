@@ -48,6 +48,10 @@ final class LiveGameManager {
         set { UserDefaults.standard.set(newValue, forKey: startTokenKey) }
     }
 
+    /// What the server starts cards with: scheduled games and followed teams'
+    /// games (PushManager hands it over with the teams).
+    var pushToStartToken: String? { startToken }
+
     /// At every launch, including the background launch iOS gives the app
     /// when the server starts a card, so the new card's token reaches the
     /// server and its updates can flow.
@@ -57,6 +61,17 @@ final class LiveGameManager {
         for activity in Activity<GameAttributes>.activities { watch(activity) }
         Task {
             for await activity in Activity<GameAttributes>.activityUpdates {
+                // A followed team's game the server put up while this game was
+                // already up from its page: keep the one that was there.
+                let game = activity.attributes
+                let twin = Activity<GameAttributes>.activities.contains {
+                    $0.id != activity.id && $0.attributes.league == game.league && $0.attributes.eventId == game.eventId
+                        && ($0.activityState == .active || $0.activityState == .stale)
+                }
+                if twin {
+                    await activity.end(nil, dismissalPolicy: .immediate)
+                    continue
+                }
                 watch(activity)
                 forgetScheduled(league: activity.attributes.league, eventId: activity.attributes.eventId)
                 // Started by the server: make sure its logos are saved, then
@@ -71,8 +86,12 @@ final class LiveGameManager {
                     let token = data.hex
                     let changed = token != startToken
                     startToken = token
-                    // A new token: the server needs every scheduled game again.
-                    if changed { for card in scheduled { await PushServer.schedule(card: card, startToken: token) } }
+                    // A new token: the server needs every scheduled game again,
+                    // and the device's teams carry it too.
+                    if changed {
+                        for card in scheduled { await PushServer.schedule(card: card, startToken: token) }
+                        PushManager.shared.resync()
+                    }
                 }
             }
         }

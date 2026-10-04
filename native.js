@@ -59,8 +59,10 @@ async function call(action, args = {}) {
 }
 
 // { platform ('android'; the iPhone app doesn't say), liveActivities,
-//   canSchedule (iOS 17.2+, Android with Firebase), active: [{league, eventId}],
-//   scheduled: [{league, eventId}], alerts: 'authorized' | 'denied' | ... }
+//   canSchedule (iOS 17.2+, Android with Firebase), teamLockScreen (a team's
+//   every game on the Lock Screen: iPhone build 12, Android build 5 on),
+//   active: [{league, eventId}], scheduled: [{league, eventId}],
+//   alerts: 'authorized' | 'denied' | ... }
 export const nativeInfo = () => call('info');
 
 // card: details.js lockScreenCard(). Each resolves to {ok: bool} or null.
