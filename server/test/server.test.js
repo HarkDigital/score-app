@@ -111,9 +111,9 @@ test('requests are validated', () => {
   assert.equal(parseActivity({ token: TOKEN, env: 'staging', league: 'nfl', eventId: '1' }), null);
   assert.equal(parseActivity({ token: TOKEN, env: 'sandbox', league: 'nfl', eventId: '1; drop' }), null);
   assert.deepEqual(parseDevice({ env: 'sandbox', teams: [{ league: 'nfl', id: 21, start: true, score: true }] }),
-    { platform: 'ios', env: 'sandbox', teams: [{ league: 'nfl', id: '21', start: true, score: true, end: false }] });
+    { platform: 'ios', env: 'sandbox', teams: [{ league: 'nfl', id: '21', start: true, score: true, end: false, lock: false }] });
   // An early build sends bare teams: starts and finals.
-  assert.deepEqual(parseDevice({ env: 'sandbox', teams: [{ league: 'nfl', id: '21' }] }).teams[0], { league: 'nfl', id: '21', start: true, score: false, end: true });
+  assert.deepEqual(parseDevice({ env: 'sandbox', teams: [{ league: 'nfl', id: '21' }] }).teams[0], { league: 'nfl', id: '21', start: true, score: false, end: true, lock: false });
   assert.deepEqual(parseDevice({ env: 'sandbox', teams: [{ league: 'nfl', id: '21', start: false }] }).teams, [], 'all switches off is no team');
   assert.equal(parseDevice({ env: 'sandbox', teams: [{ league: 'nfl', id: '<x>' }] }), null);
 });
@@ -279,4 +279,41 @@ test('the watcher starts a scheduled card once, at the right time', async () => 
   assert.equal(h.sent.length, 1, 'on time');
   assert.equal(h.sent[0].payload.aps.event, 'start');
   assert.deepEqual(h.store.data.scheduled, {}, 'sent once, then forgotten');
+});
+
+test('every game on the Lock Screen: the iPhone gets a push-to-start, once, when the game is due', async () => {
+  const START = 'cd'.repeat(32);
+  const device = parseDevice({ env: 'production', startToken: START, teams: [{ league: 'nfl', id: '14', lock: true }] });
+  assert.equal(device.startToken, START);
+  assert.deepEqual(device.teams, [{ league: 'nfl', id: '14', start: false, score: false, end: false, lock: true }], 'Lock Screen alone keeps the team');
+  const h = harness({ devices: { [TOKEN]: device } });
+  await h.watcher.tick(); // 18:00Z, SF @ LAR (404) is 2h25 away
+  assert.equal(h.sent.length, 0);
+  h.later(2 * 3600_000 + 10 * 60_000 + 1_000); // just under 15 minutes before
+  await h.watcher.tick();
+  const starts = h.sent.filter((s) => s.payload.aps.event === 'start');
+  assert.equal(starts.length, 1);
+  assert.equal(starts[0].token, START, 'to the push-to-start token, not the device token');
+  assert.equal(starts[0].payload.aps.attributes.home.name, 'Rams');
+  assert.equal(starts[0].payload.aps.attributes.away.logo, game(nflBoard, '404').teams[0].logo || null);
+  h.later(60_000);
+  await h.watcher.tick();
+  assert.equal(h.sent.filter((s) => s.payload.aps.event === 'start').length, 1, 'once: a card swiped away stays away');
+});
+
+test('every game on the Lock Screen: nothing for an iPhone without a push-to-start token, or one scheduled by hand', async () => {
+  const h = harness({ devices: { [TOKEN]: parseDevice({ env: 'production', teams: [{ league: 'nfl', id: '14', lock: true }] }) } });
+  h.later(2 * 3600_000 + 10 * 60_000 + 1_000);
+  await h.watcher.tick();
+  assert.equal(h.sent.length, 0, 'before iOS 17.2 the server cannot start a card');
+
+  const START = 'cd'.repeat(32);
+  const entry = parseScheduled({ token: START, env: 'production', card: card('404') });
+  const h2 = harness({
+    devices: { [TOKEN]: parseDevice({ env: 'production', startToken: START, teams: [{ league: 'nfl', id: '14', lock: true }] }) },
+    scheduled: { [`${START}|nfl:404`]: { ...entry, createdAt: 0 } },
+  });
+  h2.later(2 * 3600_000 + 10 * 60_000 + 1_000);
+  await h2.watcher.tick();
+  assert.equal(h2.sent.filter((s) => s.payload.aps.event === 'start').length, 1, 'the scheduled card only, not a second one');
 });

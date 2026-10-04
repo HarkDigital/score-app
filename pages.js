@@ -491,6 +491,12 @@ function alertsPanel(league, team) {
     ['score', 'Scores', basketball ? 'The score at the end of each quarter or half' : 'Every time either team scores'],
     ['end', 'Final score', 'When a game ends'],
   ];
+  // Every game on the Lock Screen: the push server starts the cards, which
+  // needs an iPhone on iOS 17.2 or later, or the Android app with Firebase,
+  // and an app build that knows the switch (teamLockScreen).
+  if (native.info?.teamLockScreen) {
+    rows.push(['lock', 'Lock Screen', 'Every game on your Lock Screen']);
+  }
   return `
     <div class="alert-panel" role="group" aria-label="${esc(team.name)} alerts">
       ${rows.map(([kind, title, sub]) => `

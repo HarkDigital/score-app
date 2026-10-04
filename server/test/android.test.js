@@ -193,3 +193,17 @@ test('an Android phone gets its team alerts through Firebase', async () => {
   assert.equal(alerts[0].data.body, 'Starting now.');
   assert.equal(alerts[0].data.route, '#/game/nfl/402');
 });
+
+test('every game on the Lock Screen: an Android phone gets an automatic start, then updates', async () => {
+  const device = parseDevice({ platform: 'android', teams: [{ league: 'nfl', id: '14', lock: true }] });
+  const h = harness({ devices: { [FCM]: device } });
+  h.later(2 * 3600_000 + 10 * 60_000 + 1_000); // just under 15 minutes before SF @ LAR
+  await h.watcher.tick();
+  const start = h.sent.find((m) => m.data.type === 'start');
+  assert.equal(start.data.auto, '1', 'the phone takes it without a scheduled card');
+  assert.equal(JSON.parse(start.data.card).home.name, 'Rams');
+  assert.ok(h.store.data.activities[`${FCM}|nfl:404`], 'kept current like any card');
+  h.later(60_000);
+  await h.watcher.tick();
+  assert.equal(h.sent.filter((m) => m.data.type === 'start').length, 1, 'once');
+});

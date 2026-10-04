@@ -45,9 +45,13 @@ enum PushServer {
         await send("DELETE", "v1/scheduled/\(startToken)/\(league)/\(eventId)", nil)
     }
 
-    /// teams: [{league, id, start, score, end}]. Empty forgets the device.
-    static func registerDevice(token: String, teams: [[String: Any]]) async {
-        await send("PUT", "v1/devices/\(token)", ["env": environment, "teams": teams])
+    /// teams: [{league, id, start, score, end, lock}]. Empty forgets the
+    /// device. startToken: the push-to-start token (iOS 17.2+), with which the
+    /// server puts followed teams' games on the Lock Screen (lock).
+    static func registerDevice(token: String, teams: [[String: Any]], startToken: String?) async {
+        var body: [String: Any] = ["env": environment, "teams": teams]
+        if let startToken { body["startToken"] = startToken }
+        await send("PUT", "v1/devices/\(token)", body)
     }
 
     private static func send(_ method: String, _ path: String, _ body: [String: Any]?) async {

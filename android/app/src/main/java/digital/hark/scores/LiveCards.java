@@ -54,10 +54,12 @@ final class LiveCards {
         post(c, key, card, state, false);
     }
 
-    // From the server: a scheduled card's time has come.
-    static boolean start(Context c, JSONObject card, JSONObject state) {
+    // From the server: a scheduled card's time has come, or (auto) a followed
+    // team's game with "every game on the Lock Screen" on.
+    static boolean start(Context c, JSONObject card, JSONObject state, boolean auto) {
         String key = Store.key(card.optString("league"), card.optString("eventId"));
-        if (!Store.scheduled(c).has(key)) return false; // turned off since; FcmService tells the server
+        if (auto && Store.card(c, key) != null) return true; // up from its game page already
+        if (!auto && !Store.scheduled(c).has(key)) return false; // turned off since; FcmService tells the server
         Store.removeScheduled(c, key);
         Store.putCard(c, key, card, state);
         post(c, key, card, state, false);

@@ -49,11 +49,12 @@ final class NativeBridge: NSObject, WKScriptMessageHandlerWithReply {
         case "enableAlerts":
             return await PushManager.shared.requestAuthorization()
         case "setAlertTeams":
-            // [{league, id, start, score, end}]: which alerts each team wants.
+            // [{league, id, start, score, end, lock}]: which alerts each team
+            // wants (lock: every game on the Lock Screen).
             let teams = (body["teams"] as? [[String: Any]] ?? []).compactMap { team -> [String: Any]? in
                 guard let league = team["league"] as? String, let id = team["id"] as? String else { return nil }
                 var entry: [String: Any] = ["league": league, "id": id]
-                for kind in ["start", "score", "end"] { entry[kind] = (team[kind] as? Bool) ?? false }
+                for kind in ["start", "score", "end", "lock"] { entry[kind] = (team[kind] as? Bool) ?? false }
                 return entry
             }
             PushManager.shared.setTeams(teams)
@@ -76,6 +77,9 @@ final class NativeBridge: NSObject, WKScriptMessageHandlerWithReply {
             let manager = LiveGameManager.shared
             result["liveActivities"] = manager.enabled
             result["canSchedule"] = manager.canSchedule
+            // A followed team's every game on the Lock Screen: started by
+            // the server like a scheduled card.
+            result["teamLockScreen"] = manager.canSchedule
             result["active"] = manager.active.map { ["league": $0.league, "eventId": $0.eventId] }
             result["scheduled"] = manager.scheduled.map { ["league": $0["league"] ?? "", "eventId": $0["eventId"] ?? ""] }
         }

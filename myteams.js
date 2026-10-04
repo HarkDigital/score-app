@@ -33,14 +33,16 @@ export function toggleFollowed(list, leagueId, team) {
 // Team alerts are per followed team, sent by the iPhone app's push server:
 // when a game starts, when either side scores (basketball: the score at
 // each break) and the final. Unfollowing a team drops its alerts with it.
-export const ALERT_KINDS = ['start', 'score', 'end'];
-const NO_ALERTS = { start: false, score: false, end: false };
+// start, score, end: notifications. lock: every game on the Lock Screen,
+// put up by the push server 15 minutes before it starts.
+export const ALERT_KINDS = ['start', 'score', 'end', 'lock'];
+const NO_ALERTS = { start: false, score: false, end: false, lock: false };
 
 export function alertsFor(list, leagueId, teamId) {
   const team = list.find((t) => t.league === leagueId && t.id === String(teamId));
   const a = team?.alerts;
   // Early builds stored a plain true for "starts and finals".
-  if (a === true) return { start: true, score: false, end: true };
+  if (a === true) return { ...NO_ALERTS, start: true, end: true };
   return { ...NO_ALERTS, ...(a && typeof a === 'object' ? a : {}) };
 }
 
