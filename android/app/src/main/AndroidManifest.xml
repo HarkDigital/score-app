@@ -56,4 +56,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <!-- Lock Screen cards and team alerts (asked for on Android 13 and later). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Android 16: the card as a Live Update, in full on the Lock Screen and
+         always-on display, with a status bar chip. -->
+    <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
 </manifest>

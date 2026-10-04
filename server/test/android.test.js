@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs';
 import { leagueById, parseScoreboard } from '../../espn.js';
 import {
   contentState, parseActivity, parseDevice, parseScheduled, normalizeToken, validToken, activityKey,
-  androidCardMessage, androidStartMessage, androidAlertMessage, gameAlerts, gameMemo,
+  androidCardMessage, androidStartMessage, androidAlertMessage, gameAlerts, gameMemo, gameProgress, gamePeriods,
 } from '../live.js';
 import { assertion, fcmMessage, fcmTokenIsDead, createFcm, readAccount } from '../fcm.js';
 import { createWatcher } from '../watcher.js';
@@ -206,4 +206,34 @@ test('every game on the Lock Screen: an Android phone gets an automatic start, t
   h.later(60_000);
   await h.watcher.tick();
   assert.equal(h.sent.filter((m) => m.data.type === 'start').length, 1, 'once');
+});
+
+test('how far through a game is, from ESPN\'s status text, for the Live Update bar', () => {
+  const at = (id, statusText, state = 'in') => gameProgress({ state, statusText }, leagueById(id));
+  assert.equal(at('nfl', 'anything', 'pre'), 0);
+  assert.equal(at('nfl', 'Final', 'post'), 1);
+  assert.equal(at('nfl', '15:00 - 1st'), 0);
+  assert.equal(at('nfl', '7:30 - 1st'), 0.125);
+  assert.equal(at('nfl', 'Halftime'), 0.5);
+  assert.equal(at('nfl', 'End of 3rd'), 0.75);
+  assert.equal(at('nfl', '0:00 - 4th'), 0.99, 'never quite done until the final');
+  assert.equal(at('nfl', '5:00 - OT'), 0.99);
+  assert.equal(at('nba', '6:00 - 2nd'), 0.375);
+  assert.equal(at('ncaam', '10:00 - 2nd Half'), 0.75);
+  assert.equal(at('wnba', '5:00 - 1st'), 0.125);
+  assert.equal(at('nhl', '10:00 - 2nd'), 0.5);
+  assert.equal(at('mlb', 'Top 1st'), 0);
+  assert.equal(at('mlb', 'Bot 5th'), 0.5);
+  assert.equal(at('mlb', 'End 9th'), 0.99);
+  assert.equal(at('epl', "45'"), 0.5);
+  assert.equal(at('epl', 'HT'), 0.5);
+  assert.equal(Math.round(at('mls', "67'") * 1000) / 1000, 0.744);
+  assert.equal(at('nfl', 'Delayed'), null);
+  assert.equal(gamePeriods(leagueById('mlb')).periods, 9);
+  assert.equal(gamePeriods(leagueById('ncaam')).periods, 2);
+
+  const msg = androidCardMessage({ league: 'nfl', eventId: '1' }, {}, { priority: 10, end: false }, 0.375, 4);
+  assert.equal(msg.data.progress, '0.375');
+  assert.equal(msg.data.periods, '4');
+  assert.equal(androidCardMessage({ league: 'nfl', eventId: '1' }, {}, { priority: 10, end: false }).data.progress, undefined);
 });

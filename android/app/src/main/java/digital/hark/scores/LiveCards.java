@@ -1,24 +1,34 @@
 package digital.hark.scores;
 
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.widget.RemoteViews;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-// The Lock Screen card on Android: an ongoing notification with both logos
-// and the score, the iPhone's Live Activity in Android's terms. It's put up
+// The Lock Screen card on Android, the iPhone's Live Activity in Android's
+// terms. On Android 16 and later it's a Live Update (a promoted ongoing
+// notification): always in full on the Lock Screen and the always-on display,
+// with the score in a status bar chip; Android only promotes its standard
+// layouts, so it's the score as the title and a progress bar through the
+// game's periods with a logo at each end. Before 16, an ongoing notification
+// with Phade's own scoreboard layout (both logos either side of the score). It's put up
 // from a game page (LiveCards.show), or by the push server 15 minutes before
 // a scheduled game ("start"); the server keeps it current with "update"
 // messages and ends it with "end" (FcmService). The card and state JSON are
@@ -30,6 +40,7 @@ final class LiveCards {
 
     static final String CHANNEL = "live_games";
     private static final long FINAL_STAYS = 2 * 60 * 60 * 1000L;
+    private static final int MINT = 0xFF46BB93;
 
     static void channels(Context c) {
         if (Build.VERSION.SDK_INT < 26) return;
@@ -112,28 +123,83 @@ final class LiveCards {
         Bitmap left = TeamLogos.badge(c, game.left, px);
         Bitmap right = TeamLogos.badge(c, game.right, px);
 
-        RemoteViews small = views(c, R.layout.notification_card, game, left, right);
-        RemoteViews big = views(c, R.layout.notification_card_big, game, left, right);
-
         int id = id(key);
-        Intent open = new Intent(c, MainActivity.class)
+        Intent openGame = new Intent(c, MainActivity.class)
             .setAction(Intent.ACTION_VIEW)
             .putExtra(MainActivity.EXTRA_ROUTE, "#/game/" + card.optString("league") + "/" + card.optString("eventId"))
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        Intent dismissed = new Intent(c, CardDismissedReceiver.class)
+        Intent swiped = new Intent(c, CardDismissedReceiver.class)
             .putExtra("league", card.optString("league"))
             .putExtra("eventId", card.optString("eventId"));
         int flags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
+        PendingIntent open = PendingIntent.getActivity(c, id, openGame, flags);
+        PendingIntent dismissed = PendingIntent.getBroadcast(c, id, swiped, flags);
 
+        Notification notification = Build.VERSION.SDK_INT >= 36
+            ? liveUpdate(c, key, game, left, right, end, open, dismissed)
+            : scoreboard(c, key, game, left, right, end, open, dismissed);
+        try {
+            NotificationManagerCompat.from(c).notify(id, notification);
+        } catch (SecurityException ignored) {
+            // notifications were turned off meanwhile
+        }
+    }
+
+    // Android 16 and later: a Live Update. Each period is a segment of the
+    // bar (quarters, halves, periods, innings), filled as far as the game has
+    // got; the chip shows the score, or counts down to the start.
+    @RequiresApi(36)
+    private static Notification liveUpdate(Context c, String key, Game game, Bitmap left, Bitmap right, boolean end,
+                                           PendingIntent open, PendingIntent dismissed) {
+        List<Notification.ProgressStyle.Segment> segments = new ArrayList<>();
+        for (int i = 0; i < game.periods; i++) segments.add(new Notification.ProgressStyle.Segment(100).setColor(MINT));
+        Notification.ProgressStyle bar = new Notification.ProgressStyle()
+            .setStyledByProgress(true)
+            .setProgressSegments(segments)
+            .setProgress(Math.round((float) (game.progress * game.periods * 100)))
+            .setProgressStartIcon(Icon.createWithBitmap(left))
+            .setProgressEndIcon(Icon.createWithBitmap(right));
+        Notification.Builder n = new Notification.Builder(c, CHANNEL)
+            .setSmallIcon(R.drawable.ic_stat_scores)
+            .setColor(MINT)
+            .setContentTitle(game.scoreTitle())
+            .setContentText(game.statusLine(c))
+            .setSubText(game.league)
+            .setStyle(bar)
+            .setCategory(Notification.CATEGORY_STATUS)
+            .setVisibility(Notification.VISIBILITY_PUBLIC)
+            .setOnlyAlertOnce(true)
+            .setOngoing(!end)
+            .setGroup("card:" + key)
+            .setContentIntent(open)
+            .setDeleteIntent(dismissed);
+        if (end) {
+            n.setAutoCancel(true).setTimeoutAfter(FINAL_STAYS).setShowWhen(false);
+        } else {
+            // Ask Android to promote it (Android 16's SDK has no setter yet;
+            // this is the extra NotificationCompat's setRequestPromotedOngoing sets).
+            android.os.Bundle promote = new android.os.Bundle();
+            promote.putBoolean(NotificationCompat.EXTRA_REQUEST_PROMOTED_ONGOING, true);
+            n.addExtras(promote);
+            if (game.started()) n.setShortCriticalText(game.leftScore + "-" + game.rightScore).setShowWhen(false);
+            else n.setWhen(game.start).setShowWhen(true).setUsesChronometer(true).setChronometerCountDown(true);
+        }
+        return n.build();
+    }
+
+    // Before Android 16: Phade's scoreboard layout. Android draws its own
+    // header (the app's icon and name) over any custom layout; the status
+    // goes in the card itself.
+    private static Notification scoreboard(Context c, String key, Game game, Bitmap left, Bitmap right, boolean end,
+                                           PendingIntent open, PendingIntent dismissed) {
         NotificationCompat.Builder n = new NotificationCompat.Builder(c, CHANNEL)
             .setSmallIcon(R.drawable.ic_stat_scores)
-            .setColor(0xFF46BB93)
-            .setContentTitle(game.title())
+            .setColor(MINT)
+            .setContentTitle(game.scoreTitle())
             .setContentText(game.statusText(c))
-            .setSubText(game.league + " · " + game.statusText(c))
             .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
-            .setCustomContentView(small)
-            .setCustomBigContentView(big)
+            .setCustomContentView(views(c, R.layout.notification_card, game, left, right))
+            .setCustomBigContentView(views(c, R.layout.notification_card_big, game, left, right))
             .setCategory(NotificationCompat.CATEGORY_STATUS)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setOnlyAlertOnce(true)
@@ -142,14 +208,10 @@ final class LiveCards {
             // Its own group, so Android never bundles a card with alerts
             // (a bundle hides the scoreboard layout).
             .setGroup("card:" + key)
-            .setContentIntent(PendingIntent.getActivity(c, id, open, flags))
-            .setDeleteIntent(PendingIntent.getBroadcast(c, id, dismissed, flags));
+            .setContentIntent(open)
+            .setDeleteIntent(dismissed);
         if (end) n.setAutoCancel(true).setTimeoutAfter(FINAL_STAYS);
-        try {
-            NotificationManagerCompat.from(c).notify(id, n.build());
-        } catch (SecurityException ignored) {
-            // notifications were turned off meanwhile
-        }
+        return n.build();
     }
 
     private static RemoteViews views(Context c, int layout, Game game, Bitmap left, Bitmap right) {
@@ -163,6 +225,7 @@ final class LiveCards {
         v.setTextViewText(R.id.right_name, game.right.optString(name));
         v.setTextViewText(R.id.score, game.middle(big));
         if (big) {
+            v.setTextViewText(R.id.status, game.league + " · " + game.statusText(c));
             v.setTextViewText(R.id.detail, game.detail);
             v.setViewVisibility(R.id.detail, game.detail.isEmpty() ? android.view.View.GONE : android.view.View.VISIBLE);
         } else {
@@ -183,6 +246,8 @@ final class LiveCards {
         final String detail;
         final boolean homeFirst;
         final long start;
+        final double progress;  // 0 to 1, from the server (FcmService)
+        final int periods;
 
         Game(JSONObject card, JSONObject s) {
             league = card.optString("leagueLabel", card.optString("league").toUpperCase());
@@ -197,6 +262,30 @@ final class LiveCards {
             status = s.optString("status");
             detail = s.optString("detail");
             start = card.optLong("start") * 1000;
+            progress = Math.max(0, Math.min(1, s.optDouble("progress", "post".equals(state) ? 1 : 0)));
+            periods = Math.max(1, s.optInt("periods", periodsOf(card.optString("league"))));
+        }
+
+        // Until the server says (server/live.js gamePeriods).
+        private static int periodsOf(String league) {
+            switch (league) {
+                case "mlb": return 9;
+                case "nhl": return 3;
+                case "ncaam": case "mls": case "epl": case "ucl": return 2;
+                default: return 4;
+            }
+        }
+
+        // "Colts 17 - 13 Commanders", or "Colts @ Commanders" before the start.
+        String scoreTitle() {
+            String l = left.optString("name"), r = right.optString("name");
+            return started() ? l + " " + leftScore + " - " + rightScore + " " + r : l + (homeFirst ? " vs " : " @ ") + r;
+        }
+
+        // "Live · 10:39 - 3rd · 1st & 10 at IND 34".
+        String statusLine(Context c) {
+            String status = statusText(c);
+            return detail.isEmpty() || !"in".equals(state) ? status : status + " · " + detail;
         }
 
         boolean started() {
@@ -205,13 +294,9 @@ final class LiveCards {
 
         String middle(boolean big) {
             if (!started()) return homeFirst ? "vs" : "@";
-            return big ? leftScore + "  -  " + rightScore : leftScore + " - " + rightScore;
+            return leftScore + " - " + rightScore;
         }
 
-        String title() {
-            String l = left.optString("name"), r = right.optString("name");
-            return started() ? l + " " + leftScore + ", " + r + " " + rightScore : l + (homeFirst ? " vs " : " @ ") + r;
-        }
 
         // "Live · 7:41 - 2nd", "Final", or the start in the phone's own time.
         String statusText(Context c) {
