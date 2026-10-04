@@ -210,7 +210,28 @@ function parseTeam(c, state, situation) {
     score: state === 'pre' ? '' : String(c.score?.displayValue ?? c.score ?? ''),
     winner: c.winner === true,
     possession: situation?.possession != null && situation.possession === team.id,
+    // Football's timeouts left (the live situation's homeTimeouts and
+    // awayTimeouts), else null.
+    timeouts: timeoutCount(situation?.[`${c.homeAway}Timeouts`]),
   };
+}
+
+const timeoutCount = (n) => (Number.isInteger(n) && n >= 0 && n <= 9 ? n : null);
+
+// The Lock Screen card's football extras, from a parsed home and away team:
+// each side's timeouts left and who has the ball. Only the keys ESPN gave
+// (GameAttributes.ContentState has them as optionals). Shared by the web
+// app's first card (details.js lockScreenCard) and the push server's updates
+// (server/live.js contentState).
+export function cardSituation(away, home) {
+  const out = {};
+  if (Number.isInteger(away?.timeouts) && Number.isInteger(home?.timeouts)) {
+    out.awayTimeouts = away.timeouts;
+    out.homeTimeouts = home.timeouts;
+  }
+  if (away?.possession === true) out.possession = 'away';
+  else if (home?.possession === true) out.possession = 'home';
+  return out;
 }
 
 function situationText(s) {

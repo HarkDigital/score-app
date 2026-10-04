@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import {
   LEAGUES, scoreboardUrl, parseScoreboard, groupGames, refreshDelay,
   statusLabel, formatStart, dayLabel, weekLabel, weekInfo, adjacentWeek, teamColor, fallbackUrl, parseOdds,
-  lineSteamUrl, leagueFilter, dayUrls, mergeGames,
+  lineSteamUrl, leagueFilter, dayUrls, mergeGames, cardSituation,
 } from '../espn.js';
 
 const league = (id) => LEAGUES.find((l) => l.id === id);
@@ -111,6 +111,20 @@ test('live football shows possession and down & distance', () => {
   assert.deepEqual(live.teams.map((t) => t.possession), [true, false]);
   // Situation is ignored once a game is over.
   assert.equal(game(nfl, '401').detail, '');
+});
+
+test('live football carries each side\'s timeouts and who has the ball for the card', () => {
+  // Captured Oct 4 2026: NE @ BUF, NE with the ball; JAX @ CIN between plays.
+  const board = parseScoreboard(fixture('nfl-scoreboard-live'), league('nfl'));
+  const [ne, buf] = game(board, '401872971').teams;
+  assert.deepEqual([ne.abbr, ne.timeouts, ne.possession], ['NE', 2, true]);
+  assert.deepEqual([buf.abbr, buf.timeouts, buf.possession], ['BUF', 3, false]);
+  assert.deepEqual(cardSituation(ne, buf), { awayTimeouts: 2, homeTimeouts: 3, possession: 'away' });
+  const [jax, cin] = game(board, '401872969').teams;
+  assert.deepEqual(cardSituation(jax, cin), { awayTimeouts: 3, homeTimeouts: 2 });
+  // Nothing outside a live football game.
+  assert.deepEqual(game(nfl, '401').teams.map((t) => t.timeouts), [null, null]);
+  assert.deepEqual(cardSituation(...game(epl, '702').teams), {});
 });
 
 test('baseball situation shows outs and runners', () => {

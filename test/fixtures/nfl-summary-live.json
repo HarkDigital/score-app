@@ -1,0 +1,143 @@
+{
+ "header": {
+  "id": "401872971",
+  "league": {
+   "id": "28",
+   "abbreviation": "NFL",
+   "slug": "nfl"
+  },
+  "competitions": [
+   {
+    "id": "401872971",
+    "date": "2026-10-04T17:00Z",
+    "status": {
+     "displayClock": "8:16",
+     "period": 2,
+     "type": {
+      "id": "2",
+      "name": "STATUS_IN_PROGRESS",
+      "state": "in",
+      "completed": false,
+      "description": "In Progress",
+      "detail": "8:16 - 2nd Quarter",
+      "shortDetail": "8:16 - 2nd",
+      "statusPrimary": "8:16",
+      "statusSecondary": "2nd"
+     },
+     "isTBDFlex": false,
+     "displayPeriod": "2nd"
+    },
+    "competitors": [
+     {
+      "id": "2",
+      "homeAway": "home",
+      "order": 0,
+      "score": "7",
+      "timeoutsUsed": 0,
+      "possession": false,
+      "record": [
+       {
+        "type": "total",
+        "summary": "3-0",
+        "displayValue": "3-0"
+       },
+       {
+        "type": "home",
+        "summary": "2-0",
+        "displayValue": "2-0"
+       },
+       {
+        "type": "vsconf",
+        "summary": "2-0",
+        "displayValue": "2-0"
+       }
+      ],
+      "team": {
+       "id": "2",
+       "abbreviation": "BUF",
+       "displayName": "Buffalo Bills",
+       "name": "Bills",
+       "color": "00338d",
+       "alternateColor": "d50a0a",
+       "logos": [
+        {
+         "href": "https://a.espncdn.com/i/teamlogos/nfl/500/buf.png",
+         "width": 500,
+         "height": 500,
+         "alt": "",
+         "rel": [
+          "full",
+          "default"
+         ],
+         "lastUpdated": "2024-06-25T18:45Z"
+        }
+       ]
+      },
+      "linescores": [
+       {
+        "displayValue": "0"
+       },
+       {
+        "displayValue": "7"
+       }
+      ]
+     },
+     {
+      "id": "17",
+      "homeAway": "away",
+      "order": 1,
+      "score": "7",
+      "timeoutsUsed": 1,
+      "possession": true,
+      "record": [
+       {
+        "type": "total",
+        "summary": "1-2",
+        "displayValue": "1-2"
+       },
+       {
+        "type": "road",
+        "summary": "0-2",
+        "displayValue": "0-2"
+       },
+       {
+        "type": "vsconf",
+        "summary": "1-1",
+        "displayValue": "1-1"
+       }
+      ],
+      "team": {
+       "id": "17",
+       "abbreviation": "NE",
+       "displayName": "New England Patriots",
+       "name": "Patriots",
+       "color": "002a5c",
+       "alternateColor": "c60c30",
+       "logos": [
+        {
+         "href": "https://a.espncdn.com/i/teamlogos/nfl/500/ne.png",
+         "width": 500,
+         "height": 500,
+         "alt": "",
+         "rel": [
+          "full",
+          "default"
+         ],
+         "lastUpdated": "2024-06-25T18:54Z"
+        }
+       ]
+      },
+      "linescores": [
+       {
+        "displayValue": "7"
+       },
+       {
+        "displayValue": "0"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

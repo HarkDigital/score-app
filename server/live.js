@@ -3,7 +3,7 @@
 // game's change of state sends, and request validation. index.js and
 // watcher.js do the I/O.
 
-import { leagueById } from '../espn.js';
+import { leagueById, cardSituation } from '../espn.js';
 
 // Statuses that mean the game won't go ahead as scheduled (ui.js's TROUBLE).
 export const TROUBLE = /POSTPONED|CANCELED|CANCELLED|SUSPENDED|DELAYED|FORFEIT|ABANDONED/;
@@ -26,6 +26,7 @@ export function contentState(game, league) {
     state: game.state,
     status: scheduled ? '' : game.statusText,
     detail: game.detail ?? '',
+    ...cardSituation(away, home),
   };
 }
 
@@ -35,7 +36,7 @@ export function activityPlan(last, next) {
   const end = next.state === 'post';
   if (!last) return { priority: 10, end };
   const same = (k) => last[k] === next[k];
-  if (['away', 'home', 'state', 'status', 'detail'].every(same)) return null;
+  if (['away', 'home', 'state', 'status', 'detail', 'awayTimeouts', 'homeTimeouts', 'possession'].every(same)) return null;
   const big = !same('away') || !same('home') || !same('state');
   return { priority: big ? 10 : 5, end };
 }

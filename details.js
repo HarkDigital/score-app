@@ -3,7 +3,7 @@
 // is covered by tests (test/details.test.js, fixtures trimmed from real
 // responses).
 
-import { parseGame, parseOdds, teamColor, fallbackUrl } from './espn.js';
+import { parseGame, parseOdds, teamColor, fallbackUrl, cardSituation } from './espn.js';
 
 const BASE = 'https://site.api.espn.com/apis/site/v2/sports';
 
@@ -36,6 +36,12 @@ export function parseSummary(data, league) {
   const away = competitors.find((c) => c.homeAway === 'away') ?? competitors[1];
   const order = (league.homeFirst ? [home, away] : [away, home]).filter(Boolean);
   const baseball = sportOf(league) === 'baseball';
+  // The header counts timeouts used this half (3 each); overtime has its own
+  // count, so only regulation's are read here.
+  const timeoutsLeft = (c) =>
+    sportOf(league) === 'football' && state === 'in' && comp.status?.period <= 4 && Number.isInteger(c.timeoutsUsed)
+      ? Math.max(0, 3 - c.timeoutsUsed)
+      : null;
   const teams = order.map((c) => {
     const team = c.team ?? {};
     return {
@@ -52,6 +58,8 @@ export function parseSummary(data, league) {
       linescores: (c.linescores ?? []).map((l) => String(l.displayValue ?? l.value ?? '')),
       // Baseball's line score ends R H E.
       extras: baseball ? [String(c.hits ?? ''), String(c.errors ?? '')] : [],
+      possession: state === 'in' && c.possession === true,
+      timeouts: timeoutsLeft(c),
     };
   });
   let periods = Math.max(0, ...teams.map((t) => t.linescores.length));
@@ -107,6 +115,7 @@ export function lockScreenCard(game, league, eventId) {
       state: game.state,
       status: scheduled ? '' : game.statusText,
       detail: '',
+      ...cardSituation(away, home),
     },
   };
 }
