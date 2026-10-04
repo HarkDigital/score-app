@@ -27,6 +27,7 @@ test('card state names away and home, whatever order the league lists them', () 
   const live = parseScoreboard(fixture('nfl-scoreboard-live'), nfl);
   assert.deepEqual(contentState(game(live, '401872971'), nfl), {
     away: '7', home: '7', state: 'in', status: '8:21 - 2nd', detail: '1st & 10 at NE 37', awayTimeouts: 2, homeTimeouts: 3, possession: 'away',
+    yardLine: 63, toGo: 10,
   });
   // Soccer lists home first: Arsenal 1, Chelsea 0.
   const ars = contentState(game(eplBoard, '702'), epl);
@@ -48,6 +49,7 @@ test('pushes go out only on change, scores at high priority', () => {
   assert.deepEqual(activityPlan(live, { ...live, status: '4:01 - 3rd' }), { priority: 5, end: false });
   assert.deepEqual(activityPlan({ ...live, awayTimeouts: 3, homeTimeouts: 3 }, { ...live, awayTimeouts: 2, homeTimeouts: 3 }), { priority: 5, end: false });
   assert.deepEqual(activityPlan({ ...live, possession: 'away' }, { ...live, possession: 'home' }), { priority: 5, end: false });
+  assert.deepEqual(activityPlan({ ...live, yardLine: 63, toGo: 10 }, { ...live, yardLine: 58, toGo: 5 }), { priority: 5, end: false });
   assert.deepEqual(activityPlan(live, { ...live, home: '24' }), { priority: 10, end: false });
   assert.deepEqual(activityPlan(live, { ...live, state: 'post', status: 'Final' }), { priority: 10, end: true });
 });

@@ -94,6 +94,10 @@ struct Game {
     let rightTimeouts: Int?
     let leftHasBall: Bool
     let rightHasBall: Bool
+    /// Live football: the ball's spot and the first-down line, in yards from
+    /// the left team's goal line (0...100).
+    let ballFromLeft: Double?
+    let firstDownFromLeft: Double?
 
     init(_ a: GameAttributes, _ s: GameAttributes.ContentState) {
         league = a.leagueLabel
@@ -112,12 +116,28 @@ struct Game {
         rightTimeouts = live ? (a.homeFirst ? s.awayTimeouts : s.homeTimeouts) : nil
         leftHasBall = live && s.possession == (a.homeFirst ? "home" : "away")
         rightHasBall = live && s.possession == (a.homeFirst ? "away" : "home")
+        // The left team defends the left goal line; the home team's is the
+        // one ESPN counts from.
+        if live, let spot = s.yardLine, (0...100).contains(spot) {
+            let ball = Double(a.homeFirst ? spot : 100 - spot)
+            let heading: Double? = leftHasBall ? 1 : rightHasBall ? -1 : nil
+            ballFromLeft = ball
+            firstDownFromLeft = s.toGo.flatMap { go in heading.map { min(100, max(0, ball + $0 * Double(go))) } }
+        } else {
+            ballFromLeft = nil
+            firstDownFromLeft = nil
+        }
     }
 
     var live: Bool { state == "in" }
     var final: Bool { state == "post" }
     var started: Bool { state != "pre" && !(leftScore.isEmpty && rightScore.isEmpty) }
     var separator: String { homeFirst ? "vs" : "@" }
+
+    /// The field goes on the card for the whole of a live football game (the
+    /// timeouts come with every update), so it doesn't come and go between
+    /// plays; the ball shows when ESPN gives a spot.
+    var showsField: Bool { live && (leftTimeouts != nil || ballFromLeft != nil) }
 
     /// For the card's league pill: "NFL", but "EPL" and "UCL" rather than
     /// "Premier League" and "Champions League".
@@ -161,11 +181,16 @@ struct LockScreenView: View {
                             timeouts: game.rightTimeouts, hasBall: game.rightHasBall, trailing: true)
                 TeamPanel(team: game.right, dim: game.rightLost, trailing: true)
             }
-            .frame(height: 84)
+            .frame(height: game.showsField ? 80 : 84)
+            if game.showsField {
+                FieldStrip(game: game)
+                    .padding(.horizontal, 12)
+                    .padding(.top, 8)
+            }
             PillRow(game: game)
                 .padding(.horizontal, 12)
-                .padding(.top, 10)
-                .padding(.bottom, 12)
+                .padding(.top, game.showsField ? 8 : 10)
+                .padding(.bottom, game.showsField ? 10 : 12)
         }
     }
 
@@ -268,6 +293,77 @@ struct ScoreColumn: View {
         .frame(minWidth: 46)
         .padding(.leading, trailing ? 0 : 8)
         .padding(.trailing, trailing ? 8 : 0)
+    }
+}
+
+/// Live football's field, the card's width: each team's end zone in its
+/// color at its own side (the left team defends the left goal line), a line
+/// every ten yards, the ball on the line of scrimmage and the first-down line
+/// (amber) ahead of the drive, the yards between them lit.
+struct FieldStrip: View {
+    let game: Game
+
+    var body: some View {
+        GeometryReader { geo in
+            let w = geo.size.width
+            let h = geo.size.height
+            // 10 of the field's 120 yards at each end.
+            let zone = w / 12
+            let yard = (w - zone * 2) / 100
+            ZStack(alignment: .topLeading) {
+                Phade.turf
+                EndZone(team: game.left).frame(width: zone, height: h)
+                EndZone(team: game.right).frame(width: zone, height: h).offset(x: w - zone)
+                ForEach(1..<10, id: \.self) { i in
+                    Rectangle()
+                        .fill(Color.white.opacity(i == 5 ? 0.45 : 0.22))
+                        .frame(width: 1, height: h)
+                        .offset(x: zone + yard * CGFloat(i * 10) - 0.5)
+                }
+                if let first = game.firstDownFromLeft, let ball = game.ballFromLeft {
+                    // The yards to go, lit, so the drive's direction reads.
+                    Rectangle()
+                        .fill(Color.white.opacity(0.18))
+                        .frame(width: yard * abs(first - ball), height: h)
+                        .offset(x: zone + yard * min(first, ball))
+                    Rectangle()
+                        .fill(Phade.amber)
+                        .frame(width: 2, height: h)
+                        .offset(x: zone + yard * first - 1)
+                }
+                if let ball = game.ballFromLeft {
+                    Rectangle()
+                        .fill(Color.white.opacity(0.9))
+                        .frame(width: 2, height: h)
+                        .offset(x: zone + yard * ball - 1)
+                    Image(systemName: "football.fill")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(.white)
+                        .shadow(color: .black.opacity(0.6), radius: 1.5)
+                        .frame(width: 18, height: h)
+                        .offset(x: zone + yard * ball - 9)
+                }
+            }
+        }
+        .frame(height: 18)
+        .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+    }
+}
+
+struct EndZone: View {
+    let team: GameAttributes.Team
+
+    var body: some View {
+        let rgb = Phade.rgb(team.color)
+        ZStack {
+            Rectangle().fill(rgb.map { Color(red: $0.r, green: $0.g, blue: $0.b) } ?? Phade.gray700)
+            Text(team.abbr)
+                .font(.system(size: 9, weight: .heavy))
+                .foregroundStyle(Phade.textOn(rgb))
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+                .padding(.horizontal, 2)
+        }
     }
 }
 
@@ -507,6 +603,9 @@ enum Phade {
     static let gray400 = Color(red: 156 / 255, green: 163 / 255, blue: 175 / 255)
     static let gray500 = Color(red: 107 / 255, green: 114 / 255, blue: 128 / 255)
     static let gray700 = Color(red: 55 / 255, green: 65 / 255, blue: 81 / 255)
+    /// The card's field: a dark turf green that keeps the white lines and the
+    /// team colors readable on the glass.
+    static let turf = Color(red: 30 / 255, green: 92 / 255, blue: 56 / 255).opacity(0.85)
 
     /// "#rrggbb" as 0...1 components, or nil.
     static func rgb(_ hex: String?) -> (r: Double, g: Double, b: Double)? {

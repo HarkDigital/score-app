@@ -34,6 +34,10 @@ struct GameAttributes: ActivityAttributes {
         var awayTimeouts: Int?
         var homeTimeouts: Int?
         var possession: String?
+        /// Where the ball is, in yards from the HOME team's goal line (ESPN's
+        /// count), and the yards to go; only while a team has the ball.
+        var yardLine: Int?
+        var toGo: Int?
     }
 
     var league: String

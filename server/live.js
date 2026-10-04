@@ -26,7 +26,7 @@ export function contentState(game, league) {
     state: game.state,
     status: scheduled ? '' : game.statusText,
     detail: game.detail ?? '',
-    ...cardSituation(away, home),
+    ...cardSituation(away, home, game.ball),
   };
 }
 
@@ -36,7 +36,7 @@ export function activityPlan(last, next) {
   const end = next.state === 'post';
   if (!last) return { priority: 10, end };
   const same = (k) => last[k] === next[k];
-  if (['away', 'home', 'state', 'status', 'detail', 'awayTimeouts', 'homeTimeouts', 'possession'].every(same)) return null;
+  if (['away', 'home', 'state', 'status', 'detail', 'awayTimeouts', 'homeTimeouts', 'possession', 'yardLine', 'toGo'].every(same)) return null;
   const big = !same('away') || !same('home') || !same('state');
   return { priority: big ? 10 : 5, end };
 }

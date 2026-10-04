@@ -115,6 +115,8 @@ export function lockScreenCard(game, league, eventId) {
       state: game.state,
       status: scheduled ? '' : game.statusText,
       detail: '',
+      // No ball spot here: the summary has none. The push server's first
+      // update (seconds later) brings it.
       ...cardSituation(away, home),
     },
   };

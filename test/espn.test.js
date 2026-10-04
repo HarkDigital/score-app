@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import {
   LEAGUES, scoreboardUrl, parseScoreboard, groupGames, refreshDelay,
   statusLabel, formatStart, dayLabel, weekLabel, weekInfo, adjacentWeek, teamColor, fallbackUrl, parseOdds,
-  lineSteamUrl, leagueFilter, dayUrls, mergeGames, cardSituation,
+  lineSteamUrl, leagueFilter, dayUrls, mergeGames, cardSituation, parseGame,
 } from '../espn.js';
 
 const league = (id) => LEAGUES.find((l) => l.id === id);
@@ -119,12 +119,26 @@ test('live football carries each side\'s timeouts and who has the ball for the c
   const [ne, buf] = game(board, '401872971').teams;
   assert.deepEqual([ne.abbr, ne.timeouts, ne.possession], ['NE', 2, true]);
   assert.deepEqual([buf.abbr, buf.timeouts, buf.possession], ['BUF', 3, false]);
-  assert.deepEqual(cardSituation(ne, buf), { awayTimeouts: 2, homeTimeouts: 3, possession: 'away' });
-  const [jax, cin] = game(board, '401872969').teams;
-  assert.deepEqual(cardSituation(jax, cin), { awayTimeouts: 3, homeTimeouts: 2 });
+  // 1st & 10 at NE 37: 63 yards from Buffalo's (the home) goal line.
+  const live = game(board, '401872971');
+  assert.deepEqual(live.ball, { yardLine: 63, toGo: 10 });
+  assert.deepEqual(cardSituation(ne, buf, live.ball), { awayTimeouts: 2, homeTimeouts: 3, possession: 'away', yardLine: 63, toGo: 10 });
+  // Between plays nobody has the ball, so there's no spot to show.
+  const between = game(board, '401872969');
+  assert.equal(between.ball, null);
+  assert.deepEqual(cardSituation(...between.teams, between.ball), { awayTimeouts: 3, homeTimeouts: 2 });
   // Nothing outside a live football game.
   assert.deepEqual(game(nfl, '401').teams.map((t) => t.timeouts), [null, null]);
   assert.deepEqual(cardSituation(...game(epl, '702').teams), {});
+});
+
+test('the ball spot needs a team with the ball and a yard line on the field; no down, no yards to go', () => {
+  const nflLeague = league('nfl');
+  const spot = (situation) => parseGame({ competitions: [{ status: { type: { state: 'in' } }, competitors: [], situation }] }, nflLeague).ball;
+  assert.deepEqual(spot({ possession: '3', yardLine: 39, down: 2, distance: 2 }), { yardLine: 39, toGo: 2 });
+  assert.deepEqual(spot({ possession: '3', yardLine: 65, down: -1, distance: 0 }), { yardLine: 65, toGo: null });
+  assert.equal(spot({ yardLine: 35, down: -1 }), null);
+  assert.equal(spot({ possession: '3', yardLine: 120, down: 1, distance: 10 }), null);
 });
 
 test('baseball situation shows outs and runners', () => {
