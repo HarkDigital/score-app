@@ -495,7 +495,7 @@ function alertsPanel(league, team) {
   // needs an iPhone on iOS 17.2 or later, or the Android app with Firebase,
   // and an app build that knows the switch (teamLockScreen).
   if (native.info?.teamLockScreen) {
-    rows.push(['lock', 'Lock Screen', `Every game on your Lock Screen, from ${LOCK_LEAD_MINUTES} minutes before it starts`]);
+    rows.push(['lock', 'Lock Screen', 'Every game on your Lock Screen']);
   }
   return `
     <div class="alert-panel" role="group" aria-label="${esc(team.name)} alerts">
