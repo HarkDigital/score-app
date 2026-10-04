@@ -8,6 +8,7 @@ import { leagueById, dayUrls, parseScoreboard, fallbackUrl, addDays, ymd } from 
 import {
   contentState, activityPlan, activityPayload, gameAlerts, gameMemo, wantsAlert, followsGame, startDue, startPayload, SCHEDULE_LEAD,
   isAndroid, activityKey, androidCardMessage, androidStartMessage, androidAlertMessage, wantsLock, cardFromGame,
+  gameProgress, gamePeriods,
 } from './live.js';
 import { prune } from './store.js';
 
@@ -96,7 +97,7 @@ export function createWatcher({ store, apns, fcm = null, fetchJson: getJson = fe
       // Entries from before Android keep their token as the key only.
       const token = card.token ?? key;
       const result = isAndroid(card)
-        ? await sendAndroid(token, androidCardMessage(card, state, plan))
+        ? await sendAndroid(token, androidCardMessage(card, state, plan, gameProgress(game, league), gamePeriods(league).periods))
         : await push('activity', token, card.env, activityPayload(state, plan, nowSec), plan.priority);
       if (result.dead || (plan.end && result.ok)) delete data.activities[key];
       else if (result.ok) card.last = state;

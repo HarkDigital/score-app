@@ -195,12 +195,62 @@ export function startPayload(card, game, league, nowSec) {
 // app carry platform: 'android'; everything else is the iPhone app.
 export const isAndroid = (entry) => entry?.platform === 'android';
 
+// How far through a game is (0 to 1), from ESPN's status text, for the
+// Android Live Update's progress bar; null when the text doesn't say.
+// Periods and their length in minutes, by sport: football and basketball
+// quarters (college basketball halves), hockey periods, baseball innings,
+// soccer halves. Overtime and extra innings read as nearly done.
+export function gamePeriods(league) {
+  const [sport, name] = league.path.split('/');
+  if (sport === 'football') return { periods: 4, minutes: 15 };
+  if (name === 'mens-college-basketball') return { periods: 2, minutes: 20 };
+  if (sport === 'basketball') return { periods: 4, minutes: name === 'wnba' ? 10 : 12 };
+  if (sport === 'hockey') return { periods: 3, minutes: 20 };
+  if (sport === 'baseball') return { periods: 9, minutes: null };
+  return { periods: 2, minutes: 45 };
+}
+
+export function gameProgress(game, league) {
+  if (game.state === 'pre') return 0;
+  if (game.state === 'post') return 1;
+  const text = String(game.statusText ?? '');
+  const { periods, minutes } = gamePeriods(league);
+  const nearlyDone = 0.99;
+  const ordinal = text.match(/(\d+)(?:st|nd|rd|th)/i);
+  const period = ordinal ? Number(ordinal[1]) : null;
+  if (league.path.startsWith('soccer/')) {
+    if (/^HT$|half\s*time/i.test(text)) return 0.5;
+    const minute = text.match(/(\d+)'/);
+    return minute ? Math.min(nearlyDone, Number(minute[1]) / 90) : null;
+  }
+  if (/halftime/i.test(text)) return 0.5;
+  if (league.path.startsWith('baseball/')) {
+    if (!period) return null;
+    const done = /^end/i.test(text) ? period : /^(mid|bot)/i.test(text) ? period - 0.5 : period - 1;
+    return Math.min(nearlyDone, done / periods);
+  }
+  if (!period) return /\bOT\b|\bSO\b/.test(text) ? nearlyDone : null;
+  if (period > periods) return nearlyDone;
+  if (/^end/i.test(text)) return Math.min(nearlyDone, period / periods);
+  const clock = text.match(/(\d{1,2}):(\d{2})/);
+  const left = clock ? (Number(clock[1]) * 60 + Number(clock[2])) / (minutes * 60) : 1;
+  return Math.min(nearlyDone, Math.max(0, (period - 1 + (1 - Math.min(1, left))) / periods));
+}
+
 // A card's update, or its final state. Score and state changes go at high
 // priority; a clock or down-and-distance change at normal, which Android may
 // hold while the phone dozes (as Apple does with priority 5).
-export function androidCardMessage(entry, state, plan) {
+// progress: gameProgress (or null), and the game's periods, for the bar.
+export function androidCardMessage(entry, state, plan, progress = null, periods = null) {
   return {
-    data: { type: plan.end ? 'end' : 'update', league: entry.league, eventId: entry.eventId, state: JSON.stringify(state) },
+    data: {
+      type: plan.end ? 'end' : 'update',
+      league: entry.league,
+      eventId: entry.eventId,
+      state: JSON.stringify(state),
+      ...(progress === null ? {} : { progress: String(Math.round(progress * 1000) / 1000) }),
+      ...(periods ? { periods: String(periods) } : {}),
+    },
     priority: plan.priority === 10 ? 'HIGH' : 'NORMAL',
     collapseKey: `${entry.league}:${entry.eventId}`,
     ttl: plan.end ? '7200s' : '600s',
@@ -220,6 +270,8 @@ export function androidStartMessage(card, game, league, { auto = false } = {}) {
       eventId: card.eventId,
       card: JSON.stringify({ ...card, start: Math.round(game.start.getTime() / 1000) }),
       state: JSON.stringify(contentState(game, league)),
+      progress: String(Math.round((gameProgress(game, league) ?? 0) * 1000) / 1000),
+      periods: String(gamePeriods(league).periods),
     },
     priority: 'HIGH',
     collapseKey: `${card.league}:${card.eventId}`,

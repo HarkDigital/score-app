@@ -34,14 +34,16 @@ public class FcmService extends FirebaseMessagingService {
                 case "end": {
                     String league = data.get("league");
                     String eventId = data.get("eventId");
-                    boolean shown = LiveCards.update(this, league, eventId, new JSONObject(data.get("state")), "end".equals(type));
+                    JSONObject state = withProgress(new JSONObject(data.get("state")), data);
+                    boolean shown = LiveCards.update(this, league, eventId, state, "end".equals(type));
                     if (!shown) stop(league, eventId);
                     break;
                 }
                 case "start": {
                     JSONObject card = new JSONObject(data.get("card"));
                     boolean auto = "1".equals(data.get("auto"));
-                    if (!LiveCards.start(this, card, new JSONObject(data.get("state")), auto)) stop(card.optString("league"), card.optString("eventId"));
+                    JSONObject state = withProgress(new JSONObject(data.get("state")), data);
+                    if (!LiveCards.start(this, card, state, auto)) stop(card.optString("league"), card.optString("eventId"));
                     break;
                 }
                 case "alert":
@@ -50,9 +52,19 @@ public class FcmService extends FirebaseMessagingService {
                 default:
                     break;
             }
-        } catch (JSONException | NullPointerException ignored) {
+        } catch (JSONException | NullPointerException | NumberFormatException ignored) {
             // a message from a newer server
         }
+    }
+
+    // The server's progress through the game (0 to 1) and its periods, kept
+    // with the state for the Live Update's bar (Android 16 and later).
+    private static JSONObject withProgress(JSONObject state, Map<String, String> data) throws JSONException {
+        String progress = data.get("progress");
+        String periods = data.get("periods");
+        if (progress != null) state.put("progress", Double.parseDouble(progress));
+        if (periods != null) state.put("periods", Integer.parseInt(periods));
+        return state;
     }
 
     // An update for a card this phone no longer has (turned off while the
