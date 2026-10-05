@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Debug builds only: may load a local copy of the site over plain http
-     (http://10.0.2.2:<port> is the Mac from the emulator). Release builds
-     load https only. -->
+     (http://10.0.2.2:<port> is the Mac from the emulator), and take
+     hand-made Lock Screen cards over adb (DebugCards). Release builds load
+     https only and have no such receiver. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <application
         android:usesCleartextTraffic="true"
-        tools:ignore="UnusedAttribute" />
+        tools:ignore="UnusedAttribute">
+        <!-- Hand-made Lock Screen cards for testing (DebugCards). -->
+        <receiver
+            android:name=".DebugCards"
+            android:exported="true" />
+    </application>
 </manifest>

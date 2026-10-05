@@ -7,6 +7,10 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
 import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.widget.RemoteViews;
@@ -26,8 +30,8 @@ import org.json.JSONObject;
 // terms. On Android 16 and later it's a Live Update (a promoted ongoing
 // notification): always in full on the Lock Screen and the always-on display,
 // with the score in a status bar chip; Android only promotes its standard
-// layouts, so it's the score as the title and a progress bar through the
-// game's periods with a logo at each end. Before 16, an ongoing notification
+// layouts, so it's each team's score as the title and, in live football, the
+// field as the bar, like the iPhone card's. Before 16, an ongoing notification
 // with Phade's own scoreboard layout (both logos either side of the score). It's put up
 // from a game page (LiveCards.show), or by the push server 15 minutes before
 // a scheduled game ("start"); the server keeps it current with "update"
@@ -41,6 +45,9 @@ final class LiveCards {
     static final String CHANNEL = "live_games";
     private static final long FINAL_STAYS = 2 * 60 * 60 * 1000L;
     private static final int MINT = 0xFF46BB93;
+    private static final int AMBER = 0xFFFBBF24;
+    // The iPhone card's turf green.
+    private static final int TURF = 0xFF1E5C38;
 
     static void channels(Context c) {
         if (Build.VERSION.SDK_INT < 26) return;
@@ -145,27 +152,20 @@ final class LiveCards {
         }
     }
 
-    // Android 16 and later: a Live Update. Each period is a segment of the
-    // bar (quarters, halves, periods, innings), filled as far as the game has
-    // got; the chip shows the score, or counts down to the start.
+    // Android 16 and later: a Live Update, as close to the iPhone card as
+    // Android's standard layouts go: each team's score in the title, the
+    // clock and the down underneath, the timeouts above them, and in live
+    // football the field as the bar (see field). No bar for other games. The
+    // chip shows who's ahead ("PHI 20-10"), or counts down to the start.
     @RequiresApi(36)
     private static Notification liveUpdate(Context c, String key, Game game, Bitmap left, Bitmap right, boolean end,
                                            PendingIntent open, PendingIntent dismissed) {
-        List<Notification.ProgressStyle.Segment> segments = new ArrayList<>();
-        for (int i = 0; i < game.periods; i++) segments.add(new Notification.ProgressStyle.Segment(100).setColor(MINT));
-        Notification.ProgressStyle bar = new Notification.ProgressStyle()
-            .setStyledByProgress(true)
-            .setProgressSegments(segments)
-            .setProgress(Math.round((float) (game.progress * game.periods * 100)))
-            .setProgressStartIcon(Icon.createWithBitmap(left))
-            .setProgressEndIcon(Icon.createWithBitmap(right));
         Notification.Builder n = new Notification.Builder(c, CHANNEL)
             .setSmallIcon(R.drawable.ic_stat_scores)
             .setColor(MINT)
             .setContentTitle(game.scoreTitle())
             .setContentText(game.statusLine(c))
-            .setSubText(game.league)
-            .setStyle(bar)
+            .setSubText(game.timeouts())
             .setCategory(Notification.CATEGORY_STATUS)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setOnlyAlertOnce(true)
@@ -173,6 +173,7 @@ final class LiveCards {
             .setGroup("card:" + key)
             .setContentIntent(open)
             .setDeleteIntent(dismissed);
+        if (game.showsField()) n.setStyle(field(c, game, left, right));
         if (end) {
             n.setAutoCancel(true).setTimeoutAfter(FINAL_STAYS).setShowWhen(false);
         } else {
@@ -181,10 +182,61 @@ final class LiveCards {
             android.os.Bundle promote = new android.os.Bundle();
             promote.putBoolean(NotificationCompat.EXTRA_REQUEST_PROMOTED_ONGOING, true);
             n.addExtras(promote);
-            if (game.started()) n.setShortCriticalText(game.leftScore + "-" + game.rightScore).setShowWhen(false);
+            if (game.started()) n.setShortCriticalText(game.chip()).setShowWhen(false);
             else n.setWhen(game.start).setShowWhen(true).setUsesChronometer(true).setChronometerCountDown(true);
         }
         return n.build();
+    }
+
+    // Live football's field as the Live Update's bar, 120 yards long: each
+    // end zone (10) in its team's color next to that team's logo (the left
+    // team defends the left goal line, as on the iPhone), the field between
+    // in ten 10-yard segments (Android's gaps between segments are the yard
+    // lines), the ball where it's spotted and an amber dot on the first-down
+    // line. Between plays there's no spot, so no ball.
+    @RequiresApi(36)
+    private static Notification.ProgressStyle field(Context c, Game game, Bitmap left, Bitmap right) {
+        List<Notification.ProgressStyle.Segment> yards = new ArrayList<>();
+        yards.add(new Notification.ProgressStyle.Segment(10).setColor(game.color(game.left)));
+        yards.add(new Notification.ProgressStyle.Segment(100).setColor(TURF));
+        yards.add(new Notification.ProgressStyle.Segment(10).setColor(game.color(game.right)));
+        Notification.ProgressStyle style = new Notification.ProgressStyle()
+            .setStyledByProgress(false)
+            .setProgressSegments(yards)
+            .setProgressStartIcon(Icon.createWithBitmap(left))
+            .setProgressEndIcon(Icon.createWithBitmap(right));
+        if (!Double.isNaN(game.ball)) {
+            style.setProgress((int) Math.round(10 + game.ball)).setProgressTrackerIcon(Icon.createWithBitmap(football(c)));
+        }
+        if (!Double.isNaN(game.firstDown)) {
+            List<Notification.ProgressStyle.Point> marks = new ArrayList<>();
+            marks.add(new Notification.ProgressStyle.Point((int) Math.round(10 + game.firstDown)).setColor(AMBER));
+            style.setProgressPoints(marks);
+        }
+        return style;
+    }
+
+    // The ball for the field: brown, white laces and a white edge so it reads
+    // on the turf, tipped like a ball in flight.
+    private static Bitmap football(Context c) {
+        int px = Math.round(24 * c.getResources().getDisplayMetrics().density);
+        Bitmap ball = Bitmap.createBitmap(px, px, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(ball);
+        canvas.rotate(-30, px / 2f, px / 2f);
+        RectF body = new RectF(px * 0.06f, px * 0.27f, px * 0.94f, px * 0.73f);
+        Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG);
+        fill.setColor(0xFF8B4A2B);
+        canvas.drawOval(body, fill);
+        Paint white = new Paint(Paint.ANTI_ALIAS_FLAG);
+        white.setColor(Color.WHITE);
+        white.setStyle(Paint.Style.STROKE);
+        white.setStrokeCap(Paint.Cap.ROUND);
+        white.setStrokeWidth(px * 0.06f);
+        canvas.drawOval(body, white);
+        float mid = px / 2f;
+        canvas.drawLine(px * 0.34f, mid, px * 0.66f, mid, white);
+        for (float x = 0.40f; x <= 0.61f; x += 0.1f) canvas.drawLine(px * x, mid - px * 0.07f, px * x, mid + px * 0.07f, white);
+        return ball;
     }
 
     // Before Android 16: Phade's scoreboard layout. Android draws its own
@@ -246,8 +298,16 @@ final class LiveCards {
         final String detail;
         final boolean homeFirst;
         final long start;
-        final double progress;  // 0 to 1, from the server (FcmService)
-        final int periods;
+        // Live football (server/live.js contentState): timeouts left (-1 when
+        // ESPN gave none), who has the ball, and the ball's spot and the
+        // first-down line in yards from the left team's goal line (NaN when
+        // there's none).
+        final int leftTimeouts;
+        final int rightTimeouts;
+        final boolean leftHasBall;
+        final boolean rightHasBall;
+        final double ball;
+        final double firstDown;
 
         Game(JSONObject card, JSONObject s) {
             league = card.optString("leagueLabel", card.optString("league").toUpperCase());
@@ -262,30 +322,101 @@ final class LiveCards {
             status = s.optString("status");
             detail = s.optString("detail");
             start = card.optLong("start") * 1000;
-            progress = Math.max(0, Math.min(1, s.optDouble("progress", "post".equals(state) ? 1 : 0)));
-            periods = Math.max(1, s.optInt("periods", periodsOf(card.optString("league"))));
-        }
-
-        // Until the server says (server/live.js gamePeriods).
-        private static int periodsOf(String league) {
-            switch (league) {
-                case "mlb": return 9;
-                case "nhl": return 3;
-                case "ncaam": case "mls": case "epl": case "ucl": return 2;
-                default: return 4;
+            boolean live = "in".equals(state);
+            int awayTimeouts = s.optInt("awayTimeouts", -1);
+            int homeTimeouts = s.optInt("homeTimeouts", -1);
+            leftTimeouts = live ? (homeFirst ? homeTimeouts : awayTimeouts) : -1;
+            rightTimeouts = live ? (homeFirst ? awayTimeouts : homeTimeouts) : -1;
+            String possession = s.optString("possession");
+            leftHasBall = live && possession.equals(homeFirst ? "home" : "away");
+            rightHasBall = live && possession.equals(homeFirst ? "away" : "home");
+            // ESPN counts the spot from the home team's goal line; the left
+            // team defends the left one.
+            int spot = s.optInt("yardLine", -1);
+            if (live && spot >= 0 && spot <= 100) {
+                ball = homeFirst ? spot : 100 - spot;
+                int toGo = s.optInt("toGo", 0);
+                int heading = leftHasBall ? 1 : rightHasBall ? -1 : 0;
+                firstDown = toGo > 0 && heading != 0 ? Math.max(0, Math.min(100, ball + heading * toGo)) : Double.NaN;
+            } else {
+                ball = Double.NaN;
+                firstDown = Double.NaN;
             }
         }
 
-        // "Colts 17 - 13 Commanders", or "Colts @ Commanders" before the start.
-        String scoreTitle() {
-            String l = left.optString("name"), r = right.optString("name");
-            return started() ? l + " " + leftScore + " - " + rightScore + " " + r : l + (homeFirst ? " vs " : " @ ") + r;
+        // The field shows for the whole of a live football game (the timeouts
+        // come with every update), so the card keeps its size between plays.
+        boolean showsField() {
+            return "in".equals(state) && (leftTimeouts >= 0 || !Double.isNaN(ball));
         }
 
-        // "Live · 10:39 - 3rd · 1st & 10 at IND 34".
+        // "Patriots 14 · Bills 7", with a football by the team that has the
+        // ball; "Patriots @ Bills" before the start.
+        String scoreTitle() {
+            String l = left.optString("name"), r = right.optString("name");
+            if (!started()) return l + (homeFirst ? " vs " : " @ ") + r;
+            return l + " " + leftScore + (leftHasBall ? " \uD83C\uDFC8" : "") + "  ·  "
+                + r + " " + rightScore + (rightHasBall ? " \uD83C\uDFC8" : "");
+        }
+
+        // For the status bar chip, which shows about ten characters' width
+        // and drops anything wider: the team ahead and the score from its
+        // side ("PHI 20-10"), else the bare score (tied, or too wide).
+        String chip() {
+            String plain = leftScore + "-" + rightScore;
+            int l = number(leftScore), r = number(rightScore);
+            String abbr = (l > r ? left : right).optString("abbr");
+            if (l < 0 || r < 0 || l == r || abbr.isEmpty()) return plain;
+            String lead = abbr + " " + Math.max(l, r) + "-" + Math.min(l, r);
+            return fitsChip(lead) ? lead : plain;
+        }
+
+        // Measured on Android 16: "BOS 99-101" shows, "MORG 21-14" doesn't.
+        private static boolean fitsChip(String text) {
+            Paint paint = new Paint();
+            paint.setTextSize(100);
+            return paint.measureText(text) <= paint.measureText("BOS 99-101");
+        }
+
+        private static int number(String score) {
+            try {
+                return Integer.parseInt(score.trim());
+            } catch (NumberFormatException e) {
+                return -1;
+            }
+        }
+
+        // "2nd • 8:21 · 1st & 10 at NE 37", "Halftime", "Final"; the start
+        // time only before the game.
         String statusLine(Context c) {
-            String status = statusText(c);
-            return detail.isEmpty() || !"in".equals(state) ? status : status + " · " + detail;
+            if (!"in".equals(state)) return statusText(c);
+            String clock = clock();
+            return detail.isEmpty() ? clock : clock + " · " + detail;
+        }
+
+        // ESPN's "8:21 - 2nd" the way a scorebug reads it, "2nd • 8:21".
+        private String clock() {
+            if (status.isEmpty()) return "Live";
+            String[] parts = status.split(" - ");
+            return parts.length == 2 ? parts[1] + " \u2022 " + parts[0] : status;
+        }
+
+        // Live football's timeouts, as the iPhone's dashes: "NE ●●○  BUF ●●●".
+        String timeouts() {
+            if (leftTimeouts < 0 || rightTimeouts < 0) return null;
+            return "Timeouts  " + left.optString("abbr") + " " + dots(leftTimeouts) + "   " + right.optString("abbr") + " " + dots(rightTimeouts);
+        }
+
+        private static String dots(int left) {
+            StringBuilder out = new StringBuilder();
+            for (int i = 0; i < Math.max(3, left); i++) out.append(i < left ? '\u25CF' : '\u25CB');
+            return out.toString();
+        }
+
+        // The team's color for its end zone, or Phade's gray.
+        int color(JSONObject team) {
+            String hex = team.optString("color", "");
+            return hex.matches("#[0-9a-fA-F]{6}") ? Color.parseColor(hex) : 0xFF374151;
         }
 
         boolean started() {
