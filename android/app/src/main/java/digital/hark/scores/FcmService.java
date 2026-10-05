@@ -34,7 +34,7 @@ public class FcmService extends FirebaseMessagingService {
                 case "end": {
                     String league = data.get("league");
                     String eventId = data.get("eventId");
-                    JSONObject state = withProgress(new JSONObject(data.get("state")), data);
+                    JSONObject state = new JSONObject(data.get("state"));
                     boolean shown = LiveCards.update(this, league, eventId, state, "end".equals(type));
                     if (!shown) stop(league, eventId);
                     break;
@@ -42,7 +42,7 @@ public class FcmService extends FirebaseMessagingService {
                 case "start": {
                     JSONObject card = new JSONObject(data.get("card"));
                     boolean auto = "1".equals(data.get("auto"));
-                    JSONObject state = withProgress(new JSONObject(data.get("state")), data);
+                    JSONObject state = new JSONObject(data.get("state"));
                     if (!LiveCards.start(this, card, state, auto)) stop(card.optString("league"), card.optString("eventId"));
                     break;
                 }
@@ -55,16 +55,6 @@ public class FcmService extends FirebaseMessagingService {
         } catch (JSONException | NullPointerException | NumberFormatException ignored) {
             // a message from a newer server
         }
-    }
-
-    // The server's progress through the game (0 to 1) and its periods, kept
-    // with the state for the Live Update's bar (Android 16 and later).
-    private static JSONObject withProgress(JSONObject state, Map<String, String> data) throws JSONException {
-        String progress = data.get("progress");
-        String periods = data.get("periods");
-        if (progress != null) state.put("progress", Double.parseDouble(progress));
-        if (periods != null) state.put("periods", Integer.parseInt(periods));
-        return state;
     }
 
     // An update for a card this phone no longer has (turned off while the
