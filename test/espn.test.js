@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import {
   LEAGUES, scoreboardUrl, parseScoreboard, groupGames, refreshDelay,
   statusLabel, formatStart, dayLabel, weekLabel, weekInfo, adjacentWeek, teamColor, fallbackUrl, parseOdds,
-  lineSteamUrl, leagueFilter, dayUrls, mergeGames, cardSituation, parseGame,
+  lineSteamUrl, leagueFilter, dayUrls, mergeGames, cardSituation, parseGame, fieldView,
 } from '../espn.js';
 
 const league = (id) => LEAGUES.find((l) => l.id === id);
@@ -130,6 +130,20 @@ test('live football carries each side\'s timeouts and who has the ball for the c
   // Nothing outside a live football game.
   assert.deepEqual(game(nfl, '401').teams.map((t) => t.timeouts), [null, null]);
   assert.deepEqual(cardSituation(...game(epl, '702').teams), {});
+});
+
+test('the game page field runs left to right as the teams are listed', () => {
+  const board = parseScoreboard(fixture('nfl-scoreboard-live'), league('nfl'));
+  // NE (left, away) on its own 37 at Buffalo: 37 from the left goal line,
+  // driving right, the first down at the 47.
+  assert.deepEqual(fieldView(game(board, '401872971'), league('nfl')), { ball: 37, firstDown: 47, heading: 1 });
+  // Between plays there's no spot.
+  assert.equal(fieldView(game(board, '401872969'), league('nfl')), null);
+  // The home team driving left, goal to go: the first-down line is the goal line.
+  const redZone = { teams: [{ possession: false }, { possession: true }], ball: { yardLine: 96, toGo: 4 } };
+  assert.deepEqual(fieldView(redZone, league('nfl')), { ball: 4, firstDown: 0, heading: -1 });
+  // No down (an extra point): the ball, no first-down line.
+  assert.deepEqual(fieldView({ ...redZone, ball: { yardLine: 98, toGo: null } }, league('nfl')), { ball: 2, firstDown: null, heading: -1 });
 });
 
 test('the ball spot needs a team with the ball and a yard line on the field; no down, no yards to go', () => {

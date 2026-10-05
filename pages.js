@@ -2,11 +2,11 @@
 // scoreboard from links like #/game/nfl/401547417 and #/team/nfl/12, so the
 // back button, swipe-back and shared links all work.
 
-import { leagueById, statusLabel, lineSteamUrl, dayUrls, parseScoreboard } from './espn.js';
+import { leagueById, statusLabel, lineSteamUrl, dayUrls, parseScoreboard, fieldView } from './espn.js';
 import {
   summaryUrl, scheduleUrls, parseSummary, parseSchedule, lockScreenCard, canShowOnLockScreen, LOCK_LEAD_MINUTES,
 } from './details.js';
-import { ICONS, getJson, TROUBLE, oddsHtml, logoHtml, emptyState, errorState, formatClock, esc, patchHtml } from './ui.js';
+import { ICONS, getJson, TROUBLE, oddsHtml, logoHtml, emptyState, errorState, formatClock, esc, patchHtml, textOn } from './ui.js';
 import {
   inApp, appPlatform, nativeInfo, showOnLockScreen, scheduleOnLockScreen, removeFromLockScreen, enableAlerts,
 } from './native.js';
@@ -34,6 +34,7 @@ const page = {
   timer: null,
   quick: null,   // live game: the 5s score and clock check
   board: null,   // live game: the scoreboard URL that has it
+  live: null,    // live game: its latest scoreboard entry (the ball's spot, the down)
   requestId: 0,
 };
 const root = () => document.getElementById('page');
@@ -69,6 +70,7 @@ function leave() {
   clearTimeout(page.timer);
   clearTimeout(page.quick);
   page.board = null;
+  page.live = null;
   page.requestId++;
   remember();
   if (page.loading) {
@@ -160,7 +162,8 @@ function schedule() {
   if (page.error) delay = FULL;
   else if (route.kind === 'game' && data?.state === 'in') {
     delay = FULL;
-    page.quick = setTimeout(quick, QUICK);
+    // Straight away the first time: the field comes from the scoreboard.
+    page.quick = setTimeout(quick, page.live ? QUICK : 0);
   } else if (route.kind === 'team' && data?.games.some((g) => g.state === 'in')) delay = 60_000;
   if (delay) page.timer = setTimeout(load, delay);
 }
@@ -185,10 +188,13 @@ async function quick() {
       load();
       return;
     }
-    if (game && game.statusText !== data.statusText) {
+    // A new clock, spot or down redraws the page; patchHtml touches only
+    // what changed.
+    const situation = (g) => g && JSON.stringify([g.statusText, g.ball, g.detail, g.teams.map((t) => [t.possession, t.timeouts])]);
+    if (game && situation(game) !== situation(page.live)) {
       Object.assign(data, { statusText: game.statusText, statusName: game.statusName });
-      const status = root().querySelector('.matchup-status');
-      if (status) status.innerHTML = statusHtml(data);
+      page.live = game;
+      render();
     }
   } catch {
     // The 30s refresh reports trouble.
@@ -312,7 +318,7 @@ function lineSteamHtml(league, id) {
     </a>`;
 }
 
-// The badge and clock above the score; the 5s check swaps just this in.
+// The badge and clock above the score.
 function statusHtml(game) {
   if (TROUBLE.test(game.statusName)) return `<span class="badge badge-warn">${esc(game.statusText)}</span>`;
   if (game.state === 'in') return `<span class="badge badge-live"><span class="live-dot" aria-hidden="true"></span>Live</span><span class="clock">${esc(game.statusText)}</span>`;
@@ -340,8 +346,44 @@ function matchupHtml(game, league, id) {
       ${lineSteamHtml(league, id)}
       <div class="matchup-status">${statusHtml(game)}</div>
       <div class="matchup-teams">${a ? side(a) : ''}${middle}${b ? side(b) : ''}</div>
+      ${live ? fieldHtml(game, league) : ''}
       ${meta.length ? `<div class="matchup-meta">${meta.map(esc).join(' · ')}</div>` : ''}
     </div>`;
+}
+
+// Live football: the field, as on the Lock Screen cards. Each end zone in its
+// team's color on that team's side (the left team defends the left goal
+// line), a line every ten yards, the ball on the line of scrimmage and the
+// first-down line (amber) ahead of the drive, the yards between lit; under it
+// who has the ball and the down and distance. From the 5s scoreboard check,
+// as the summary has no spot; between plays there's no ball.
+function fieldHtml(game, league) {
+  const live = page.live;
+  if (!league.path.startsWith('football/') || !live || live.id !== String(page.route?.id)) return '';
+  if (!live.ball && !live.teams.some((t) => Number.isInteger(t.timeouts))) return '';
+  const view = fieldView(live, league);
+  const zone = (team) => {
+    const bg = team?.color ?? '#374151';
+    return `<span class="end-zone" style="background:${esc(bg)};color:${textOn(bg)}">${esc(team?.abbr ?? '')}</span>`;
+  };
+  const at = (yards) => `left:${yards}%`;
+  const lines = [10, 20, 30, 40, 50, 60, 70, 80, 90].map((y) => `<i class="yard${y === 50 ? ' mid' : ''}" style="${at(y)}"></i>`).join('');
+  let play = '';
+  if (view) {
+    if (view.firstDown !== null) {
+      play += `<i class="to-go" style="${at(Math.min(view.ball, view.firstDown))};width:${Math.abs(view.firstDown - view.ball)}%"></i>`
+        + `<i class="first-down" style="${at(view.firstDown)}"></i>`;
+    }
+    play += `<i class="scrimmage" style="${at(view.ball)}"></i><span class="ball" style="${at(view.ball)}">${ICONS.football}</span>`;
+  }
+  const [a, b] = game.teams;
+  const holder = live.teams.find((t) => t.possession);
+  const caption = [holder && `<span class="field-ball">${ICONS.football}${esc(holder.abbr)}</span>`, live.detail && esc(live.detail)].filter(Boolean).join(' · ');
+  return `
+    <div class="field" role="img" aria-label="${esc(live.detail ? `${holder ? `${holder.abbr} ball, ` : ''}${live.detail}` : 'The field')}">
+      ${zone(a)}<div class="turf">${lines}${play}</div>${zone(b)}
+    </div>
+    ${caption ? `<p class="field-detail">${caption}</p>` : ''}`;
 }
 
 function moneylinesHtml(game) {
