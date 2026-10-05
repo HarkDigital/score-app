@@ -147,6 +147,22 @@ test('lock-screen card: away and home by side, scores, and a status only when it
   assert.equal(late.state.status, 'Delayed');
 });
 
+test('a live football card starts with timeouts left and who has the ball', () => {
+  // Captured Oct 4 2026, NE @ BUF in the 2nd: the header counts timeouts used.
+  const nfl = leagueById('nfl');
+  const game = summary('nfl-summary-live', 'nfl');
+  assert.deepEqual(game.teams.map((t) => [t.abbr, t.timeouts, t.possession]), [['NE', 2, true], ['BUF', 3, false]]);
+  const card = lockScreenCard(game, nfl, game.id);
+  assert.deepEqual(card.state, { away: '7', home: '7', state: 'in', status: '8:16 - 2nd', detail: '', awayTimeouts: 2, homeTimeouts: 3, possession: 'away' });
+  // Overtime has its own count, so it's left to the push server's scoreboard.
+  const data = fixture('nfl-summary-live');
+  data.header.competitions[0].status.period = 5;
+  assert.deepEqual(parseSummary(data, nfl).teams.map((t) => t.timeouts), [null, null]);
+  // Other sports and finished games carry neither.
+  assert.equal('possession' in lockScreenCard(summary('nba-summary', 'nba'), leagueById('nba'), '1').state, false);
+  assert.equal('awayTimeouts' in lockScreenCard(summary('nfl-summary', 'nfl'), nfl, '1').state, false);
+});
+
 test('the lock-screen card goes up now for live games and ones within 15 minutes; later ones are scheduled', () => {
   const now = new Date('2026-10-04T16:00:00Z');
   const pre = (minutes) => ({ state: 'pre', statusName: 'STATUS_SCHEDULED', start: new Date(now.getTime() + minutes * 60_000) });

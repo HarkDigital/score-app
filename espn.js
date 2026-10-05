@@ -134,6 +134,7 @@ export function parseGame(event, league) {
     // Scoreboards list names; team schedules list media.
     broadcast: [...new Set((comp.broadcasts ?? []).flatMap((b) => b.names ?? [b.media?.shortName]).filter(Boolean))].join(', '),
     detail: situationText(situation),
+    ball: ballSpot(situation),
     note: comp.notes?.[0]?.headline ?? '',
     // Once a game is under way ESPN's entry is a stale pre-game line or nothing.
     odds: state === 'pre' ? parseOdds(comp.odds, home, away) : null,
@@ -210,7 +211,44 @@ function parseTeam(c, state, situation) {
     score: state === 'pre' ? '' : String(c.score?.displayValue ?? c.score ?? ''),
     winner: c.winner === true,
     possession: situation?.possession != null && situation.possession === team.id,
+    // Football's timeouts left (the live situation's homeTimeouts and
+    // awayTimeouts), else null.
+    timeouts: timeoutCount(situation?.[`${c.homeAway}Timeouts`]),
   };
+}
+
+const timeoutCount = (n) => (Number.isInteger(n) && n >= 0 && n <= 9 ? n : null);
+
+// Where the ball is in live football: ESPN's situation.yardLine, which counts
+// yards from the HOME team's goal line (New England on its own 37 at Buffalo
+// is 63; college the same), and the yards to go while there's a down. Only
+// while a team has the ball: a kickoff's or extra point's spot has no side.
+function ballSpot(s) {
+  if (!s?.possession) return null;
+  const { yardLine, down, distance } = s;
+  if (!Number.isInteger(yardLine) || yardLine < 0 || yardLine > 100) return null;
+  return { yardLine, toGo: down >= 1 && Number.isInteger(distance) && distance > 0 ? distance : null };
+}
+
+// The Lock Screen card's football extras, from a parsed home and away team
+// and the game's ball spot: each side's timeouts left, who has the ball,
+// where it is (yardLine, from the home goal line) and the yards to go. Only
+// the keys ESPN gave (GameAttributes.ContentState has them as optionals).
+// Shared by the web app's first card (details.js lockScreenCard, which has
+// no spot) and the push server's updates (server/live.js contentState).
+export function cardSituation(away, home, ball = null) {
+  const out = {};
+  if (Number.isInteger(away?.timeouts) && Number.isInteger(home?.timeouts)) {
+    out.awayTimeouts = away.timeouts;
+    out.homeTimeouts = home.timeouts;
+  }
+  if (away?.possession === true) out.possession = 'away';
+  else if (home?.possession === true) out.possession = 'home';
+  if (out.possession && ball) {
+    out.yardLine = ball.yardLine;
+    if (ball.toGo) out.toGo = ball.toGo;
+  }
+  return out;
 }
 
 function situationText(s) {

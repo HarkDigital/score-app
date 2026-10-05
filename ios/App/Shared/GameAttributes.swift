@@ -28,6 +28,16 @@ struct GameAttributes: ActivityAttributes {
         var status: String
         /// Down and distance, outs and runners, or empty.
         var detail: String
+        /// Live football only (espn.js cardSituation): each side's timeouts
+        /// left, and "away" or "home" for the team with the ball. Optional,
+        /// so pushes from before these keys still decode.
+        var awayTimeouts: Int?
+        var homeTimeouts: Int?
+        var possession: String?
+        /// Where the ball is, in yards from the HOME team's goal line (ESPN's
+        /// count), and the yards to go; only while a team has the ball.
+        var yardLine: Int?
+        var toGo: Int?
     }
 
     var league: String

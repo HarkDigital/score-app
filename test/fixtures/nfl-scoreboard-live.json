@@ -1,0 +1,245 @@
+{
+ "leagues": [
+  {
+   "id": "28",
+   "abbreviation": "NFL",
+   "slug": "nfl"
+  }
+ ],
+ "events": [
+  {
+   "id": "401872971",
+   "date": "2026-10-04T17:00Z",
+   "name": "New England Patriots at Buffalo Bills",
+   "shortName": "NE @ BUF",
+   "competitions": [
+    {
+     "id": "401872971",
+     "date": "2026-10-04T17:00Z",
+     "status": {
+      "clock": 501,
+      "displayClock": "8:21",
+      "period": 2,
+      "type": {
+       "id": "2",
+       "name": "STATUS_IN_PROGRESS",
+       "state": "in",
+       "completed": false,
+       "description": "In Progress",
+       "detail": "8:21 - 2nd Quarter",
+       "shortDetail": "8:21 - 2nd"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "id": "2",
+       "homeAway": "home",
+       "score": "7",
+       "team": {
+        "id": "2",
+        "abbreviation": "BUF",
+        "displayName": "Buffalo Bills",
+        "shortDisplayName": "Bills",
+        "color": "00338d",
+        "alternateColor": "d50a0a",
+        "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/scoreboard/buf.png"
+       },
+       "records": [
+        {
+         "name": "overall",
+         "abbreviation": "Any",
+         "type": "total",
+         "summary": "3-0"
+        },
+        {
+         "name": "Home",
+         "type": "home",
+         "summary": "2-0"
+        },
+        {
+         "name": "Road",
+         "type": "road",
+         "summary": "1-0"
+        }
+       ]
+      },
+      {
+       "id": "17",
+       "homeAway": "away",
+       "score": "7",
+       "team": {
+        "id": "17",
+        "abbreviation": "NE",
+        "displayName": "New England Patriots",
+        "shortDisplayName": "Patriots",
+        "color": "002a5c",
+        "alternateColor": "c60c30",
+        "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/scoreboard/ne.png"
+       },
+       "records": [
+        {
+         "name": "overall",
+         "abbreviation": "Any",
+         "type": "total",
+         "summary": "1-2"
+        },
+        {
+         "name": "Home",
+         "type": "home",
+         "summary": "1-0"
+        },
+        {
+         "name": "Road",
+         "type": "road",
+         "summary": "0-2"
+        }
+       ]
+      }
+     ],
+     "situation": {
+      "down": 1,
+      "yardLine": 63,
+      "distance": 10,
+      "downDistanceText": "1st & 10 at NE 37",
+      "shortDownDistanceText": "1st & 10",
+      "possessionText": "NE 37",
+      "isRedZone": false,
+      "homeTimeouts": 3,
+      "awayTimeouts": 2,
+      "possession": "17"
+     }
+    }
+   ],
+   "status": {
+    "clock": 501,
+    "displayClock": "8:21",
+    "period": 2,
+    "type": {
+     "id": "2",
+     "name": "STATUS_IN_PROGRESS",
+     "state": "in",
+     "completed": false,
+     "description": "In Progress",
+     "detail": "8:21 - 2nd Quarter",
+     "shortDetail": "8:21 - 2nd"
+    }
+   }
+  },
+  {
+   "id": "401872969",
+   "date": "2026-10-04T17:00Z",
+   "name": "Jacksonville Jaguars at Cincinnati Bengals",
+   "shortName": "JAX @ CIN",
+   "competitions": [
+    {
+     "id": "401872969",
+     "date": "2026-10-04T17:00Z",
+     "status": {
+      "clock": 603,
+      "displayClock": "10:03",
+      "period": 2,
+      "type": {
+       "id": "2",
+       "name": "STATUS_IN_PROGRESS",
+       "state": "in",
+       "completed": false,
+       "description": "In Progress",
+       "detail": "10:03 - 2nd Quarter",
+       "shortDetail": "10:03 - 2nd"
+      },
+      "isTBDFlex": false
+     },
+     "competitors": [
+      {
+       "id": "4",
+       "homeAway": "home",
+       "score": "3",
+       "team": {
+        "id": "4",
+        "abbreviation": "CIN",
+        "displayName": "Cincinnati Bengals",
+        "shortDisplayName": "Bengals",
+        "color": "fb4f14",
+        "alternateColor": "000000",
+        "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/scoreboard/cin.png"
+       },
+       "records": [
+        {
+         "name": "overall",
+         "abbreviation": "Any",
+         "type": "total",
+         "summary": "2-1"
+        },
+        {
+         "name": "Home",
+         "type": "home",
+         "summary": "1-0"
+        },
+        {
+         "name": "Road",
+         "type": "road",
+         "summary": "1-1"
+        }
+       ]
+      },
+      {
+       "id": "30",
+       "homeAway": "away",
+       "score": "3",
+       "team": {
+        "id": "30",
+        "abbreviation": "JAX",
+        "displayName": "Jacksonville Jaguars",
+        "shortDisplayName": "Jaguars",
+        "color": "007487",
+        "alternateColor": "d7a22a",
+        "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/scoreboard/jax.png"
+       },
+       "records": [
+        {
+         "name": "overall",
+         "abbreviation": "Any",
+         "type": "total",
+         "summary": "2-1"
+        },
+        {
+         "name": "Home",
+         "type": "home",
+         "summary": "2-0"
+        },
+        {
+         "name": "Road",
+         "type": "road",
+         "summary": "0-1"
+        }
+       ]
+      }
+     ],
+     "situation": {
+      "down": -1,
+      "yardLine": 35,
+      "distance": 0,
+      "isRedZone": true,
+      "homeTimeouts": 2,
+      "awayTimeouts": 3
+     }
+    }
+   ],
+   "status": {
+    "clock": 603,
+    "displayClock": "10:03",
+    "period": 2,
+    "type": {
+     "id": "2",
+     "name": "STATUS_IN_PROGRESS",
+     "state": "in",
+     "completed": false,
+     "description": "In Progress",
+     "detail": "10:03 - 2nd Quarter",
+     "shortDetail": "10:03 - 2nd"
+    }
+   }
+  }
+ ]
+}
