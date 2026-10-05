@@ -402,7 +402,7 @@ function standingsHtml(data) {
   if (view.league.standingsViews) {
     const shown = standingsView(data, view.standings);
     return `
-      <div class="toolbar">
+      <div class="toolbar toolbar-center">
         <div class="pills" role="group" aria-label="Standings view">
           ${STANDINGS_VIEWS.map((v) => `<button data-standings="${v.id}" aria-pressed="${v.id === view.standings}">${esc(v.label)}</button>`).join('')}
         </div>
@@ -472,7 +472,7 @@ function rankingsHtml(data) {
   }
   const poll = data.polls[Math.min(view.poll, data.polls.length - 1)];
   return `
-    <div class="toolbar">
+    <div class="toolbar toolbar-center">
       <div class="pills" role="group" aria-label="Poll">
         ${data.polls.map((p) => `<button data-poll="${data.polls.indexOf(p)}" aria-pressed="${p === poll}">${esc(p.shortName)}</button>`).join('')}
       </div>

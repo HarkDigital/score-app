@@ -8,6 +8,8 @@ const icon = (size, body, extra = '') =>
 const stroke = (d) => `<path d="${d}" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`;
 const STAR_PATH = '<path fill="currentColor" d="M12 2.6l2.9 5.98 6.6.95-4.78 4.65 1.13 6.57L12 17.65l-5.9 3.1 1.13-6.57L2.5 9.53l6.6-.95z"/>';
 export const ICONS = {
+  // The field's ball: brown with white laces, like the Android card's.
+  football: '<svg viewBox="0 0 24 14" aria-hidden="true"><ellipse cx="12" cy="7" rx="10.6" ry="5.8" fill="#8b4a2b" stroke="#fff" stroke-width="1.4"/><path d="M8.5 7h7M10 5.4v3.2M12 5.4v3.2M14 5.4v3.2" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/></svg>',
   star: icon(14, STAR_PATH),
   starSmall: icon(11, STAR_PATH),
   starLarge: icon(30, STAR_PATH),
@@ -120,7 +122,7 @@ function abbreviate(name = '') {
   return words[words.length - 1].slice(0, 3).toUpperCase();
 }
 
-function textOn(hex) {
+export function textOn(hex) {
   const n = parseInt(hex.slice(1), 16);
   const lum = 0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255);
   return lum > 186 ? '#0a0a0a' : '#ffffff';

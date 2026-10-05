@@ -380,6 +380,19 @@ main {
   margin-bottom: 14px;
 }
 
+/* Sub filters (the NFL's standings views, the polls) sit centered; a poll's
+   headline goes on its own line under them. */
+.toolbar-center {
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.toolbar-center .sub {
+  flex-basis: 100%;
+  text-align: center;
+}
+
 .eyebrow {
   font-size: 11px;
   font-weight: 700;
@@ -531,7 +544,7 @@ main {
   align-items: center;
   gap: 8px;
   min-height: 20px;
-  margin: 12px 0 0;
+  margin: 16px 0 0;
   font-size: 12px;
   color: var(--gray-500);
 }
@@ -1478,6 +1491,79 @@ a.team-cell:hover .team-name { color: var(--accent); }
   font-size: 12px;
   color: var(--gray-500);
 }
+
+/* Live football's field, as on the Lock Screen cards: 10-yard end zones
+   either side of the 100-yard field. */
+.field {
+  display: grid;
+  grid-template-columns: 1fr 10fr 1fr;
+  height: 26px;
+  margin: 14px 2px 0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.end-zone {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+/* Above the end zones, so a ball on the goal line isn't covered. */
+.turf {
+  position: relative;
+  z-index: 1;
+  background: #1e5c38;
+}
+
+.turf i,
+.turf .ball {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.turf .yard { width: 1px; margin-left: -0.5px; background: rgb(255 255 255 / 0.22); }
+.turf .yard.mid { background: rgb(255 255 255 / 0.45); }
+.turf .to-go { background: rgb(255 255 255 / 0.16); }
+.turf .first-down { width: 2px; margin-left: -1px; background: var(--warn); }
+.turf .scrimmage { width: 2px; margin-left: -1px; background: rgb(255 255 255 / 0.9); }
+
+.turf .ball {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  margin-left: -12px;
+}
+
+.turf .ball svg {
+  width: 22px;
+  height: 13px;
+  transform: rotate(-25deg);
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.5));
+}
+
+.field-detail {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-300);
+}
+
+.field-ball {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.field-ball svg { width: 16px; height: 10px; }
 
 .page-odds { margin-top: 12px; }
 .page-odds .game-odds:first-child { border-top: 0; }

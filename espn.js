@@ -230,6 +230,20 @@ function ballSpot(s) {
   return { yardLine, toGo: down >= 1 && Number.isInteger(distance) && distance > 0 ? distance : null };
 }
 
+// Live football's field as the game page draws it, left to right as the
+// game's teams are listed (the left team defends the left end zone): the
+// ball's spot and the first-down line in yards from the left goal line, and
+// which way the drive goes (1 to the right, -1 to the left, 0 not known).
+// null without a spot. ESPN counts the spot from the home team's goal line.
+export function fieldView(game, league) {
+  const [left, right] = game?.teams ?? [];
+  if (!game?.ball || !left || !right) return null;
+  const ball = league.homeFirst ? game.ball.yardLine : 100 - game.ball.yardLine;
+  const heading = left.possession ? 1 : right.possession ? -1 : 0;
+  const firstDown = game.ball.toGo && heading ? Math.min(100, Math.max(0, ball + heading * game.ball.toGo)) : null;
+  return { ball, firstDown, heading };
+}
+
 // The Lock Screen card's football extras, from a parsed home and away team
 // and the game's ball spot: each side's timeouts left, who has the ball,
 // where it is (yardLine, from the home goal line) and the yards to go. Only
