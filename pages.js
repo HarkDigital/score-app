@@ -6,7 +6,7 @@ import { leagueById, statusLabel, lineSteamUrl, dayUrls, parseScoreboard } from 
 import {
   summaryUrl, scheduleUrls, parseSummary, parseSchedule, lockScreenCard, canShowOnLockScreen, LOCK_LEAD_MINUTES,
 } from './details.js';
-import { ICONS, getJson, TROUBLE, oddsHtml, logoHtml, emptyState, errorState, formatClock, esc } from './ui.js';
+import { ICONS, getJson, TROUBLE, oddsHtml, logoHtml, emptyState, errorState, formatClock, esc, patchHtml } from './ui.js';
 import {
   inApp, appPlatform, nativeInfo, showOnLockScreen, scheduleOnLockScreen, removeFromLockScreen, enableAlerts,
 } from './native.js';
@@ -206,7 +206,8 @@ function render() {
   const updated = data && page.updatedAt
     ? `<p class="status${error ? ' error' : ''}">${error ? `Couldn't reach ESPN. Showing data from ${esc(formatClock(page.updatedAt))}.` : `Updated ${esc(formatClock(page.updatedAt))}`}</p>`
     : '';
-  root().innerHTML = html + updated;
+  // Patched, not replaced: the logos would flash on every refresh.
+  patchHtml(root(), html + updated);
 }
 
 function title(route, data) {

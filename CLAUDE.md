@@ -86,6 +86,7 @@ The feeds are unofficial and undocumented. Before changing a parser, check the s
 - Hover styles that change a tapped control's look go inside `@media (hover: hover)`: iOS keeps `:hover` on the last thing tapped.
 - `localStorage` keys: `scores.league` (last tab), `scores.myTeams` (followed teams `{league, id, name, abbr, logo, color}`), `scores.filters` (the last filter per league, `{ncaaf: '8'}`; unknown ids fall back to All FBS). Wrap every storage access in try/catch.
 - Chrome (tabs, mode switch, day strip) re-renders only when its inputs change, so a refresh never steals focus or scroll.
+- The scoreboard and the game and team pages are drawn with `patchHtml` (`ui.js`), not `innerHTML`: it matches the new markup to the old nodes by position and tag and touches only what changed. Replacing the markup made every logo a new `<img>`, and WebKit shows a new image blank until it decodes, so the logos flashed on every 5s refresh in the iPhone app. A `<details>` keeps the open state the person gave it.
 
 ## iOS app ("Phade Scores", TestFlight)
 
