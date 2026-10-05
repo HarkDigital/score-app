@@ -67,6 +67,38 @@ export function oddsHtml(odds, league) {
 // ESPN's logo, or Phade's fallback: the team's color with its abbreviation.
 export const failedLogos = new Set();
 
+// Puts new markup into an element, keeping every node that's already right.
+// Live scores redraw every 5 seconds; rebuilding the markup made every logo a
+// new <img>, which WebKit shows blank until it has decoded it, so the logos
+// flashed. Nodes are matched by position and tag, so only what changed (a
+// score, the clock) is touched. A box score group someone opened or closed
+// stays that way.
+export function patchHtml(el, html) {
+  const next = document.createElement('template');
+  next.innerHTML = html;
+  patchChildren(el, next.content);
+}
+
+function patchChildren(el, next) {
+  const before = [...el.childNodes];
+  const after = [...next.childNodes];
+  after.forEach((node, i) => {
+    const old = before[i];
+    if (!old) el.appendChild(node);
+    else if (old.nodeType !== node.nodeType || old.nodeName !== node.nodeName) el.replaceChild(node, old);
+    else if (node.nodeType === Node.ELEMENT_NODE) patchElement(old, node);
+    else if (old.nodeValue !== node.nodeValue) old.nodeValue = node.nodeValue;
+  });
+  for (const extra of before.slice(after.length)) extra.remove();
+}
+
+function patchElement(el, next) {
+  const keep = (name) => name === 'open' && el.tagName === 'DETAILS';
+  for (const { name } of [...el.attributes]) if (!next.hasAttribute(name) && !keep(name)) el.removeAttribute(name);
+  for (const { name, value } of [...next.attributes]) if (!keep(name) && el.getAttribute(name) !== value) el.setAttribute(name, value);
+  patchChildren(el, next);
+}
+
 export function logoHtml(team, size = 28) {
   const abbr = team.abbr || abbreviate(team.name);
   if (team.logo && !failedLogos.has(team.logo)) {

@@ -12,6 +12,7 @@ import {
 } from './myteams.js';
 import {
   ICONS, getJson, TROUBLE, oddsHtml, failedLogos, logoHtml, fallbackLogo, emptyState, errorState, fullDate, formatClock, esc,
+  patchHtml,
 } from './ui.js';
 import {
   initPages, parseRoute, showPage, hidePage, pageOpen, refreshPage, pageVisible, gameHref, teamHref,
@@ -298,14 +299,15 @@ function renderContent() {
   const animate = view.animate && Boolean(data);
   if (data) view.animate = false;
   els.content.classList.toggle('stagger-in', animate);
+  // Patched, not replaced, so a refresh doesn't make the logos flash.
   if (!data) {
-    els.content.innerHTML = error ? errorState() : skeleton(mode);
+    patchHtml(els.content, error ? errorState() : skeleton(mode));
   } else if (mode === 'standings') {
-    els.content.innerHTML = standingsHtml(data);
+    patchHtml(els.content, standingsHtml(data));
   } else if (mode === 'rankings') {
-    els.content.innerHTML = rankingsHtml(data);
+    patchHtml(els.content, rankingsHtml(data));
   } else {
-    els.content.innerHTML = gamesHtml(data.games);
+    patchHtml(els.content, gamesHtml(data.games));
   }
 }
 
