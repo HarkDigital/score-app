@@ -10,7 +10,7 @@ const BASE = 'https://site.api.espn.com/apis/site/v2/sports';
 // linesteam: the league's slug on linesteam.com, which charts FanDuel line
 // movement for these five; game pages link there.
 export const LEAGUES = [
-  { id: 'nfl', label: 'NFL', path: 'football/nfl', weekly: true, linesteam: 'nfl' },
+  { id: 'nfl', label: 'NFL', path: 'football/nfl', weekly: true, linesteam: 'nfl', standingsParams: { level: '3' }, standingsViews: true },
   { id: 'nba', label: 'NBA', path: 'basketball/nba', linesteam: 'nba' },
   { id: 'mlb', label: 'MLB', path: 'baseball/mlb', linesteam: 'mlb' },
   { id: 'nhl', label: 'NHL', path: 'hockey/nhl', linesteam: 'nhl' },

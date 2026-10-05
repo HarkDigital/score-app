@@ -78,8 +78,6 @@ struct LiveGameActivity: Widget {
 
 /// Left and right as the scoreboard reads: away @ home, or home vs away for soccer.
 struct Game {
-    let league: String
-    let leagueId: String
     let start: Date
     let left: GameAttributes.Team
     let right: GameAttributes.Team
@@ -100,8 +98,6 @@ struct Game {
     let firstDownFromLeft: Double?
 
     init(_ a: GameAttributes, _ s: GameAttributes.ContentState) {
-        league = a.leagueLabel
-        leagueId = a.league
         start = a.start
         homeFirst = a.homeFirst
         left = a.homeFirst ? a.home : a.away
@@ -139,10 +135,6 @@ struct Game {
     /// plays; the ball shows when ESPN gives a spot.
     var showsField: Bool { live && (leftTimeouts != nil || ballFromLeft != nil) }
 
-    /// For the card's league pill: "NFL", but "EPL" and "UCL" rather than
-    /// "Premier League" and "Champions League".
-    var shortLeague: String { (league.contains(" ") ? leagueId : league).uppercased() }
-
     /// ESPN's "8:21 - 2nd" the way a scorebug reads it, "2nd • 8:21";
     /// anything else ("Halftime", "Top 5th") as it is.
     var clock: String {
@@ -163,8 +155,8 @@ struct Game {
 /// A scorebug: each team's logo on a block of its color at the card's edge,
 /// the inner side slanted, with the scores beside them (football adds the
 /// timeouts left and a ball by the team that has it) and the period and clock
-/// between. Under that, a row of pills: the league, down and distance (or the
-/// matchup) and LIVE.
+/// between. Under that, a row of pills: down and distance (or the matchup)
+/// and LIVE.
 struct LockScreenView: View {
     let game: Game
 
@@ -414,21 +406,13 @@ struct CenterStatus: View {
     }
 }
 
-/// The league; down and distance (or outs and runners), else the matchup;
-/// and LIVE while it's on.
+/// Down and distance (or outs and runners), else the matchup, and LIVE while
+/// it's on. No league: the teams make the sport plain.
 struct PillRow: View {
     let game: Game
 
     var body: some View {
         HStack(spacing: 6) {
-            // Mint with dark text, so it reads on any wallpaper.
-            Pill(fill: Phade.mint) {
-                Text(game.shortLeague)
-                    .font(.caption.weight(.bold))
-                    .tracking(1)
-                    .foregroundStyle(Phade.background)
-            }
-            .fixedSize()
             Pill {
                 Text(game.live && !game.detail.isEmpty ? game.detail : "\(game.left.name) \(game.separator) \(game.right.name)")
                     .foregroundStyle(.white)
@@ -449,7 +433,6 @@ struct PillRow: View {
 }
 
 struct Pill<Content: View>: View {
-    var fill = Color.white.opacity(0.12)
     @ViewBuilder let content: Content
 
     var body: some View {
@@ -457,7 +440,7 @@ struct Pill<Content: View>: View {
             .lineLimit(1)
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
-            .background(Capsule().fill(fill))
+            .background(Capsule().fill(Color.white.opacity(0.12)))
     }
 }
 

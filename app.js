@@ -4,7 +4,7 @@ import {
 } from './espn.js';
 import {
   standingsUrl, filterStandingsGroup, teamListUrls, parseStandings, rankingsUrl, parseRankings, teamsFromStandings,
-  searchTeams, fold,
+  searchTeams, fold, STANDINGS_VIEWS, standingsView, clinchLegend,
 } from './standings.js';
 import {
   loadFollowed, saveFollowed, isFollowed, toggleFollowed, followedLeagues, countFollowed, gamesForTeams,
@@ -36,6 +36,7 @@ const view = {
   dayOffset: 0,    // days from today, so "Today" survives midnight
   week: null,      // weekly leagues: null means the current week
   poll: 0,         // rankings: which poll is showing
+  standings: 'division', // NFL standings: 'division' | 'conference' | 'playoffs'
   data: null,      // the board, standings or rankings for the current view
   error: null,
   updatedAt: null,
@@ -395,7 +396,23 @@ function standingsHtml(data) {
   if (!data.groups.length) {
     return emptyState({ icon: ICONS.trophy, title: 'No standings yet', text: `ESPN hasn't published ${view.league.label} standings for this season yet.` });
   }
-  return data.groups.map((group) => `
+  // The NFL's Division, Conference and Playoff Picture, all from one download.
+  if (view.league.standingsViews) {
+    const shown = standingsView(data, view.standings);
+    return `
+      <div class="toolbar">
+        <div class="pills" role="group" aria-label="Standings view">
+          ${STANDINGS_VIEWS.map((v) => `<button data-standings="${v.id}" aria-pressed="${v.id === view.standings}">${esc(v.label)}</button>`).join('')}
+        </div>
+      </div>
+      ${standingsTables(shown.groups)}
+      ${view.standings === 'playoffs' ? clinchHtml(shown.groups) : ''}`;
+  }
+  return standingsTables(data.groups);
+}
+
+function standingsTables(groups) {
+  return groups.map((group) => `
     <section class="group">
       <h2 class="group-title">${esc(group.name)}</h2>
       <div class="card">
@@ -421,7 +438,7 @@ function standingsRow(row, i, columns) {
     <tr${mine ? ' class="followed"' : ''}>
       <th scope="row" class="col-team">
         <a class="team-cell" href="${teamHref(view.league.id, row.team.id)}">
-          <span class="pos"${note}>${i + 1}</span>
+          <span class="pos"${note}>${row.pos ?? i + 1}</span>
           ${logoHtml(row.team, 22)}
           <span class="team-name">${esc(row.team.shortName || row.team.name)}</span>
           ${row.clincher ? `<span class="clinch" title="Clinched or eliminated">${esc(row.clincher)}</span>` : ''}
@@ -429,6 +446,13 @@ function standingsRow(row, i, columns) {
       </th>
       ${columns.map((c) => `<td${c.key ? ' class="key"' : ''}>${esc(row.stats[c.id] ?? '–')}</td>`).join('')}
     </tr>`;
+}
+
+// What the letters by a team mean (the playoff picture's clinch marks).
+function clinchHtml(groups) {
+  const marks = clinchLegend(groups.flatMap((g) => g.rows));
+  if (!marks.length) return '';
+  return `<p class="others">${marks.map(([mark, text]) => `<b>${esc(mark)}</b> ${esc(text)}`).join(' · ')}</p>`;
 }
 
 function legendHtml(rows) {
@@ -778,6 +802,9 @@ document.addEventListener('click', (event) => {
   } else if (d.poll !== undefined) {
     view.poll = Number(d.poll);
     renderContent();
+  } else if (d.standings) {
+    view.standings = d.standings;
+    renderContent();
   } else if (d.pickerLeague) {
     picker.league = leagueById(d.pickerLeague);
     renderPickerTabs();
@@ -821,7 +848,7 @@ document.addEventListener('change', (event) => {
 // In the iPhone app every button press taps the haptic engine: a selection
 // tick for tabs, view switches, days and polls, a light tap for the rest.
 // Captured first, so it buzzes even for buttons whose handlers stop the click.
-const SELECTION = '[role="tab"], .day, [data-poll]';
+const SELECTION = '[role="tab"], .day, [data-poll], [data-standings]';
 document.addEventListener('click', (event) => {
   const button = event.target.closest('button');
   if (button && !button.disabled) haptic(button.matches(SELECTION) ? 'selection' : 'light');

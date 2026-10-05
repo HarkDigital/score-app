@@ -78,11 +78,13 @@ function tableFor(league) {
 
 export function parseStandings(data, league) {
   const table = tableFor(league);
-  const groups = collectGroups(data).map((node) => {
+  const groups = collectGroups(data).map(({ node, parent }) => {
     const rows = node.standings.entries.map((entry) => parseEntry(entry, table)).filter(Boolean);
     return {
       // College conferences read best short ("Big Ten"); pro ones in full.
       name: (league.college && node.shortName) || node.name || node.abbreviation || '',
+      // The conference a division table sits in (NFL's level=3 feed).
+      conference: parent?.isConference ? { name: parent.name ?? '', abbr: parent.abbreviation ?? '' } : null,
       columns: table.columns.filter((c) => rows.some((r) => r.stats[c.id] !== undefined)),
       rows: sortRows(rows),
     };
@@ -92,10 +94,10 @@ export function parseStandings(data, league) {
 
 // Conferences and divisions nest in `children` to varying depths; a table is
 // any node with entries of its own.
-function collectGroups(node) {
+function collectGroups(node, parent = null) {
   if (!node || typeof node !== 'object') return [];
-  if (Array.isArray(node.standings?.entries) && node.standings.entries.length) return [node];
-  return (node.children ?? []).flatMap(collectGroups);
+  if (Array.isArray(node.standings?.entries) && node.standings.entries.length) return [{ node, parent }];
+  return (node.children ?? []).flatMap((child) => collectGroups(child, node));
 }
 
 function parseEntry(entry, table) {
@@ -137,14 +139,98 @@ function parseEntry(entry, table) {
 }
 
 // The feed's entries come in no useful order. Use league position (soccer),
-// then playoff seed (pro leagues), then the table's sort stat.
+// then playoff seed (pro leagues), then the table's sort stat. Rows keep the
+// seed and the sort stat for the NFL's conference and playoff views.
 function sortRows(rows) {
   const all = (field) => rows.every((r) => r.order[field] !== null);
   let compare;
   if (all('rank')) compare = (a, b) => a.order.rank - b.order.rank;
   else if (all('seed')) compare = (a, b) => a.order.seed - b.order.seed;
   else compare = (a, b) => (b.order.key ?? -1) - (a.order.key ?? -1) || (b.order.wins ?? 0) - (a.order.wins ?? 0);
-  return [...rows].sort(compare).map(({ order, ...row }) => row);
+  return [...rows].sort(compare).map(({ order, ...row }) => ({ ...row, seed: order.seed, key: order.key }));
+}
+
+// ---- NFL standings views ----
+
+// The NFL's standings come by division (level=3); the other two views are
+// built from the same tables, so switching costs no download.
+export const STANDINGS_VIEWS = [
+  { id: 'division', label: 'Division' },
+  { id: 'conference', label: 'Conference' },
+  { id: 'playoffs', label: 'Playoff Picture' },
+];
+
+export function standingsView(standings, view) {
+  if (view === 'conference') return { groups: conferenceTables(standings.groups) };
+  if (view === 'playoffs') return { groups: playoffPicture(standings.groups) };
+  return standings;
+}
+
+// Better record first; on equal records ESPN's playoff seed, which carries
+// the NFL's tiebreakers (head to head, division record, common games...).
+const byRecord = (a, b) => (b.key ?? -1) - (a.key ?? -1) || (a.seed ?? 99) - (b.seed ?? 99);
+
+function byConference(groups) {
+  const conferences = new Map();
+  for (const group of groups) {
+    if (!group.conference) continue;
+    const entry = conferences.get(group.conference.abbr) ?? { conference: group.conference, divisions: [] };
+    entry.divisions.push(group);
+    conferences.set(group.conference.abbr, entry);
+  }
+  return [...conferences.values()];
+}
+
+// Each conference's 16 teams together, by record.
+function conferenceTables(groups) {
+  return byConference(groups).map(({ conference, divisions }) => ({
+    name: conference.name,
+    conference,
+    columns: divisions[0].columns,
+    rows: divisions.flatMap((d) => d.rows).sort(byRecord),
+  }));
+}
+
+// ESPN's clinch marks in NFL standings, in the order the legend lists them.
+const NFL_CLINCHERS = [
+  ['*', 'clinched division and bye'],
+  ['z', 'clinched division'],
+  ['y', 'clinched wild card'],
+  ['x', 'clinched playoff spot'],
+  ['e', 'eliminated'],
+];
+
+// The marks that appear among these rows, with their meaning.
+export function clinchLegend(rows) {
+  const present = new Set(rows.map((r) => r.clincher));
+  return NFL_CLINCHERS.filter(([mark]) => present.has(mark));
+}
+
+// Zone colors for the playoff picture's position column and legend.
+export const PLAYOFF_ZONES = {
+  bye: { color: '#46bb93', description: 'First-round bye' },
+  division: { color: '#60a5fa', description: 'Division leader' },
+  wildCard: { color: '#fbbf24', description: 'Wild card' },
+};
+
+// The NFL's playoff field, per conference: the four division winners are
+// seeds 1 to 4 by record (a division winner ranks above every wild card,
+// whatever its record), the three best other teams are the wild cards, 5 to
+// 7, and only the 1 seed has a first-round bye. Everyone else is in the hunt.
+// A division's winner is its first row (division tables are ordered by seed).
+export function playoffPicture(groups) {
+  return byConference(groups).flatMap(({ conference, divisions }) => {
+    const columns = divisions[0].columns;
+    const winners = divisions.map((d) => d.rows[0]).filter(Boolean).sort(byRecord);
+    const others = divisions.flatMap((d) => d.rows.slice(1)).sort(byRecord);
+    const zone = (seed) => (seed === 1 ? PLAYOFF_ZONES.bye : seed <= winners.length ? PLAYOFF_ZONES.division : PLAYOFF_ZONES.wildCard);
+    const seeded = [...winners, ...others.slice(0, 3)].map((row, i) => ({ ...row, pos: i + 1, note: zone(i + 1) }));
+    const hunt = others.slice(3).map((row, i) => ({ ...row, pos: seeded.length + i + 1, note: null }));
+    return [
+      { name: conference.abbr || conference.name, conference, columns, rows: seeded },
+      ...(hunt.length ? [{ name: `${conference.abbr || conference.name} · In the hunt`, conference, columns, rows: hunt }] : []),
+    ];
+  });
 }
 
 function parseNote(note) {
