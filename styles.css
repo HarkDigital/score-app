@@ -948,6 +948,92 @@ main {
   background: var(--note);
 }
 
+/* ---- News ---- */
+
+/* The newest article leads with its picture and summary; the rest are rows
+   with a thumbnail. Each opens on ESPN. */
+.news-lead,
+.news-row {
+  color: inherit;
+  text-decoration: none;
+}
+
+.news-lead {
+  display: block;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.news-lead-img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  background: var(--gray-900);
+}
+
+.news-lead .news-body { padding: 14px 16px 16px; }
+.news-lead .news-headline { font-size: 17px; -webkit-line-clamp: 3; }
+
+.news-body {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.news-headline {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--white);
+}
+
+.news-desc {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--gray-400);
+}
+
+.news-meta {
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.news-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 88px;
+  padding: 12px 16px;
+}
+
+.news-row + .news-row { border-top: 1px solid var(--hairline); }
+.news-row .news-body { flex: 1; }
+
+.news-thumb {
+  flex: none;
+  width: 96px;
+  height: 64px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--gray-900);
+}
+
+@media (hover: hover) {
+  .news-row:hover,
+  .news-lead:hover { background-color: rgb(255 255 255 / 0.03); }
+}
+
+.team-tabs { margin: 16px 0 4px; }
+
 /* ---- Rankings ---- */
 
 .pills {

@@ -1,0 +1,491 @@
+{
+ "header": "NFL News",
+ "articles": [
+  {
+   "id": 50117652,
+   "type": "Story",
+   "headline": "Knockout league pickups: Jaxon Smith-Njigba, Ja'Marr Chase among big names available in Week 5",
+   "description": "Tristan H. Cockcroft lists the most common players on eliminated teams and finds how much FAB to spend this week.",
+   "published": "2026-10-06T17:36:34Z",
+   "premium": false,
+   "byline": "Tristan H. Cockcroft",
+   "images": [
+    {
+     "url": "https://a.espncdn.com/photo/2026/1006/r1726857_1296x729_16-9.jpg",
+     "width": 1296,
+     "height": 729,
+     "type": "header"
+    }
+   ],
+   "categories": [
+    {
+     "type": "league"
+    },
+    {
+     "type": "league"
+    },
+    {
+     "type": "topic"
+    },
+    {
+     "type": "topic"
+    },
+    {
+     "type": "topic"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "contributor"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/fantasy/football/story/_/id/50117652/fantasy-football-knockout-waiver-wire-free-agent-pickups-nfl-week-5"
+    }
+   }
+  },
+  {
+   "id": 50117945,
+   "type": "HeadlineNews",
+   "headline": "NFL Referees Association to challenge officials' suspensions",
+   "description": "The NFL Referees Association said it will challenge the severity of the suspensions of two officials for unprofessional conduct.",
+   "published": "2026-10-06T17:30:07Z",
+   "premium": false,
+   "images": [
+    {
+     "url": "https://a.espncdn.com/photo/2018/0710/r399232_1296x729_16-9.jpg",
+     "width": 1296,
+     "height": 729,
+     "type": "header"
+    }
+   ],
+   "categories": [
+    {
+     "type": "league"
+    },
+    {
+     "type": "team",
+     "teamId": 22,
+     "description": "Arizona Cardinals"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "team",
+     "teamId": 16,
+     "description": "Minnesota Vikings"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "topic"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/nfl/story/_/id/50117945/nfl-referees-association-challenge-officials-suspensions"
+    }
+   }
+  },
+  {
+   "id": 50117199,
+   "type": "Story",
+   "headline": "Fantasy football D/ST outlook for Weeks 5-8: Jaguars a solid option in October",
+   "description": "Looking for the right D/ST units to stream over the next four weeks? Here's what you need to know.",
+   "published": "2026-10-06T17:04:36Z",
+   "premium": false,
+   "byline": "Tristan H. Cockcroft",
+   "images": [
+    {
+     "url": "https://a.espncdn.com/photo/2026/1006/r1726847_1296x729_16-9.jpg",
+     "width": 1296,
+     "height": 729,
+     "type": "header"
+    }
+   ],
+   "categories": [
+    {
+     "type": "league"
+    },
+    {
+     "type": "topic"
+    },
+    {
+     "type": "team",
+     "teamId": 30,
+     "description": "Jacksonville Jaguars"
+    },
+    {
+     "type": "team",
+     "teamId": 14,
+     "description": "Los Angeles Rams"
+    },
+    {
+     "type": "team",
+     "teamId": 28,
+     "description": "Washington Commanders"
+    },
+    {
+     "type": "team",
+     "teamId": 12,
+     "description": "Kansas City Chiefs"
+    },
+    {
+     "type": "team",
+     "teamId": 34,
+     "description": "Houston Texans"
+    },
+    {
+     "type": "team",
+     "teamId": 26,
+     "description": "Seattle Seahawks"
+    },
+    {
+     "type": "team",
+     "teamId": 6,
+     "description": "Dallas Cowboys"
+    },
+    {
+     "type": "team",
+     "teamId": 23,
+     "description": "Pittsburgh Steelers"
+    },
+    {
+     "type": "team",
+     "teamId": 27,
+     "description": "Tampa Bay Buccaneers"
+    },
+    {
+     "type": "team",
+     "teamId": 33,
+     "description": "Baltimore Ravens"
+    },
+    {
+     "type": "team",
+     "teamId": 29,
+     "description": "Carolina Panthers"
+    },
+    {
+     "type": "team",
+     "teamId": 4,
+     "description": "Cincinnati Bengals"
+    },
+    {
+     "type": "team",
+     "teamId": 20,
+     "description": "New York Jets"
+    },
+    {
+     "type": "team",
+     "teamId": 19,
+     "description": "New York Giants"
+    },
+    {
+     "type": "team",
+     "teamId": 17,
+     "description": "New England Patriots"
+    },
+    {
+     "type": "team",
+     "teamId": 11,
+     "description": "Indianapolis Colts"
+    },
+    {
+     "type": "team",
+     "teamId": 21,
+     "description": "Philadelphia Eagles"
+    },
+    {
+     "type": "team",
+     "teamId": 8,
+     "description": "Detroit Lions"
+    },
+    {
+     "type": "team",
+     "teamId": 16,
+     "description": "Minnesota Vikings"
+    },
+    {
+     "type": "team",
+     "teamId": 5,
+     "description": "Cleveland Browns"
+    },
+    {
+     "type": "team",
+     "teamId": 10,
+     "description": "Tennessee Titans"
+    },
+    {
+     "type": "team",
+     "teamId": 3,
+     "description": "Chicago Bears"
+    },
+    {
+     "type": "team",
+     "teamId": 24,
+     "description": "Los Angeles Chargers"
+    },
+    {
+     "type": "team",
+     "teamId": 2,
+     "description": "Buffalo Bills"
+    },
+    {
+     "type": "team",
+     "teamId": 15,
+     "description": "Miami Dolphins"
+    },
+    {
+     "type": "team",
+     "teamId": 1,
+     "description": "Atlanta Falcons"
+    },
+    {
+     "type": "team",
+     "teamId": 13,
+     "description": "Las Vegas Raiders"
+    },
+    {
+     "type": "team",
+     "teamId": 25,
+     "description": "San Francisco 49ers"
+    },
+    {
+     "type": "team",
+     "teamId": 7,
+     "description": "Denver Broncos"
+    },
+    {
+     "type": "contributor"
+    },
+    {
+     "type": "league"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/fantasy/football/story/_/id/50117199/fantasy-football-defense-special-teams-streaming-week-5"
+    }
+   }
+  },
+  {
+   "id": 50117893,
+   "type": "Media",
+   "headline": "What Kevin O'Connell sees in Kyler Murray",
+   "description": "What Kevin O'Connell sees in Kyler Murray ",
+   "published": "2026-10-06T17:05:36Z",
+   "premium": false,
+   "images": [
+    {
+     "url": "https://espnmedia-cdn.akamaized.net/espn/media/common/2026/1006/ss_20261006_125954255_3686916/ss_20261006_125954255_3686916.jpg",
+     "width": 576,
+     "height": 324
+    }
+   ],
+   "categories": [
+    {
+     "type": "league"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "series"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "team",
+     "teamId": 16,
+     "description": "Minnesota Vikings"
+    },
+    {
+     "type": "editorialindicator"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/video/clip/_/id/50117893/what-kevin-oconnell-sees-kyler-murray"
+    }
+   }
+  },
+  {
+   "id": 50117645,
+   "type": "Media",
+   "headline": "Bryce Young to McAfee: 'We rally around the city in the same way they rally around us'",
+   "description": "Bryce Young to McAfee: 'We rally around the city in the same way they rally around us'",
+   "published": "2026-10-06T16:46:35Z",
+   "premium": false,
+   "images": [
+    {
+     "url": "https://espnmedia-cdn.akamaized.net/espn/media/common/2026/1006/ss_20261006_123344774_3686900/ss_20261006_123344774_3686900.jpg",
+     "width": 576,
+     "height": 324
+    }
+   ],
+   "categories": [
+    {
+     "type": "league"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "team",
+     "teamId": 29,
+     "description": "Carolina Panthers"
+    },
+    {
+     "type": "editorialindicator"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "series"
+    },
+    {
+     "type": "topic"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/video/clip/_/id/50117645/rally-city-same-way-rally-us"
+    }
+   }
+  },
+  {
+   "id": 50117108,
+   "type": "Story",
+   "headline": "Strength of schedule (SOS) cheat sheet: Every team's year-to-date and rest-of-season ratings",
+   "description": "Ranking each team's remaining schedule and how it might impact every position's fantasy performance.",
+   "published": "2026-10-06T16:11:20Z",
+   "premium": false,
+   "byline": "Mike Clay",
+   "images": [
+    {
+     "url": "https://a.espncdn.com/photo/2026/1006/r1726834_576x324_16-9.jpg",
+     "width": 576,
+     "height": 324,
+     "type": "header"
+    }
+   ],
+   "categories": [
+    {
+     "type": "topic"
+    },
+    {
+     "type": "topic"
+    },
+    {
+     "type": "league"
+    },
+    {
+     "type": "contributor"
+    },
+    {
+     "type": "league"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/fantasy/football/story/_/id/50117108/fantasy-football-2026-strength-schedule-rest-season"
+    }
+   }
+  },
+  {
+   "id": 50117332,
+   "type": "Media",
+   "headline": "Daniel Dopp: Michael Wilson is a fantasy football must-start in Week 5",
+   "description": "Daniel Dopp: Michael Wilson is a fantasy football must-start in Week 5",
+   "published": "2026-10-06T15:58:36Z",
+   "premium": false,
+   "images": [
+    {
+     "url": "https://espnmedia-cdn.akamaized.net/espn/media/common/2026/1006/dm_261006_Michael_Wilson_fantasy/dm_261006_Michael_Wilson_fantasy.jpg",
+     "width": 576,
+     "height": 324
+    }
+   ],
+   "categories": [
+    {
+     "type": "topic"
+    },
+    {
+     "type": "league"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "editorialindicator"
+    },
+    {
+     "type": "league"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/video/clip/_/id/50117332/michael-wilson-fantasy-football-start-week-5"
+    }
+   }
+  },
+  {
+   "id": 50117248,
+   "type": "Media",
+   "headline": "Daniel Dopp congratulates fantasy managers that have Bijan Robinson",
+   "description": "Daniel Dopp congratulates fantasy managers that have Bijan Robinson",
+   "published": "2026-10-06T15:46:00Z",
+   "premium": false,
+   "images": [
+    {
+     "url": "https://espnmedia-cdn.akamaized.net/espn/media/common/2026/1006/dm_261006_FFP_DOPP_ON_BIJAN_ROBINSON/dm_261006_FFP_DOPP_ON_BIJAN_ROBINSON.jpg",
+     "width": 576,
+     "height": 324
+    }
+   ],
+   "categories": [
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "topic"
+    },
+    {
+     "type": "league"
+    },
+    {
+     "type": "league"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/video/clip/_/id/50117248/daniel-dopp-congratulates-fantasy-managers-bijan-robinson"
+    }
+   }
+  }
+ ]
+}
