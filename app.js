@@ -14,7 +14,7 @@ import {
   ICONS, getJson, TROUBLE, oddsHtml, failedLogos, failedImages, logoHtml, fallbackLogo, emptyState, errorState, fullDate, formatClock, esc,
   patchHtml, newsHtml,
 } from './ui.js';
-import { newsUrl, parseNews } from './news.js';
+import { newsUrl, parseNews, mergeNews } from './news.js';
 import {
   initPages, parseRoute, showPage, hidePage, pageOpen, refreshPage, pageVisible, gameHref, teamHref,
 } from './pages.js';
@@ -86,7 +86,7 @@ async function load() {
 async function fetchView() {
   const { league, mode } = view;
   const date = addDays(new Date(), view.dayOffset);
-  if (league.mine) return fetchMyTeams(date);
+  if (league.mine) return mode === 'news' ? fetchMyNews() : fetchMyTeams(date);
   if (mode === 'standings') return parseStandings(await getJson(standingsUrl(league, filterStandingsGroup(view.filter))), league);
   if (mode === 'rankings') return parseRankings(await getJson(rankingsUrl(league)));
   if (mode === 'news') return parseNews(await getJson(newsUrl(league)));
@@ -105,6 +105,23 @@ async function fetchMyTeams(date) {
   return {
     games: results.flatMap((r) => (r.status === 'fulfilled' ? r.value : [])),
     failed: failed.map((l) => l.label),
+  };
+}
+
+// My Teams' news: each followed team's own news (news.js), merged. Fewer
+// articles per team when there are several, to keep the download small.
+async function fetchMyNews() {
+  const teams = followed.filter((t) => leagueById(t.league));
+  const limit = teams.length <= 3 ? 50 : 25;
+  const results = await Promise.allSettled(teams.map(async (team) => ({
+    team,
+    articles: parseNews(await getJson(newsUrl(leagueById(team.league), team.id, limit)), { teamId: team.id }).articles,
+  })));
+  const failed = teams.filter((_, i) => results[i].status === 'rejected');
+  if (teams.length && failed.length === teams.length) throw results[0].reason;
+  return {
+    articles: mergeNews(results.filter((r) => r.status === 'fulfilled').map((r) => r.value)),
+    failed: failed.map((t) => t.abbr || t.name),
   };
 }
 
@@ -152,14 +169,17 @@ function renderModes() {
   if (rendered.modes === key) return;
   rendered.modes = key;
   if (league.mine) {
-    els.modes.innerHTML = followed.length ? `
+    els.modes.innerHTML = `
+      <div class="segmented" role="tablist" aria-label="View">
+        ${[['scores', 'Scores'], ['news', 'News']].map(([id, label]) => `<button role="tab" data-mode="${id}" aria-selected="${mode === id}">${label}</button>`).join('')}
+      </div>` + (followed.length ? `
       <div class="toolbar">
         <span class="eyebrow">Following ${followed.length} team${followed.length === 1 ? '' : 's'}</span>
         <button class="pill-btn" data-action="edit-teams">Edit teams</button>
       </div>
       <nav class="chips" aria-label="Your teams">
         ${followed.map((t) => `<a class="chip" href="${teamHref(t.league, t.id)}">${logoHtml(t, 20)}${esc(t.abbr || t.name)}</a>`).join('')}
-      </nav>` : '';
+      </nav>` : '');
     return;
   }
   const modes = [['scores', 'Scores'], ['standings', 'Standings'], ...(league.rankings ? [['rankings', 'Rankings']] : []), ['news', 'News']];
@@ -310,7 +330,9 @@ function renderContent() {
   } else if (mode === 'rankings') {
     patchHtml(els.content, rankingsHtml(data));
   } else if (mode === 'news') {
-    patchHtml(els.content, newsHtml(data.articles, { empty: `ESPN has no ${view.league.label} news right now.` }));
+    const { league } = view;
+    if (league.mine && !followed.length) patchHtml(els.content, pickTeamsHtml());
+    else patchHtml(els.content, newsHtml(data.articles, { empty: league.mine ? 'ESPN has no recent news about your teams.' : `ESPN has no ${league.label} news right now.` }));
   } else {
     patchHtml(els.content, gamesHtml(data.games));
   }
@@ -318,16 +340,18 @@ function renderContent() {
 
 // ---- Scores ----
 
+function pickTeamsHtml() {
+  return emptyState({
+    icon: ICONS.starLarge,
+    title: 'Pick your teams',
+    text: 'Follow teams from any league and their games, live, and their news land here.',
+    action: '<button class="btn-primary" data-action="edit-teams">Choose teams</button>',
+  });
+}
+
 function gamesHtml(games) {
   const { league } = view;
-  if (league.mine && !followed.length) {
-    return emptyState({
-      icon: ICONS.starLarge,
-      title: 'Pick your teams',
-      text: 'Follow teams from any league and all their games land here, live.',
-      action: '<button class="btn-primary" data-action="edit-teams">Choose teams</button>',
-    });
-  }
+  if (league.mine && !followed.length) return pickTeamsHtml();
   const groups = groupGames(games);
   if (!groups.length) {
     if (league.mine) {
@@ -788,8 +812,10 @@ function selectLeague(id) {
   const league = id === MINE.id ? MINE : leagueById(id);
   if (!league || league.id === view.league.id) return;
   writeStorage(LEAGUE_KEY, league.id);
-  // Stay on Standings when switching leagues; Rankings only where polls exist.
-  const mode = league.mine || (view.mode === 'rankings' && !league.rankings) ? 'scores' : view.mode;
+  // Stay on Standings or News when switching leagues; Rankings only where
+  // polls exist; My Teams has Scores and News.
+  const mode = league.mine ? (view.mode === 'news' ? 'news' : 'scores')
+    : view.mode === 'rankings' && !league.rankings ? 'scores' : view.mode;
   changeView({ league, filter: league.mine ? null : savedFilter(league), mode, dayOffset: 0, week: null, poll: 0 });
   els.tabs.querySelector(`[data-league="${league.id}"]`)?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
 }

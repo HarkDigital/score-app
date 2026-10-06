@@ -110,7 +110,13 @@ function patchElement(el, next) {
 // on ESPN (in the apps, the phone's browser).
 export function newsHtml(articles, { empty = 'No news right now.' } = {}) {
   if (!articles.length) return emptyState({ icon: ICONS.news, title: 'No news yet', text: empty });
-  const meta = (a) => [newsAge(a.published), a.kind, a.premium ? 'ESPN+' : ''].filter(Boolean).map(esc).join(' · ');
+  // My Teams tags each story with the followed teams it's about.
+  const meta = (a) => {
+    const text = [newsAge(a.published), a.kind, a.premium ? 'ESPN+' : ''].filter(Boolean).map(esc).join(' · ');
+    if (!a.teams?.length) return text;
+    const teams = a.teams.map((t) => `<span class="news-team">${logoHtml(t, 16)}${esc(t.abbr || t.name)}</span>`).join('');
+    return `${teams}${text ? `<span>${text}</span>` : ''}`;
+  };
   const link = (a, cls, body) => `<a class="${cls}" href="${esc(a.url)}" target="_blank" rel="noopener">${body}</a>`;
   // At twice the size shown, for sharp phones.
   const photo = (a, w, h) => {
