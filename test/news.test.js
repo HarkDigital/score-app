@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { leagueById } from '../espn.js';
-import { newsUrl, parseNews, newsAge, newsImage } from '../news.js';
+import { newsUrl, parseNews, newsAge, newsImage, mergeNews } from '../news.js';
 
 // Trimmed from ESPN's news feeds on Oct 5 2026.
 const fixture = (name) => JSON.parse(readFileSync(new URL(`./fixtures/${name}.json`, import.meta.url)));
@@ -13,6 +13,7 @@ test('news comes from the site API, a team\'s read deeper', () => {
   assert.equal(team.pathname, '/apis/site/v2/sports/football/college-football/news');
   assert.equal(team.searchParams.get('team'), '2294');
   assert.equal(team.searchParams.get('limit'), '50');
+  assert.equal(new URL(newsUrl(leagueById('nfl'), 12, 25)).searchParams.get('limit'), '25');
 });
 
 test('league news: every article, newest first, with its kind, picture and link', () => {
@@ -68,4 +69,22 @@ test('ESPN photos come through its resizer at the size shown; other images as th
     'https://a.espncdn.com/combiner/i?img=/photo/2026/1004/r1726104_600x400_3-2.jpg&w=192&h=128&scale=crop&cquality=80');
   assert.equal(newsImage('https://a.espncdn.com/i/teamlogos/nfl/500/kc.png', 192, 128), 'https://a.espncdn.com/i/teamlogos/nfl/500/kc.png');
   assert.equal(newsImage(null, 192, 128), null);
+});
+
+test('My Teams news: every followed team\'s together, newest first, a shared story once', () => {
+  const chiefs = { league: 'nfl', id: '12', abbr: 'KC' };
+  const iowa = { league: 'ncaaf', id: '2294', abbr: 'IOWA' };
+  const raiders = { league: 'nfl', id: '13', abbr: 'LV' };
+  const kc = parseNews(fixture('nfl-news-team12'), { teamId: '12' }).articles;
+  const ia = parseNews(fixture('ncaaf-news-team2294'), { teamId: 2294 }).articles;
+  const merged = mergeNews([{ team: chiefs, articles: kc }, { team: iowa, articles: ia }]);
+  assert.equal(merged.length, kc.length + ia.length);
+  assert.ok(merged.every((a, i) => i === 0 || a.published <= merged[i - 1].published));
+  assert.deepEqual(merged.find((a) => a.id === ia[0].id).teams, [iowa]);
+  // Their game's story, in both teams' feeds: once, tagged with both.
+  const game = kc[0];
+  const both = mergeNews([{ team: chiefs, articles: [game] }, { team: raiders, articles: [game] }]);
+  assert.equal(both.length, 1);
+  assert.deepEqual(both[0].teams, [chiefs, raiders]);
+  assert.equal(mergeNews([{ team: chiefs, articles: kc }], 2).length, 2);
 });

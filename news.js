@@ -5,10 +5,11 @@
 const SITE_BASE = 'https://site.api.espn.com/apis/site/v2/sports';
 
 // A team's feed is every article that tags the team, round-ups included, so
-// it's read deeper and filtered (teamNews).
-export function newsUrl(league, teamId) {
+// it's read deeper and filtered (parseNews). limit: fewer per team when My
+// Teams reads several at once.
+export function newsUrl(league, teamId, limit = teamId ? 50 : 30) {
   const url = new URL(`${SITE_BASE}/${league.path}/news`);
-  url.searchParams.set('limit', teamId ? '50' : '30');
+  url.searchParams.set('limit', String(limit));
   if (teamId) url.searchParams.set('team', String(teamId));
   return url.toString();
 }
@@ -54,6 +55,21 @@ export function parseNews(data, { teamId } = {}) {
     });
   }
   return { articles: articles.sort((x, y) => (y.published ?? 0) - (x.published ?? 0)) };
+}
+
+// My Teams: each followed team's news (parseNews with its teamId) together,
+// newest first, each article tagged with the followed teams it's about. A
+// story about two of them (their game) shows once, tagged with both.
+export function mergeNews(feeds, limit = 40) {
+  const byId = new Map();
+  for (const { team, articles } of feeds) {
+    for (const article of articles) {
+      const seen = byId.get(article.id);
+      if (!seen) byId.set(article.id, { ...article, teams: [team] });
+      else if (!seen.teams.some((t) => t.league === team.league && t.id === team.id)) seen.teams.push(team);
+    }
+  }
+  return [...byId.values()].sort((x, y) => (y.published ?? 0) - (x.published ?? 0)).slice(0, limit);
 }
 
 // An article photo at the size it's shown: ESPN's photos run up to 1920px
