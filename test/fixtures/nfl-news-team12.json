@@ -1,0 +1,1721 @@
+{
+ "header": "NFL News",
+ "articles": [
+  {
+   "id": 50117199,
+   "type": "Story",
+   "headline": "Fantasy football D/ST outlook for Weeks 5-8: Jaguars a solid option in October",
+   "description": "Looking for the right D/ST units to stream over the next four weeks? Here's what you need to know.",
+   "published": "2026-10-06T17:04:36Z",
+   "premium": false,
+   "byline": "Tristan H. Cockcroft",
+   "images": [
+    {
+     "url": "https://a.espncdn.com/photo/2026/1006/r1726847_1296x729_16-9.jpg",
+     "width": 1296,
+     "height": 729,
+     "type": "header"
+    }
+   ],
+   "categories": [
+    {
+     "type": "league"
+    },
+    {
+     "type": "topic"
+    },
+    {
+     "type": "team",
+     "teamId": 30,
+     "description": "Jacksonville Jaguars"
+    },
+    {
+     "type": "team",
+     "teamId": 14,
+     "description": "Los Angeles Rams"
+    },
+    {
+     "type": "team",
+     "teamId": 28,
+     "description": "Washington Commanders"
+    },
+    {
+     "type": "team",
+     "teamId": 12,
+     "description": "Kansas City Chiefs"
+    },
+    {
+     "type": "team",
+     "teamId": 34,
+     "description": "Houston Texans"
+    },
+    {
+     "type": "team",
+     "teamId": 26,
+     "description": "Seattle Seahawks"
+    },
+    {
+     "type": "team",
+     "teamId": 6,
+     "description": "Dallas Cowboys"
+    },
+    {
+     "type": "team",
+     "teamId": 23,
+     "description": "Pittsburgh Steelers"
+    },
+    {
+     "type": "team",
+     "teamId": 27,
+     "description": "Tampa Bay Buccaneers"
+    },
+    {
+     "type": "team",
+     "teamId": 33,
+     "description": "Baltimore Ravens"
+    },
+    {
+     "type": "team",
+     "teamId": 29,
+     "description": "Carolina Panthers"
+    },
+    {
+     "type": "team",
+     "teamId": 4,
+     "description": "Cincinnati Bengals"
+    },
+    {
+     "type": "team",
+     "teamId": 20,
+     "description": "New York Jets"
+    },
+    {
+     "type": "team",
+     "teamId": 19,
+     "description": "New York Giants"
+    },
+    {
+     "type": "team",
+     "teamId": 17,
+     "description": "New England Patriots"
+    },
+    {
+     "type": "team",
+     "teamId": 11,
+     "description": "Indianapolis Colts"
+    },
+    {
+     "type": "team",
+     "teamId": 21,
+     "description": "Philadelphia Eagles"
+    },
+    {
+     "type": "team",
+     "teamId": 8,
+     "description": "Detroit Lions"
+    },
+    {
+     "type": "team",
+     "teamId": 16,
+     "description": "Minnesota Vikings"
+    },
+    {
+     "type": "team",
+     "teamId": 5,
+     "description": "Cleveland Browns"
+    },
+    {
+     "type": "team",
+     "teamId": 10,
+     "description": "Tennessee Titans"
+    },
+    {
+     "type": "team",
+     "teamId": 3,
+     "description": "Chicago Bears"
+    },
+    {
+     "type": "team",
+     "teamId": 24,
+     "description": "Los Angeles Chargers"
+    },
+    {
+     "type": "team",
+     "teamId": 2,
+     "description": "Buffalo Bills"
+    },
+    {
+     "type": "team",
+     "teamId": 15,
+     "description": "Miami Dolphins"
+    },
+    {
+     "type": "team",
+     "teamId": 1,
+     "description": "Atlanta Falcons"
+    },
+    {
+     "type": "team",
+     "teamId": 13,
+     "description": "Las Vegas Raiders"
+    },
+    {
+     "type": "team",
+     "teamId": 25,
+     "description": "San Francisco 49ers"
+    },
+    {
+     "type": "team",
+     "teamId": 7,
+     "description": "Denver Broncos"
+    },
+    {
+     "type": "contributor"
+    },
+    {
+     "type": "league"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/fantasy/football/story/_/id/50117199/fantasy-football-defense-special-teams-streaming-week-5"
+    }
+   }
+  },
+  {
+   "id": 50109845,
+   "type": "Story",
+   "headline": "2026 NFL Power Rankings: How all 32 teams stack up for Week 5",
+   "description": "How does every NFL team stack up heading into Week 5? We made our 1-32 list and sized up each franchise's performance so far.",
+   "published": "2026-10-06T15:49:59Z",
+   "premium": false,
+   "byline": "NFL Nation",
+   "images": [
+    {
+     "url": "https://a.espncdn.com/photo/2026/1005/nfl_power_rankings_608x342.png",
+     "width": 608,
+     "height": 342,
+     "type": "header"
+    }
+   ],
+   "categories": [
+    {
+     "type": "league"
+    },
+    {
+     "type": "topic"
+    },
+    {
+     "type": "team",
+     "teamId": 12,
+     "description": "Kansas City Chiefs"
+    },
+    {
+     "type": "team",
+     "teamId": 24,
+     "description": "Los Angeles Chargers"
+    },
+    {
+     "type": "team",
+     "teamId": 13,
+     "description": "Las Vegas Raiders"
+    },
+    {
+     "type": "team",
+     "teamId": 7,
+     "description": "Denver Broncos"
+    },
+    {
+     "type": "team",
+     "teamId": 17,
+     "description": "New England Patriots"
+    },
+    {
+     "type": "team",
+     "teamId": 20,
+     "description": "New York Jets"
+    },
+    {
+     "type": "team",
+     "teamId": 15,
+     "description": "Miami Dolphins"
+    },
+    {
+     "type": "team",
+     "teamId": 2,
+     "description": "Buffalo Bills"
+    },
+    {
+     "type": "team",
+     "teamId": 33,
+     "description": "Baltimore Ravens"
+    },
+    {
+     "type": "team",
+     "teamId": 23,
+     "description": "Pittsburgh Steelers"
+    },
+    {
+     "type": "team",
+     "teamId": 5,
+     "description": "Cleveland Browns"
+    },
+    {
+     "type": "team",
+     "teamId": 4,
+     "description": "Cincinnati Bengals"
+    },
+    {
+     "type": "team",
+     "teamId": 34,
+     "description": "Houston Texans"
+    },
+    {
+     "type": "team",
+     "teamId": 11,
+     "description": "Indianapolis Colts"
+    },
+    {
+     "type": "team",
+     "teamId": 10,
+     "description": "Tennessee Titans"
+    },
+    {
+     "type": "team",
+     "teamId": 30,
+     "description": "Jacksonville Jaguars"
+    },
+    {
+     "type": "team",
+     "teamId": 26,
+     "description": "Seattle Seahawks"
+    },
+    {
+     "type": "team",
+     "teamId": 25,
+     "description": "San Francisco 49ers"
+    },
+    {
+     "type": "team",
+     "teamId": 14,
+     "description": "Los Angeles Rams"
+    },
+    {
+     "type": "team",
+     "teamId": 22,
+     "description": "Arizona Cardinals"
+    },
+    {
+     "type": "team",
+     "teamId": 21,
+     "description": "Philadelphia Eagles"
+    },
+    {
+     "type": "team",
+     "teamId": 28,
+     "description": "Washington Commanders"
+    },
+    {
+     "type": "team",
+     "teamId": 19,
+     "description": "New York Giants"
+    },
+    {
+     "type": "team",
+     "teamId": 6,
+     "description": "Dallas Cowboys"
+    },
+    {
+     "type": "team",
+     "teamId": 8,
+     "description": "Detroit Lions"
+    },
+    {
+     "type": "team",
+     "teamId": 3,
+     "description": "Chicago Bears"
+    },
+    {
+     "type": "team",
+     "teamId": 9,
+     "description": "Green Bay Packers"
+    },
+    {
+     "type": "team",
+     "teamId": 16,
+     "description": "Minnesota Vikings"
+    },
+    {
+     "type": "team",
+     "teamId": 27,
+     "description": "Tampa Bay Buccaneers"
+    },
+    {
+     "type": "team",
+     "teamId": 1,
+     "description": "Atlanta Falcons"
+    },
+    {
+     "type": "team",
+     "teamId": 29,
+     "description": "Carolina Panthers"
+    },
+    {
+     "type": "team",
+     "teamId": 18,
+     "description": "New Orleans Saints"
+    },
+    {
+     "type": "contributor"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/nfl/story/_/id/50109845/nfl-power-rankings-week-5-teams-first-month-recap"
+    }
+   }
+  },
+  {
+   "id": 49794361,
+   "type": "Story",
+   "headline": "2027 NFL draft order projections for Round 1, chances for top pick, more",
+   "description": "ESPN's Football Power Index projects the 2027 NFL draft order for Round 1, complete with each team's chances to pick in the top five, in the top 10 and at No. 1.",
+   "published": "2026-10-06T15:11:06Z",
+   "premium": false,
+   "byline": "ESPN staff",
+   "images": [
+    {
+     "url": "https://a.espncdn.com/photo/2026/0601/r1666608_608x342_16-9.jpg",
+     "width": 608,
+     "height": 342,
+     "type": "header"
+    }
+   ],
+   "categories": [
+    {
+     "type": "league"
+    },
+    {
+     "type": "league"
+    },
+    {
+     "type": "team",
+     "teamId": 22,
+     "description": "Arizona Cardinals"
+    },
+    {
+     "type": "team",
+     "teamId": 1,
+     "description": "Atlanta Falcons"
+    },
+    {
+     "type": "team",
+     "teamId": 33,
+     "description": "Baltimore Ravens"
+    },
+    {
+     "type": "team",
+     "teamId": 2,
+     "description": "Buffalo Bills"
+    },
+    {
+     "type": "team",
+     "teamId": 29,
+     "description": "Carolina Panthers"
+    },
+    {
+     "type": "team",
+     "teamId": 3,
+     "description": "Chicago Bears"
+    },
+    {
+     "type": "team",
+     "teamId": 4,
+     "description": "Cincinnati Bengals"
+    },
+    {
+     "type": "team",
+     "teamId": 5,
+     "description": "Cleveland Browns"
+    },
+    {
+     "type": "team",
+     "teamId": 6,
+     "description": "Dallas Cowboys"
+    },
+    {
+     "type": "team",
+     "teamId": 7,
+     "description": "Denver Broncos"
+    },
+    {
+     "type": "team",
+     "teamId": 8,
+     "description": "Detroit Lions"
+    },
+    {
+     "type": "team",
+     "teamId": 34,
+     "description": "Houston Texans"
+    },
+    {
+     "type": "team",
+     "teamId": 30,
+     "description": "Jacksonville Jaguars"
+    },
+    {
+     "type": "team",
+     "teamId": 12,
+     "description": "Kansas City Chiefs"
+    },
+    {
+     "type": "team",
+     "teamId": 13,
+     "description": "Las Vegas Raiders"
+    },
+    {
+     "type": "team",
+     "teamId": 24,
+     "description": "Los Angeles Chargers"
+    },
+    {
+     "type": "team",
+     "teamId": 15,
+     "description": "Miami Dolphins"
+    },
+    {
+     "type": "team",
+     "teamId": 16,
+     "description": "Minnesota Vikings"
+    },
+    {
+     "type": "team",
+     "teamId": 17,
+     "description": "New England Patriots"
+    },
+    {
+     "type": "team",
+     "teamId": 18,
+     "description": "New Orleans Saints"
+    },
+    {
+     "type": "team",
+     "teamId": 19,
+     "description": "New York Giants"
+    },
+    {
+     "type": "team",
+     "teamId": 20,
+     "description": "New York Jets"
+    },
+    {
+     "type": "team",
+     "teamId": 21,
+     "description": "Philadelphia Eagles"
+    },
+    {
+     "type": "team",
+     "teamId": 23,
+     "description": "Pittsburgh Steelers"
+    },
+    {
+     "type": "team",
+     "teamId": 25,
+     "description": "San Francisco 49ers"
+    },
+    {
+     "type": "team",
+     "teamId": 26,
+     "description": "Seattle Seahawks"
+    },
+    {
+     "type": "team",
+     "teamId": 27,
+     "description": "Tampa Bay Buccaneers"
+    },
+    {
+     "type": "team",
+     "teamId": 10,
+     "description": "Tennessee Titans"
+    },
+    {
+     "type": "team",
+     "teamId": 28,
+     "description": "Washington Commanders"
+    },
+    {
+     "type": "contributor"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/nfl/draft2027/story/_/id/49794361/2027-nfl-draft-order-projections-first-round-picks"
+    }
+   }
+  },
+  {
+   "id": 50079780,
+   "type": "Story",
+   "headline": "NFL Week 4's best arrivals, led by Saints DE Cam Jordan",
+   "description": "NFL stars continue to turn game-day arrivals into their own weekly fashion showcase.",
+   "published": "2026-10-05T22:54:10Z",
+   "premium": false,
+   "byline": "ESPN Staff",
+   "images": [
+    {
+     "url": "https://a.espncdn.com/photo/2026/1005/r1726588_590x332_16-9.png",
+     "width": 590,
+     "height": 332,
+     "type": "header"
+    }
+   ],
+   "categories": [
+    {
+     "type": "league"
+    },
+    {
+     "type": "team",
+     "teamId": 9,
+     "description": "Green Bay Packers"
+    },
+    {
+     "type": "team",
+     "teamId": 1,
+     "description": "Atlanta Falcons"
+    },
+    {
+     "type": "team",
+     "teamId": 12,
+     "description": "Kansas City Chiefs"
+    },
+    {
+     "type": "team",
+     "teamId": 19,
+     "description": "New York Giants"
+    },
+    {
+     "type": "team",
+     "teamId": 5,
+     "description": "Cleveland Browns"
+    },
+    {
+     "type": "team",
+     "teamId": 24,
+     "description": "Los Angeles Chargers"
+    },
+    {
+     "type": "team",
+     "teamId": 11,
+     "description": "Indianapolis Colts"
+    },
+    {
+     "type": "team",
+     "teamId": 29,
+     "description": "Carolina Panthers"
+    },
+    {
+     "type": "team",
+     "teamId": 10,
+     "description": "Tennessee Titans"
+    },
+    {
+     "type": "team",
+     "teamId": 23,
+     "description": "Pittsburgh Steelers"
+    },
+    {
+     "type": "team",
+     "teamId": 34,
+     "description": "Houston Texans"
+    },
+    {
+     "type": "team",
+     "teamId": 28,
+     "description": "Washington Commanders"
+    },
+    {
+     "type": "team",
+     "teamId": 33,
+     "description": "Baltimore Ravens"
+    },
+    {
+     "type": "team",
+     "teamId": 16,
+     "description": "Minnesota Vikings"
+    },
+    {
+     "type": "team",
+     "teamId": 27,
+     "description": "Tampa Bay Buccaneers"
+    },
+    {
+     "type": "team",
+     "teamId": 13,
+     "description": "Las Vegas Raiders"
+    },
+    {
+     "type": "team",
+     "teamId": 18,
+     "description": "New Orleans Saints"
+    },
+    {
+     "type": "team",
+     "teamId": 22,
+     "description": "Arizona Cardinals"
+    },
+    {
+     "type": "team",
+     "teamId": 6,
+     "description": "Dallas Cowboys"
+    },
+    {
+     "type": "team",
+     "teamId": 21,
+     "description": "Philadelphia Eagles"
+    },
+    {
+     "type": "team",
+     "teamId": 3,
+     "description": "Chicago Bears"
+    },
+    {
+     "type": "team",
+     "teamId": 26,
+     "description": "Seattle Seahawks"
+    },
+    {
+     "type": "contributor"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/nfl/story/_/id/50079780/nfl-week-4-fashionable-arrivals"
+    }
+   }
+  },
+  {
+   "id": 50112189,
+   "type": "Media",
+   "headline": "Tyreek Hill may return to Kansas City",
+   "description": "Nate Taylor on how Tyreek Hill's return timing couldn't be better for a Chiefs team dealing with injuries to Tyquan Thornton and Rashee Rice.",
+   "published": "2026-10-05T22:41:21Z",
+   "premium": false,
+   "images": [
+    {
+     "url": "https://espnmedia-cdn.akamaized.net/espn/media/common/2026/1005/dm_261005_Cheifs_IA_Injuries_and_Tryeek_Hill/dm_261005_Cheifs_IA_Injuries_and_Tryeek_Hill.jpg",
+     "width": 576,
+     "height": 324
+    }
+   ],
+   "categories": [
+    {
+     "type": "team",
+     "teamId": 12,
+     "description": "Kansas City Chiefs"
+    },
+    {
+     "type": "editorialindicator"
+    },
+    {
+     "type": "editorialindicator"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/video/clip/_/id/50112189/tyreek-hill-return-kansas-city"
+    }
+   }
+  },
+  {
+   "id": 50111568,
+   "type": "HeadlineNews",
+   "headline": "Sources: Chiefs WR Tyquan Thornton expected back in 12-16 weeks",
+   "description": "Chiefs wide receiver Tyquan Thornton is expected back from a dislocated left ankle injury within 12 to 16 weeks, sources told NFL Network.",
+   "published": "2026-10-05T23:03:22Z",
+   "premium": false,
+   "byline": "Nate Taylor",
+   "images": [
+    {
+     "url": "https://a.espncdn.com/photo/2026/1004/r1726104_600x400_3-2.jpg",
+     "width": 600,
+     "height": 400,
+     "type": "header"
+    }
+   ],
+   "categories": [
+    {
+     "type": "topic"
+    },
+    {
+     "type": "league"
+    },
+    {
+     "type": "team",
+     "teamId": 12,
+     "description": "Kansas City Chiefs"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "contributor"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/nfl/story/_/id/50111568/sources-chiefs-wr-tyquan-thornton-expected-back-12-16-weeks"
+    }
+   }
+  },
+  {
+   "id": 50110299,
+   "type": "Story",
+   "headline": "Why a Tyreek Hill-Chiefs reunion makes so much sense",
+   "description": "The Chiefs had been monitoring and receiving updates on Hill's rehab and training sessions even before the injuries to Tyquan Thornton and Rashee Rice.",
+   "published": "2026-10-06T13:02:58Z",
+   "premium": false,
+   "byline": "Nate Taylor",
+   "images": [
+    {
+     "url": "https://a.espncdn.com/photo/2022/0122/r964719_608x342_16-9.jpg",
+     "width": 608,
+     "height": 342,
+     "type": "header"
+    }
+   ],
+   "categories": [
+    {
+     "type": "league"
+    },
+    {
+     "type": "team",
+     "teamId": 12,
+     "description": "Kansas City Chiefs"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "contributor"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/nfl/story/_/id/50110299/tyreek-hill-chiefs-reunion-help"
+    }
+   }
+  },
+  {
+   "id": 50109897,
+   "type": "Media",
+   "headline": "Stephen A.: Nobody is beating the Chiefs if they sign Tyreek Hill",
+   "description": "Stephen A.: Nobody is beating the Chiefs if they sign Tyreek Hill ",
+   "published": "2026-10-05T15:46:33Z",
+   "premium": false,
+   "images": [
+    {
+     "url": "https://espnmedia-cdn.akamaized.net/espn/media/common/2026/1005/ss_20261005_114220856_3686089/ss_20261005_114220856_3686089.jpg",
+     "width": 576,
+     "height": 324
+    }
+   ],
+   "categories": [
+    {
+     "type": "league"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "team",
+     "teamId": 12,
+     "description": "Kansas City Chiefs"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "contributor"
+    },
+    {
+     "type": "series"
+    },
+    {
+     "type": "editorialindicator"
+    },
+    {
+     "type": "editorialindicator"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/video/clip/_/id/50109897/beating-chiefs-sign-tyreek-hill"
+    }
+   }
+  },
+  {
+   "id": 47809892,
+   "type": "Story",
+   "headline": "Super Bowl LXI odds: All 32 teams' odds to win the championship",
+   "description": "Every NFL team's win total, as well as odds to win the division, the conference and Super Bowl LXI.",
+   "published": "2026-10-05T16:16:21Z",
+   "premium": false,
+   "byline": "Doug Greenberg",
+   "images": [
+    {
+     "url": "https://a.espncdn.com/photo/2026/0202/r1609489_608x342_16-9.jpg",
+     "width": 608,
+     "height": 342,
+     "type": "header"
+    }
+   ],
+   "categories": [
+    {
+     "type": "league"
+    },
+    {
+     "type": "topic"
+    },
+    {
+     "type": "league"
+    },
+    {
+     "type": "topic"
+    },
+    {
+     "type": "topic"
+    },
+    {
+     "type": "team",
+     "teamId": 26,
+     "description": "Seattle Seahawks"
+    },
+    {
+     "type": "team",
+     "teamId": 33,
+     "description": "Baltimore Ravens"
+    },
+    {
+     "type": "team",
+     "teamId": 14,
+     "description": "Los Angeles Rams"
+    },
+    {
+     "type": "team",
+     "teamId": 2,
+     "description": "Buffalo Bills"
+    },
+    {
+     "type": "team",
+     "teamId": 25,
+     "description": "San Francisco 49ers"
+    },
+    {
+     "type": "team",
+     "teamId": 3,
+     "description": "Chicago Bears"
+    },
+    {
+     "type": "team",
+     "teamId": 12,
+     "description": "Kansas City Chiefs"
+    },
+    {
+     "type": "team",
+     "teamId": 30,
+     "description": "Jacksonville Jaguars"
+    },
+    {
+     "type": "team",
+     "teamId": 34,
+     "description": "Houston Texans"
+    },
+    {
+     "type": "team",
+     "teamId": 24,
+     "description": "Los Angeles Chargers"
+    },
+    {
+     "type": "contributor"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/espn/betting/story/_/id/47809892/2026-super-bowl-lxi-odds-nfl-sports-betting-season-win-totals-playoffs"
+    }
+   }
+  },
+  {
+   "id": 50109680,
+   "type": "HeadlineNews",
+   "headline": "Tyreek Hill could sign with new team soon, agent says",
+   "description": "Free agent wide receiver Tyreek Hill could sign with a new team \"over the next few days,\" his agent, Drew Rosenhaus, told ESPN's Adam Schefter. Hill's former team, the Chiefs, are believed to be one of those interested.",
+   "published": "2026-10-05T20:41:32Z",
+   "premium": false,
+   "images": [
+    {
+     "url": "https://a.espncdn.com/photo/2025/0911/r1543907_1296x729_16-9.jpg",
+     "width": 1296,
+     "height": 729,
+     "type": "header"
+    }
+   ],
+   "categories": [
+    {
+     "type": "league"
+    },
+    {
+     "type": "team",
+     "teamId": 12,
+     "description": "Kansas City Chiefs"
+    },
+    {
+     "type": "topic"
+    },
+    {
+     "type": "athlete"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/nfl/story/_/id/50109680/tyreek-hill-expected-sign-team-soon-agent-says"
+    }
+   }
+  },
+  {
+   "id": 49545945,
+   "type": "Story",
+   "headline": "How active NFL players continue to redefine all-time sack list",
+   "description": "Myles Garrett's torrid pace up the all-time sack list paces active players making their moves among the greats.",
+   "published": "2026-10-05T14:35:00Z",
+   "premium": false,
+   "byline": "Sarah Barshop",
+   "images": [
+    {
+     "url": "https://a.espncdn.com/photo/2026/0828/nfl_data_viz_garrett_cr_16x9_608x342.jpg",
+     "width": 608,
+     "height": 342,
+     "type": "header"
+    }
+   ],
+   "categories": [
+    {
+     "type": "league"
+    },
+    {
+     "type": "team",
+     "teamId": 14,
+     "description": "Los Angeles Rams"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "team",
+     "teamId": 23,
+     "description": "Pittsburgh Steelers"
+    },
+    {
+     "type": "team",
+     "teamId": 6,
+     "description": "Dallas Cowboys"
+    },
+    {
+     "type": "team",
+     "teamId": 18,
+     "description": "New Orleans Saints"
+    },
+    {
+     "type": "team",
+     "teamId": 33,
+     "description": "Baltimore Ravens"
+    },
+    {
+     "type": "team",
+     "teamId": 22,
+     "description": "Arizona Cardinals"
+    },
+    {
+     "type": "team",
+     "teamId": 1,
+     "description": "Atlanta Falcons"
+    },
+    {
+     "type": "team",
+     "teamId": 2,
+     "description": "Buffalo Bills"
+    },
+    {
+     "type": "team",
+     "teamId": 29,
+     "description": "Carolina Panthers"
+    },
+    {
+     "type": "team",
+     "teamId": 3,
+     "description": "Chicago Bears"
+    },
+    {
+     "type": "team",
+     "teamId": 4,
+     "description": "Cincinnati Bengals"
+    },
+    {
+     "type": "team",
+     "teamId": 5,
+     "description": "Cleveland Browns"
+    },
+    {
+     "type": "team",
+     "teamId": 7,
+     "description": "Denver Broncos"
+    },
+    {
+     "type": "team",
+     "teamId": 8,
+     "description": "Detroit Lions"
+    },
+    {
+     "type": "team",
+     "teamId": 9,
+     "description": "Green Bay Packers"
+    },
+    {
+     "type": "team",
+     "teamId": 34,
+     "description": "Houston Texans"
+    },
+    {
+     "type": "team",
+     "teamId": 11,
+     "description": "Indianapolis Colts"
+    },
+    {
+     "type": "team",
+     "teamId": 30,
+     "description": "Jacksonville Jaguars"
+    },
+    {
+     "type": "team",
+     "teamId": 12,
+     "description": "Kansas City Chiefs"
+    },
+    {
+     "type": "team",
+     "teamId": 13,
+     "description": "Las Vegas Raiders"
+    },
+    {
+     "type": "team",
+     "teamId": 24,
+     "description": "Los Angeles Chargers"
+    },
+    {
+     "type": "team",
+     "teamId": 15,
+     "description": "Miami Dolphins"
+    },
+    {
+     "type": "team",
+     "teamId": 16,
+     "description": "Minnesota Vikings"
+    },
+    {
+     "type": "team",
+     "teamId": 17,
+     "description": "New England Patriots"
+    },
+    {
+     "type": "team",
+     "teamId": 19,
+     "description": "New York Giants"
+    },
+    {
+     "type": "team",
+     "teamId": 20,
+     "description": "New York Jets"
+    },
+    {
+     "type": "team",
+     "teamId": 21,
+     "description": "Philadelphia Eagles"
+    },
+    {
+     "type": "team",
+     "teamId": 25,
+     "description": "San Francisco 49ers"
+    },
+    {
+     "type": "team",
+     "teamId": 26,
+     "description": "Seattle Seahawks"
+    },
+    {
+     "type": "team",
+     "teamId": 27,
+     "description": "Tampa Bay Buccaneers"
+    },
+    {
+     "type": "team",
+     "teamId": 10,
+     "description": "Tennessee Titans"
+    },
+    {
+     "type": "team",
+     "teamId": 28,
+     "description": "Washington Commanders"
+    },
+    {
+     "type": "contributor"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/nfl/story/_/id/49545945/all-sack-list-tracker-myles-garrett-von-miller-aaron-donald"
+    }
+   }
+  },
+  {
+   "id": 50085464,
+   "type": "Story",
+   "headline": "NFL Week 5 betting: Odds, lines and totals for every game",
+   "description": "A look at the odds, spreads, totals and FPI predictions for every NFL game in Week 5.",
+   "published": "2026-10-05T14:51:54Z",
+   "premium": false,
+   "byline": "ESPN",
+   "images": [
+    {
+     "url": "https://a.espncdn.com/photo/2026/1002/r1725004_608x342_16-9.jpg",
+     "width": 608,
+     "height": 342,
+     "type": "header"
+    }
+   ],
+   "categories": [
+    {
+     "type": "league"
+    },
+    {
+     "type": "topic"
+    },
+    {
+     "type": "league"
+    },
+    {
+     "type": "topic"
+    },
+    {
+     "type": "team",
+     "teamId": 22,
+     "description": "Arizona Cardinals"
+    },
+    {
+     "type": "team",
+     "teamId": 1,
+     "description": "Atlanta Falcons"
+    },
+    {
+     "type": "team",
+     "teamId": 33,
+     "description": "Baltimore Ravens"
+    },
+    {
+     "type": "team",
+     "teamId": 2,
+     "description": "Buffalo Bills"
+    },
+    {
+     "type": "team",
+     "teamId": 29,
+     "description": "Carolina Panthers"
+    },
+    {
+     "type": "team",
+     "teamId": 3,
+     "description": "Chicago Bears"
+    },
+    {
+     "type": "team",
+     "teamId": 4,
+     "description": "Cincinnati Bengals"
+    },
+    {
+     "type": "team",
+     "teamId": 5,
+     "description": "Cleveland Browns"
+    },
+    {
+     "type": "team",
+     "teamId": 6,
+     "description": "Dallas Cowboys"
+    },
+    {
+     "type": "team",
+     "teamId": 7,
+     "description": "Denver Broncos"
+    },
+    {
+     "type": "team",
+     "teamId": 8,
+     "description": "Detroit Lions"
+    },
+    {
+     "type": "team",
+     "teamId": 9,
+     "description": "Green Bay Packers"
+    },
+    {
+     "type": "team",
+     "teamId": 34,
+     "description": "Houston Texans"
+    },
+    {
+     "type": "team",
+     "teamId": 11,
+     "description": "Indianapolis Colts"
+    },
+    {
+     "type": "team",
+     "teamId": 30,
+     "description": "Jacksonville Jaguars"
+    },
+    {
+     "type": "team",
+     "teamId": 12,
+     "description": "Kansas City Chiefs"
+    },
+    {
+     "type": "team",
+     "teamId": 13,
+     "description": "Las Vegas Raiders"
+    },
+    {
+     "type": "team",
+     "teamId": 24,
+     "description": "Los Angeles Chargers"
+    },
+    {
+     "type": "team",
+     "teamId": 14,
+     "description": "Los Angeles Rams"
+    },
+    {
+     "type": "team",
+     "teamId": 15,
+     "description": "Miami Dolphins"
+    },
+    {
+     "type": "team",
+     "teamId": 16,
+     "description": "Minnesota Vikings"
+    },
+    {
+     "type": "team",
+     "teamId": 17,
+     "description": "New England Patriots"
+    },
+    {
+     "type": "team",
+     "teamId": 18,
+     "description": "New Orleans Saints"
+    },
+    {
+     "type": "team",
+     "teamId": 19,
+     "description": "New York Giants"
+    },
+    {
+     "type": "team",
+     "teamId": 20,
+     "description": "New York Jets"
+    },
+    {
+     "type": "team",
+     "teamId": 21,
+     "description": "Philadelphia Eagles"
+    },
+    {
+     "type": "team",
+     "teamId": 23,
+     "description": "Pittsburgh Steelers"
+    },
+    {
+     "type": "team",
+     "teamId": 25,
+     "description": "San Francisco 49ers"
+    },
+    {
+     "type": "team",
+     "teamId": 26,
+     "description": "Seattle Seahawks"
+    },
+    {
+     "type": "team",
+     "teamId": 27,
+     "description": "Tampa Bay Buccaneers"
+    },
+    {
+     "type": "team",
+     "teamId": 10,
+     "description": "Tennessee Titans"
+    },
+    {
+     "type": "team",
+     "teamId": 28,
+     "description": "Washington Commanders"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/espn/betting/story/_/id/50085464/2026-nfl-week-5-schedule-odds-betting-point-spreads-totals"
+    }
+   }
+  },
+  {
+   "id": 50077236,
+   "type": "Story",
+   "headline": "NFL Week 4: Big takeaways, questions and fantasy spin from Sunday's games",
+   "description": "Our NFL Nation reporters react to all the action, answering the biggest questions coming out of each Sunday game. Here's what we learned from Week 4.",
+   "published": "2026-10-05T05:31:59Z",
+   "premium": false,
+   "byline": "NFL Nation",
+   "images": [
+    {
+     "url": "https://a.espncdn.com/photo/2026/1005/r1726176_608x342_16-9.jpg",
+     "width": 608,
+     "height": 342,
+     "type": "header"
+    }
+   ],
+   "categories": [
+    {
+     "type": "league"
+    },
+    {
+     "type": "topic"
+    },
+    {
+     "type": "team",
+     "teamId": 11,
+     "description": "Indianapolis Colts"
+    },
+    {
+     "type": "team",
+     "teamId": 28,
+     "description": "Washington Commanders"
+    },
+    {
+     "type": "team",
+     "teamId": 10,
+     "description": "Tennessee Titans"
+    },
+    {
+     "type": "team",
+     "teamId": 33,
+     "description": "Baltimore Ravens"
+    },
+    {
+     "type": "team",
+     "teamId": 9,
+     "description": "Green Bay Packers"
+    },
+    {
+     "type": "team",
+     "teamId": 27,
+     "description": "Tampa Bay Buccaneers"
+    },
+    {
+     "type": "team",
+     "teamId": 20,
+     "description": "New York Jets"
+    },
+    {
+     "type": "team",
+     "teamId": 3,
+     "description": "Chicago Bears"
+    },
+    {
+     "type": "team",
+     "teamId": 19,
+     "description": "New York Giants"
+    },
+    {
+     "type": "team",
+     "teamId": 22,
+     "description": "Arizona Cardinals"
+    },
+    {
+     "type": "team",
+     "teamId": 30,
+     "description": "Jacksonville Jaguars"
+    },
+    {
+     "type": "team",
+     "teamId": 4,
+     "description": "Cincinnati Bengals"
+    },
+    {
+     "type": "team",
+     "teamId": 6,
+     "description": "Dallas Cowboys"
+    },
+    {
+     "type": "team",
+     "teamId": 34,
+     "description": "Houston Texans"
+    },
+    {
+     "type": "team",
+     "teamId": 14,
+     "description": "Los Angeles Rams"
+    },
+    {
+     "type": "team",
+     "teamId": 21,
+     "description": "Philadelphia Eagles"
+    },
+    {
+     "type": "team",
+     "teamId": 17,
+     "description": "New England Patriots"
+    },
+    {
+     "type": "team",
+     "teamId": 2,
+     "description": "Buffalo Bills"
+    },
+    {
+     "type": "team",
+     "teamId": 15,
+     "description": "Miami Dolphins"
+    },
+    {
+     "type": "team",
+     "teamId": 16,
+     "description": "Minnesota Vikings"
+    },
+    {
+     "type": "team",
+     "teamId": 25,
+     "description": "San Francisco 49ers"
+    },
+    {
+     "type": "team",
+     "teamId": 7,
+     "description": "Denver Broncos"
+    },
+    {
+     "type": "team",
+     "teamId": 12,
+     "description": "Kansas City Chiefs"
+    },
+    {
+     "type": "team",
+     "teamId": 13,
+     "description": "Las Vegas Raiders"
+    },
+    {
+     "type": "team",
+     "teamId": 24,
+     "description": "Los Angeles Chargers"
+    },
+    {
+     "type": "team",
+     "teamId": 26,
+     "description": "Seattle Seahawks"
+    },
+    {
+     "type": "team",
+     "teamId": 29,
+     "description": "Carolina Panthers"
+    },
+    {
+     "type": "team",
+     "teamId": 8,
+     "description": "Detroit Lions"
+    },
+    {
+     "type": "contributor"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/nfl/story/_/id/50077236/week-4-sunday-games-takeaways-questions-2026"
+    }
+   }
+  },
+  {
+   "id": 50107156,
+   "type": "Media",
+   "headline": "Big-time catches headline the top plays of Week 4",
+   "description": "Big-time catches headline the top plays of Week 4",
+   "published": "2026-10-05T05:14:34Z",
+   "premium": false,
+   "images": [
+    {
+     "url": "https://espnmedia-cdn.akamaized.net/espn/media/common/2026/1005/d65d851c2bc6458bb8038240326e207172/d65d851c2bc6458bb8038240326e207172.jpg",
+     "width": 576,
+     "height": 324
+    }
+   ],
+   "categories": [
+    {
+     "type": "team",
+     "teamId": 12,
+     "description": "Kansas City Chiefs"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "team",
+     "teamId": 19,
+     "description": "New York Giants"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "team",
+     "teamId": 8,
+     "description": "Detroit Lions"
+    },
+    {
+     "type": "team",
+     "teamId": 17,
+     "description": "New England Patriots"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "team",
+     "teamId": 6,
+     "description": "Dallas Cowboys"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "team",
+     "teamId": 2,
+     "description": "Buffalo Bills"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "team",
+     "teamId": 29,
+     "description": "Carolina Panthers"
+    },
+    {
+     "type": "league"
+    },
+    {
+     "type": "team",
+     "teamId": 34,
+     "description": "Houston Texans"
+    },
+    {
+     "type": "team",
+     "teamId": 14,
+     "description": "Los Angeles Rams"
+    },
+    {
+     "type": "team",
+     "teamId": 22,
+     "description": "Arizona Cardinals"
+    },
+    {
+     "type": "team",
+     "teamId": 28,
+     "description": "Washington Commanders"
+    },
+    {
+     "type": "team",
+     "teamId": 13,
+     "description": "Las Vegas Raiders"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "team",
+     "teamId": 11,
+     "description": "Indianapolis Colts"
+    },
+    {
+     "type": "team",
+     "teamId": 21,
+     "description": "Philadelphia Eagles"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/video/clip/_/id/50107156/big-catches-headline-top-plays-week-4"
+    }
+   }
+  }
+ ]
+}

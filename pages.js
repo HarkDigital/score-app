@@ -6,7 +6,8 @@ import { leagueById, statusLabel, lineSteamUrl, dayUrls, parseScoreboard, fieldV
 import {
   summaryUrl, scheduleUrls, parseSummary, parseSchedule, lockScreenCard, canShowOnLockScreen, LOCK_LEAD_MINUTES,
 } from './details.js';
-import { ICONS, getJson, TROUBLE, oddsHtml, logoHtml, emptyState, errorState, formatClock, esc, patchHtml, textOn } from './ui.js';
+import { ICONS, getJson, TROUBLE, oddsHtml, logoHtml, emptyState, errorState, formatClock, esc, patchHtml, textOn, newsHtml } from './ui.js';
+import { newsUrl, parseNews } from './news.js';
 import {
   inApp, appPlatform, nativeInfo, showOnLockScreen, scheduleOnLockScreen, removeFromLockScreen, enableAlerts,
 } from './native.js';
@@ -31,6 +32,9 @@ const page = {
   updatedAt: null,
   loading: false,
   side: 0,       // game page: whose box score is showing
+  tab: 'schedule', // team page: 'schedule' | 'news'
+  news: null,    // team page: its news (parseNews), once the News tab is opened
+  newsError: null,
   timer: null,
   quick: null,   // live game: the 5s score and clock check
   board: null,   // live game: the scoreboard URL that has it
@@ -58,10 +62,10 @@ const RECENT = 8;
 const stale = () => !page.updatedAt || Date.now() - page.updatedAt > 10_000;
 
 function remember() {
-  const { route, data, updatedAt, side } = page;
+  const { route, data, updatedAt, side, tab, news } = page;
   if (!route || !data) return;
   recent.delete(route.key);
-  recent.set(route.key, { data, updatedAt, side });
+  recent.set(route.key, { data, updatedAt, side, tab, news });
   if (recent.size > RECENT) recent.delete(recent.keys().next().value);
 }
 
@@ -86,7 +90,7 @@ export function showPage(route) {
   if (page.route?.key === route.key) return Boolean(page.data);
   leave();
   const seen = recent.get(route.key);
-  Object.assign(page, { route, data: null, error: null, updatedAt: null, side: 0 }, seen);
+  Object.assign(page, { route, data: null, error: null, updatedAt: null, side: 0, tab: 'schedule', news: null, newsError: null }, seen);
   Object.assign(native, { lockError: '', alertNote: '', alertsOpen: false });
   refreshNative();
   render();
@@ -132,6 +136,7 @@ async function load() {
       const ok = results.filter((r) => r.status === 'fulfilled').map((r) => r.value);
       if (!ok.length) throw results[0].reason;
       data = parseSchedule(ok, route.league, route.id);
+      if (page.tab === 'news') loadNews();
     }
     if (!data) throw new Error('No data');
     if (id !== page.requestId) return;
@@ -144,6 +149,23 @@ async function load() {
   app.setLoading(false);
   render();
   schedule();
+}
+
+// The team page's News tab: ESPN's news about this team only (news.js), read
+// the first time the tab opens and again on a refresh.
+async function loadNews() {
+  const { route } = page;
+  if (route?.kind !== 'team') return;
+  const id = page.requestId;
+  try {
+    const news = parseNews(await getJson(newsUrl(route.league, route.id)), { teamId: route.id });
+    if (id !== page.requestId || page.route !== route) return;
+    Object.assign(page, { news, newsError: null });
+  } catch (err) {
+    if (id !== page.requestId || page.route !== route) return;
+    page.newsError = err;
+  }
+  render();
 }
 
 // A summary can be over a megabyte, so a live game's box score refreshes
@@ -505,14 +527,36 @@ function teamHtml(data, league) {
       ${following && native.alertsOpen ? alertsPanel(league, team) : ''}
       ${native.alertNote ? `<p class="sub alert-note">${esc(native.alertNote)}</p>` : ''}
     </div>`;
+  const tabs = `
+    <div class="toolbar toolbar-center team-tabs">
+      <div class="pills" role="group" aria-label="Team view">
+        ${[['schedule', 'Schedule'], ['news', 'News']].map(([id, label]) => `<button data-team-tab="${id}" aria-pressed="${page.tab === id}">${label}</button>`).join('')}
+      </div>
+    </div>`;
+  if (page.tab === 'news') return head + tabs + teamNewsHtml(team, league);
   if (!games.length) {
-    return head + emptyState({ icon: ICONS.calendar, title: 'No games listed', text: `ESPN has no ${league.label} schedule for this team right now.` });
+    return head + tabs + emptyState({ icon: ICONS.calendar, title: 'No games listed', text: `ESPN has no ${league.label} schedule for this team right now.` });
   }
   const live = games.filter((g) => g.state === 'in');
   const upcoming = games.filter((g) => g.state === 'pre');
   const results = games.filter((g) => g.state === 'post').reverse();
   const list = (heading, items, cls = '') => (items.length ? section(heading, `<div class="card list-card">${items.map((g) => scheduleRow(g, league)).join('')}</div>`, cls) : '');
-  return head + list('Live', live, 'in') + list('Upcoming', upcoming, 'pre') + list('Results', results);
+  return head + tabs + list('Live', live, 'in') + list('Upcoming', upcoming, 'pre') + list('Results', results);
+}
+
+function teamNewsHtml(team, league) {
+  if (page.news) return newsHtml(page.news.articles, { empty: `ESPN has no recent news about the ${team.name}.` });
+  if (page.newsError) {
+    return emptyState({
+      error: true,
+      icon: ICONS.alert,
+      title: "Couldn't load the news",
+      text: 'Check your connection and try again.',
+      action: '<button class="btn-primary" data-team-tab="news">Try again</button>',
+    });
+  }
+  const bar = (w, h) => `<span class="skeleton" style="width:${w};height:${h}px"></span>`;
+  return `<div class="card skeleton-card">${`<div class="skeleton-row">${bar('70%', 14)}${bar('64px', 44)}</div>`.repeat(5)}</div>`;
 }
 
 // The apps only: per followed team, alerts when its games start, when
@@ -595,7 +639,7 @@ function scheduleRow(game, league) {
 
 document.addEventListener('click', (event) => {
   if (!page.route) return;
-  const target = event.target.closest('[data-side], [data-follow], [data-lock], [data-alerts], [data-alert-kind]');
+  const target = event.target.closest('[data-side], [data-follow], [data-lock], [data-alerts], [data-alert-kind], [data-team-tab]');
   if (!target || !root().contains(target) || target.disabled) return;
   if (target.hasAttribute('data-lock')) toggleLock();
   else if (target.dataset.alertKind) toggleAlertKind(target.dataset.alertKind);
@@ -606,6 +650,11 @@ document.addEventListener('click', (event) => {
   else if (target.dataset.side !== undefined) {
     page.side = Number(target.dataset.side);
     render();
+  } else if (target.dataset.teamTab) {
+    page.tab = target.dataset.teamTab;
+    if (page.tab === 'news' && !page.news) page.newsError = null;
+    render();
+    if (page.tab === 'news' && !page.news) loadNews();
   } else if (target.hasAttribute('data-follow') && page.data?.team) {
     const { team } = page.data;
     app.toggleFollow(page.route.league.id, team);

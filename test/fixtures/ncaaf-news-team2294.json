@@ -1,0 +1,3067 @@
+{
+ "header": "NCAAF News",
+ "articles": [
+  {
+   "id": 50100708,
+   "type": "Story",
+   "headline": "College Football Playoff 2026: Bubble Watch after Week 5",
+   "description": "Putting the spotlight on select teams and questions around others as the playoff picture takes shape.",
+   "published": "2026-10-06T10:05:52Z",
+   "premium": false,
+   "byline": "Heather Dinich",
+   "images": [
+    {
+     "url": "https://a.espncdn.com/photo/2026/1006/r1725520_1296x729_16-9.jpg",
+     "width": 1296,
+     "height": 729,
+     "type": "header"
+    }
+   ],
+   "categories": [
+    {
+     "type": "league"
+    },
+    {
+     "type": "team",
+     "teamId": 152,
+     "description": "NC State Wolfpack"
+    },
+    {
+     "type": "team",
+     "teamId": 152,
+     "description": "North Carolina State University"
+    },
+    {
+     "type": "team",
+     "teamId": 25,
+     "description": "California Golden Bears"
+    },
+    {
+     "type": "team",
+     "teamId": 25,
+     "description": "University of California"
+    },
+    {
+     "type": "team",
+     "teamId": 52,
+     "description": "Florida State Seminoles"
+    },
+    {
+     "type": "team",
+     "teamId": 52,
+     "description": "Florida State University"
+    },
+    {
+     "type": "team",
+     "teamId": 59,
+     "description": "Georgia Tech Yellow Jackets"
+    },
+    {
+     "type": "team",
+     "teamId": 59,
+     "description": "Georgia Tech"
+    },
+    {
+     "type": "team",
+     "teamId": 97,
+     "description": "Louisville Cardinals"
+    },
+    {
+     "type": "team",
+     "teamId": 97,
+     "description": "University of Louisville"
+    },
+    {
+     "type": "team",
+     "teamId": 2390,
+     "description": "Miami Hurricanes"
+    },
+    {
+     "type": "team",
+     "teamId": 2390,
+     "description": "University of Miami"
+    },
+    {
+     "type": "team",
+     "teamId": 221,
+     "description": "Pittsburgh Panthers"
+    },
+    {
+     "type": "team",
+     "teamId": 221,
+     "description": "University of Pittsburgh"
+    },
+    {
+     "type": "team",
+     "teamId": 154,
+     "description": "Wake Forest Demon Deacons"
+    },
+    {
+     "type": "team",
+     "teamId": 154,
+     "description": "Wake Forest University"
+    },
+    {
+     "type": "team",
+     "teamId": 103,
+     "description": "Boston College Eagles"
+    },
+    {
+     "type": "team",
+     "teamId": 103,
+     "description": "Boston College"
+    },
+    {
+     "type": "team",
+     "teamId": 228,
+     "description": "Clemson Tigers"
+    },
+    {
+     "type": "team",
+     "teamId": 228,
+     "description": "Clemson University"
+    },
+    {
+     "type": "team",
+     "teamId": 150,
+     "description": "Duke Blue Devils"
+    },
+    {
+     "type": "team",
+     "teamId": 150,
+     "description": "Duke University"
+    },
+    {
+     "type": "team",
+     "teamId": 153,
+     "description": "North Carolina Tar Heels"
+    },
+    {
+     "type": "team",
+     "teamId": 153,
+     "description": "University of North Carolina"
+    },
+    {
+     "type": "team",
+     "teamId": 2567,
+     "description": "SMU Mustangs"
+    },
+    {
+     "type": "team",
+     "teamId": 2567,
+     "description": "Southern Methodist University"
+    },
+    {
+     "type": "team",
+     "teamId": 183,
+     "description": "Syracuse Orange"
+    },
+    {
+     "type": "team",
+     "teamId": 183,
+     "description": "Syracuse University"
+    },
+    {
+     "type": "team",
+     "teamId": 258,
+     "description": "Virginia Cavaliers"
+    },
+    {
+     "type": "team",
+     "teamId": 258,
+     "description": "University of Virginia"
+    },
+    {
+     "type": "team",
+     "teamId": 24,
+     "description": "Stanford Cardinal"
+    },
+    {
+     "type": "team",
+     "teamId": 24,
+     "description": "Stanford University"
+    },
+    {
+     "type": "team",
+     "teamId": 259,
+     "description": "Virginia Tech Hokies"
+    },
+    {
+     "type": "team",
+     "teamId": 259,
+     "description": "Virginia Tech"
+    },
+    {
+     "type": "team",
+     "teamId": 66,
+     "description": "Iowa State Cyclones"
+    },
+    {
+     "type": "team",
+     "teamId": 66,
+     "description": "Iowa State University"
+    },
+    {
+     "type": "team",
+     "teamId": 12,
+     "description": "Arizona Wildcats"
+    },
+    {
+     "type": "team",
+     "teamId": 12,
+     "description": "University of Arizona"
+    },
+    {
+     "type": "team",
+     "teamId": 252,
+     "description": "BYU Cougars"
+    },
+    {
+     "type": "team",
+     "teamId": 252,
+     "description": "Brigham Young University"
+    },
+    {
+     "type": "team",
+     "teamId": 248,
+     "description": "Houston Cougars"
+    },
+    {
+     "type": "team",
+     "teamId": 248,
+     "description": "University of Houston"
+    },
+    {
+     "type": "team",
+     "teamId": 2641,
+     "description": "Texas Tech Red Raiders"
+    },
+    {
+     "type": "team",
+     "teamId": 2641,
+     "description": "Texas Tech University"
+    },
+    {
+     "type": "team",
+     "teamId": 2116,
+     "description": "UCF Knights"
+    },
+    {
+     "type": "team",
+     "teamId": 2116,
+     "description": "University of Central Florida"
+    },
+    {
+     "type": "team",
+     "teamId": 254,
+     "description": "Utah Utes"
+    },
+    {
+     "type": "team",
+     "teamId": 254,
+     "description": "University of Utah"
+    },
+    {
+     "type": "team",
+     "teamId": 2305,
+     "description": "Kansas Jayhawks"
+    },
+    {
+     "type": "team",
+     "teamId": 2305,
+     "description": "University of Kansas"
+    },
+    {
+     "type": "team",
+     "teamId": 2628,
+     "description": "TCU Horned Frogs"
+    },
+    {
+     "type": "team",
+     "teamId": 2628,
+     "description": "Texas Christian University"
+    },
+    {
+     "type": "team",
+     "teamId": 9,
+     "description": "Arizona State Sun Devils"
+    },
+    {
+     "type": "team",
+     "teamId": 9,
+     "description": "Arizona State University"
+    },
+    {
+     "type": "team",
+     "teamId": 239,
+     "description": "Baylor Bears"
+    },
+    {
+     "type": "team",
+     "teamId": 239,
+     "description": "Baylor University"
+    },
+    {
+     "type": "team",
+     "teamId": 2132,
+     "description": "Cincinnati Bearcats"
+    },
+    {
+     "type": "team",
+     "teamId": 2132,
+     "description": "University of Cincinnati"
+    },
+    {
+     "type": "team",
+     "teamId": 38,
+     "description": "Colorado Buffaloes"
+    },
+    {
+     "type": "team",
+     "teamId": 38,
+     "description": "University of Colorado"
+    },
+    {
+     "type": "team",
+     "teamId": 197,
+     "description": "Oklahoma State Cowboys"
+    },
+    {
+     "type": "team",
+     "teamId": 197,
+     "description": "Oklahoma State University"
+    },
+    {
+     "type": "team",
+     "teamId": 277,
+     "description": "West Virginia Mountaineers"
+    },
+    {
+     "type": "team",
+     "teamId": 277,
+     "description": "West Virginia University"
+    },
+    {
+     "type": "team",
+     "teamId": 2306,
+     "description": "Kansas State Wildcats"
+    },
+    {
+     "type": "team",
+     "teamId": 2306,
+     "description": "Kansas State University"
+    },
+    {
+     "type": "team",
+     "teamId": 356,
+     "description": "Illinois Fighting Illini"
+    },
+    {
+     "type": "team",
+     "teamId": 356,
+     "description": "University of Illinois"
+    },
+    {
+     "type": "team",
+     "teamId": 84,
+     "description": "Indiana Hoosiers"
+    },
+    {
+     "type": "team",
+     "teamId": 84,
+     "description": "Indiana University"
+    },
+    {
+     "type": "team",
+     "teamId": 120,
+     "description": "Maryland Terrapins"
+    },
+    {
+     "type": "team",
+     "teamId": 120,
+     "description": "University of Maryland"
+    },
+    {
+     "type": "team",
+     "teamId": 127,
+     "description": "Michigan State Spartans"
+    },
+    {
+     "type": "team",
+     "teamId": 127,
+     "description": "Michigan State University"
+    },
+    {
+     "type": "team",
+     "teamId": 135,
+     "description": "Minnesota Golden Gophers"
+    },
+    {
+     "type": "team",
+     "teamId": 135,
+     "description": "University of Minnesota"
+    },
+    {
+     "type": "team",
+     "teamId": 158,
+     "description": "Nebraska Cornhuskers"
+    },
+    {
+     "type": "team",
+     "teamId": 158,
+     "description": "University of Nebraska"
+    },
+    {
+     "type": "team",
+     "teamId": 194,
+     "description": "Ohio State Buckeyes"
+    },
+    {
+     "type": "team",
+     "teamId": 194,
+     "description": "The Ohio State University"
+    },
+    {
+     "type": "team",
+     "teamId": 2483,
+     "description": "Oregon Ducks"
+    },
+    {
+     "type": "team",
+     "teamId": 2483,
+     "description": "University of Oregon"
+    },
+    {
+     "type": "team",
+     "teamId": 213,
+     "description": "Penn State Nittany Lions"
+    },
+    {
+     "type": "team",
+     "teamId": 213,
+     "description": "Penn State University"
+    },
+    {
+     "type": "team",
+     "teamId": 2509,
+     "description": "Purdue Boilermakers"
+    },
+    {
+     "type": "team",
+     "teamId": 2509,
+     "description": "Purdue University"
+    },
+    {
+     "type": "team",
+     "teamId": 164,
+     "description": "Rutgers Scarlet Knights"
+    },
+    {
+     "type": "team",
+     "teamId": 164,
+     "description": "Rutgers, The State University of N.J."
+    },
+    {
+     "type": "team",
+     "teamId": 30,
+     "description": "USC Trojans"
+    },
+    {
+     "type": "team",
+     "teamId": 30,
+     "description": "University of Southern California"
+    },
+    {
+     "type": "team",
+     "teamId": 264,
+     "description": "Washington Huskies"
+    },
+    {
+     "type": "team",
+     "teamId": 264,
+     "description": "University of Washington"
+    },
+    {
+     "type": "team",
+     "teamId": 275,
+     "description": "Wisconsin Badgers"
+    },
+    {
+     "type": "team",
+     "teamId": 275,
+     "description": "University of Wisconsin"
+    },
+    {
+     "type": "team",
+     "teamId": 2294,
+     "description": "Iowa Hawkeyes"
+    },
+    {
+     "type": "team",
+     "teamId": 2294,
+     "description": "University of Iowa"
+    },
+    {
+     "type": "team",
+     "teamId": 130,
+     "description": "Michigan Wolverines"
+    },
+    {
+     "type": "team",
+     "teamId": 130,
+     "description": "University of Michigan"
+    },
+    {
+     "type": "team",
+     "teamId": 77,
+     "description": "Northwestern Wildcats"
+    },
+    {
+     "type": "team",
+     "teamId": 77,
+     "description": "Northwestern University"
+    },
+    {
+     "type": "team",
+     "teamId": 26,
+     "description": "UCLA Bruins"
+    },
+    {
+     "type": "team",
+     "teamId": 26,
+     "description": "University of California at Los Angeles"
+    },
+    {
+     "type": "team",
+     "teamId": 87,
+     "description": "Notre Dame Fighting Irish"
+    },
+    {
+     "type": "team",
+     "teamId": 87,
+     "description": "University of Notre Dame"
+    },
+    {
+     "type": "team",
+     "teamId": 145,
+     "description": "Ole Miss Rebels"
+    },
+    {
+     "type": "team",
+     "teamId": 145,
+     "description": "University of Mississippi"
+    },
+    {
+     "type": "team",
+     "teamId": 8,
+     "description": "Arkansas Razorbacks"
+    },
+    {
+     "type": "team",
+     "teamId": 8,
+     "description": "University of Arkansas"
+    },
+    {
+     "type": "team",
+     "teamId": 2,
+     "description": "Auburn Tigers"
+    },
+    {
+     "type": "team",
+     "teamId": 2,
+     "description": "Auburn"
+    },
+    {
+     "type": "team",
+     "teamId": 61,
+     "description": "Georgia Bulldogs"
+    },
+    {
+     "type": "team",
+     "teamId": 61,
+     "description": "University of Georgia"
+    },
+    {
+     "type": "team",
+     "teamId": 99,
+     "description": "LSU Tigers"
+    },
+    {
+     "type": "team",
+     "teamId": 99,
+     "description": "Louisiana State University"
+    },
+    {
+     "type": "team",
+     "teamId": 201,
+     "description": "Oklahoma Sooners"
+    },
+    {
+     "type": "team",
+     "teamId": 201,
+     "description": "University of Oklahoma"
+    },
+    {
+     "type": "team",
+     "teamId": 2579,
+     "description": "South Carolina Gamecocks"
+    },
+    {
+     "type": "team",
+     "teamId": 2579,
+     "description": "University of South Carolina"
+    },
+    {
+     "type": "team",
+     "teamId": 2633,
+     "description": "Tennessee Volunteers"
+    },
+    {
+     "type": "team",
+     "teamId": 2633,
+     "description": "University of Tennessee"
+    },
+    {
+     "type": "team",
+     "teamId": 245,
+     "description": "Texas A&M Aggies"
+    },
+    {
+     "type": "team",
+     "teamId": 245,
+     "description": "Texas A&M University"
+    },
+    {
+     "type": "team",
+     "teamId": 238,
+     "description": "Vanderbilt Commodores"
+    },
+    {
+     "type": "team",
+     "teamId": 238,
+     "description": "Vanderbilt University"
+    },
+    {
+     "type": "team",
+     "teamId": 333,
+     "description": "Alabama Crimson Tide"
+    },
+    {
+     "type": "team",
+     "teamId": 333,
+     "description": "University of Alabama"
+    },
+    {
+     "type": "team",
+     "teamId": 57,
+     "description": "Florida Gators"
+    },
+    {
+     "type": "team",
+     "teamId": 57,
+     "description": "University of Florida"
+    },
+    {
+     "type": "team",
+     "teamId": 251,
+     "description": "Texas Longhorns"
+    },
+    {
+     "type": "team",
+     "teamId": 251,
+     "description": "University of Texas"
+    },
+    {
+     "type": "team",
+     "teamId": 344,
+     "description": "Mississippi State Bulldogs"
+    },
+    {
+     "type": "team",
+     "teamId": 344,
+     "description": "Mississippi State University"
+    },
+    {
+     "type": "team",
+     "teamId": 142,
+     "description": "Missouri Tigers"
+    },
+    {
+     "type": "team",
+     "teamId": 142,
+     "description": "University of Missouri"
+    },
+    {
+     "type": "team",
+     "teamId": 96,
+     "description": "Kentucky Wildcats"
+    },
+    {
+     "type": "team",
+     "teamId": 96,
+     "description": "University of Kentucky"
+    },
+    {
+     "type": "team",
+     "teamId": 68,
+     "description": "Boise State Broncos"
+    },
+    {
+     "type": "team",
+     "teamId": 68,
+     "description": "Boise State University"
+    },
+    {
+     "type": "team",
+     "teamId": 256,
+     "description": "James Madison Dukes"
+    },
+    {
+     "type": "team",
+     "teamId": 256,
+     "description": "James Madison University"
+    },
+    {
+     "type": "team",
+     "teamId": 2449,
+     "description": "North Dakota State Bison"
+    },
+    {
+     "type": "team",
+     "teamId": 2449,
+     "description": "North Dakota State University"
+    },
+    {
+     "type": "contributor"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/college-football/story/_/id/50100708/college-football-playoff-2026-week-5-bubble-watch"
+    }
+   }
+  },
+  {
+   "id": 50100361,
+   "type": "Story",
+   "headline": "Predicting the College Football Playoff: Who's most likely to make the field?",
+   "description": "Find out which teams our experts think will make this season's CFP.",
+   "published": "2026-10-06T13:44:16Z",
+   "premium": false,
+   "byline": "ESPN Staff",
+   "images": [
+    {
+     "url": "https://a.espncdn.com/photo/2026/1006/r1726794_608x342_16-9.jpg",
+     "width": 608,
+     "height": 342,
+     "type": "header"
+    }
+   ],
+   "categories": [
+    {
+     "type": "league"
+    },
+    {
+     "type": "team",
+     "teamId": 194,
+     "description": "Ohio State Buckeyes"
+    },
+    {
+     "type": "team",
+     "teamId": 194,
+     "description": "The Ohio State University"
+    },
+    {
+     "type": "team",
+     "teamId": 61,
+     "description": "Georgia Bulldogs"
+    },
+    {
+     "type": "team",
+     "teamId": 61,
+     "description": "University of Georgia"
+    },
+    {
+     "type": "team",
+     "teamId": 2390,
+     "description": "Miami Hurricanes"
+    },
+    {
+     "type": "team",
+     "teamId": 2390,
+     "description": "University of Miami"
+    },
+    {
+     "type": "team",
+     "teamId": 84,
+     "description": "Indiana Hoosiers"
+    },
+    {
+     "type": "team",
+     "teamId": 84,
+     "description": "Indiana University"
+    },
+    {
+     "type": "team",
+     "teamId": 2641,
+     "description": "Texas Tech Red Raiders"
+    },
+    {
+     "type": "team",
+     "teamId": 2641,
+     "description": "Texas Tech University"
+    },
+    {
+     "type": "team",
+     "teamId": 145,
+     "description": "Ole Miss Rebels"
+    },
+    {
+     "type": "team",
+     "teamId": 145,
+     "description": "University of Mississippi"
+    },
+    {
+     "type": "team",
+     "teamId": 333,
+     "description": "Alabama Crimson Tide"
+    },
+    {
+     "type": "team",
+     "teamId": 333,
+     "description": "University of Alabama"
+    },
+    {
+     "type": "team",
+     "teamId": 87,
+     "description": "Notre Dame Fighting Irish"
+    },
+    {
+     "type": "team",
+     "teamId": 87,
+     "description": "University of Notre Dame"
+    },
+    {
+     "type": "team",
+     "teamId": 252,
+     "description": "BYU Cougars"
+    },
+    {
+     "type": "team",
+     "teamId": 252,
+     "description": "Brigham Young University"
+    },
+    {
+     "type": "team",
+     "teamId": 2449,
+     "description": "North Dakota State Bison"
+    },
+    {
+     "type": "team",
+     "teamId": 2449,
+     "description": "North Dakota State University"
+    },
+    {
+     "type": "team",
+     "teamId": 68,
+     "description": "Boise State Broncos"
+    },
+    {
+     "type": "team",
+     "teamId": 68,
+     "description": "Boise State University"
+    },
+    {
+     "type": "team",
+     "teamId": 30,
+     "description": "USC Trojans"
+    },
+    {
+     "type": "team",
+     "teamId": 30,
+     "description": "University of Southern California"
+    },
+    {
+     "type": "team",
+     "teamId": 251,
+     "description": "Texas Longhorns"
+    },
+    {
+     "type": "team",
+     "teamId": 251,
+     "description": "University of Texas"
+    },
+    {
+     "type": "team",
+     "teamId": 57,
+     "description": "Florida Gators"
+    },
+    {
+     "type": "team",
+     "teamId": 57,
+     "description": "University of Florida"
+    },
+    {
+     "type": "team",
+     "teamId": 254,
+     "description": "Utah Utes"
+    },
+    {
+     "type": "team",
+     "teamId": 254,
+     "description": "University of Utah"
+    },
+    {
+     "type": "team",
+     "teamId": 344,
+     "description": "Mississippi State Bulldogs"
+    },
+    {
+     "type": "team",
+     "teamId": 344,
+     "description": "Mississippi State University"
+    },
+    {
+     "type": "team",
+     "teamId": 2483,
+     "description": "Oregon Ducks"
+    },
+    {
+     "type": "team",
+     "teamId": 2483,
+     "description": "University of Oregon"
+    },
+    {
+     "type": "team",
+     "teamId": 197,
+     "description": "Oklahoma State Cowboys"
+    },
+    {
+     "type": "team",
+     "teamId": 197,
+     "description": "Oklahoma State University"
+    },
+    {
+     "type": "team",
+     "teamId": 2294,
+     "description": "Iowa Hawkeyes"
+    },
+    {
+     "type": "team",
+     "teamId": 2294,
+     "description": "University of Iowa"
+    },
+    {
+     "type": "contributor"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/college-football/story/_/page/playoffpredictions100629/college-football-playoff-2026-predictions-week-5"
+    }
+   }
+  },
+  {
+   "id": 50106943,
+   "type": "Story",
+   "headline": "Top 25 betting lines: Bama slim favorites at home vs. UGA; Oregon faves vs. UCLA",
+   "description": "This week's odds and FPI predictions for Alabama-Georgia, Oregon-UCLA and every top 25 matchup.",
+   "published": "2026-10-05T14:55:25Z",
+   "premium": false,
+   "byline": "ESPN",
+   "images": [
+    {
+     "url": "https://a.espncdn.com/photo/2026/1005/r1726196_1296x729_16-9.jpg",
+     "width": 1296,
+     "height": 729,
+     "type": "header"
+    }
+   ],
+   "categories": [
+    {
+     "type": "league"
+    },
+    {
+     "type": "topic"
+    },
+    {
+     "type": "league"
+    },
+    {
+     "type": "topic"
+    },
+    {
+     "type": "team",
+     "teamId": 194,
+     "description": "Ohio State Buckeyes"
+    },
+    {
+     "type": "team",
+     "teamId": 194,
+     "description": "The Ohio State University"
+    },
+    {
+     "type": "team",
+     "teamId": 2483,
+     "description": "Oregon Ducks"
+    },
+    {
+     "type": "team",
+     "teamId": 2483,
+     "description": "University of Oregon"
+    },
+    {
+     "type": "team",
+     "teamId": 61,
+     "description": "Georgia Bulldogs"
+    },
+    {
+     "type": "team",
+     "teamId": 61,
+     "description": "University of Georgia"
+    },
+    {
+     "type": "team",
+     "teamId": 87,
+     "description": "Notre Dame Fighting Irish"
+    },
+    {
+     "type": "team",
+     "teamId": 87,
+     "description": "University of Notre Dame"
+    },
+    {
+     "type": "team",
+     "teamId": 251,
+     "description": "Texas Longhorns"
+    },
+    {
+     "type": "team",
+     "teamId": 251,
+     "description": "University of Texas"
+    },
+    {
+     "type": "team",
+     "teamId": 84,
+     "description": "Indiana Hoosiers"
+    },
+    {
+     "type": "team",
+     "teamId": 84,
+     "description": "Indiana University"
+    },
+    {
+     "type": "team",
+     "teamId": 142,
+     "description": "Missouri Tigers"
+    },
+    {
+     "type": "team",
+     "teamId": 142,
+     "description": "University of Missouri"
+    },
+    {
+     "type": "team",
+     "teamId": 254,
+     "description": "Utah Utes"
+    },
+    {
+     "type": "team",
+     "teamId": 254,
+     "description": "University of Utah"
+    },
+    {
+     "type": "team",
+     "teamId": 201,
+     "description": "Oklahoma Sooners"
+    },
+    {
+     "type": "team",
+     "teamId": 201,
+     "description": "University of Oklahoma"
+    },
+    {
+     "type": "team",
+     "teamId": 2390,
+     "description": "Miami Hurricanes"
+    },
+    {
+     "type": "team",
+     "teamId": 2390,
+     "description": "University of Miami"
+    },
+    {
+     "type": "team",
+     "teamId": 30,
+     "description": "USC Trojans"
+    },
+    {
+     "type": "team",
+     "teamId": 30,
+     "description": "University of Southern California"
+    },
+    {
+     "type": "team",
+     "teamId": 333,
+     "description": "Alabama Crimson Tide"
+    },
+    {
+     "type": "team",
+     "teamId": 333,
+     "description": "University of Alabama"
+    },
+    {
+     "type": "team",
+     "teamId": 248,
+     "description": "Houston Cougars"
+    },
+    {
+     "type": "team",
+     "teamId": 248,
+     "description": "University of Houston"
+    },
+    {
+     "type": "team",
+     "teamId": 2633,
+     "description": "Tennessee Volunteers"
+    },
+    {
+     "type": "team",
+     "teamId": 2633,
+     "description": "University of Tennessee"
+    },
+    {
+     "type": "team",
+     "teamId": 2294,
+     "description": "Iowa Hawkeyes"
+    },
+    {
+     "type": "team",
+     "teamId": 2294,
+     "description": "University of Iowa"
+    },
+    {
+     "type": "team",
+     "teamId": 2641,
+     "description": "Texas Tech Red Raiders"
+    },
+    {
+     "type": "team",
+     "teamId": 2641,
+     "description": "Texas Tech University"
+    },
+    {
+     "type": "team",
+     "teamId": 99,
+     "description": "LSU Tigers"
+    },
+    {
+     "type": "team",
+     "teamId": 99,
+     "description": "Louisiana State University"
+    },
+    {
+     "type": "team",
+     "teamId": 252,
+     "description": "BYU Cougars"
+    },
+    {
+     "type": "team",
+     "teamId": 252,
+     "description": "Brigham Young University"
+    },
+    {
+     "type": "team",
+     "teamId": 145,
+     "description": "Ole Miss Rebels"
+    },
+    {
+     "type": "team",
+     "teamId": 145,
+     "description": "University of Mississippi"
+    },
+    {
+     "type": "team",
+     "teamId": 2567,
+     "description": "SMU Mustangs"
+    },
+    {
+     "type": "team",
+     "teamId": 2567,
+     "description": "Southern Methodist University"
+    },
+    {
+     "type": "team",
+     "teamId": 258,
+     "description": "Virginia Cavaliers"
+    },
+    {
+     "type": "team",
+     "teamId": 258,
+     "description": "University of Virginia"
+    },
+    {
+     "type": "team",
+     "teamId": 26,
+     "description": "UCLA Bruins"
+    },
+    {
+     "type": "team",
+     "teamId": 26,
+     "description": "University of California at Los Angeles"
+    },
+    {
+     "type": "team",
+     "teamId": 68,
+     "description": "Boise State Broncos"
+    },
+    {
+     "type": "team",
+     "teamId": 68,
+     "description": "Boise State University"
+    },
+    {
+     "type": "team",
+     "teamId": 197,
+     "description": "Oklahoma State Cowboys"
+    },
+    {
+     "type": "team",
+     "teamId": 197,
+     "description": "Oklahoma State University"
+    },
+    {
+     "type": "team",
+     "teamId": 57,
+     "description": "Florida Gators"
+    },
+    {
+     "type": "team",
+     "teamId": 57,
+     "description": "University of Florida"
+    },
+    {
+     "type": "team",
+     "teamId": 344,
+     "description": "Mississippi State Bulldogs"
+    },
+    {
+     "type": "team",
+     "teamId": 344,
+     "description": "Mississippi State University"
+    },
+    {
+     "type": "team",
+     "teamId": 221,
+     "description": "Pittsburgh Panthers"
+    },
+    {
+     "type": "team",
+     "teamId": 221,
+     "description": "University of Pittsburgh"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/espn/betting/story/_/id/50106943/2026-college-football-week-6-top-25-betting-lines-odds"
+    }
+   }
+  },
+  {
+   "id": 50086951,
+   "type": "Story",
+   "headline": "College football Power Rankings: What we've learned about top teams",
+   "description": "After another week of big wins and surprising upsets, we break down the top 25 through Week 5.",
+   "published": "2026-10-05T17:52:37Z",
+   "premium": false,
+   "byline": "ESPN",
+   "images": [
+    {
+     "url": "https://a.espncdn.com/photo/2026/1005/r1726116_608x342_16-9.jpg",
+     "width": 608,
+     "height": 342,
+     "type": "header"
+    }
+   ],
+   "categories": [
+    {
+     "type": "league"
+    },
+    {
+     "type": "topic"
+    },
+    {
+     "type": "team",
+     "teamId": 194,
+     "description": "Ohio State Buckeyes"
+    },
+    {
+     "type": "team",
+     "teamId": 194,
+     "description": "The Ohio State University"
+    },
+    {
+     "type": "team",
+     "teamId": 61,
+     "description": "Georgia Bulldogs"
+    },
+    {
+     "type": "team",
+     "teamId": 61,
+     "description": "University of Georgia"
+    },
+    {
+     "type": "team",
+     "teamId": 87,
+     "description": "Notre Dame Fighting Irish"
+    },
+    {
+     "type": "team",
+     "teamId": 87,
+     "description": "University of Notre Dame"
+    },
+    {
+     "type": "team",
+     "teamId": 2483,
+     "description": "Oregon Ducks"
+    },
+    {
+     "type": "team",
+     "teamId": 2483,
+     "description": "University of Oregon"
+    },
+    {
+     "type": "team",
+     "teamId": 251,
+     "description": "Texas Longhorns"
+    },
+    {
+     "type": "team",
+     "teamId": 251,
+     "description": "University of Texas"
+    },
+    {
+     "type": "team",
+     "teamId": 252,
+     "description": "BYU Cougars"
+    },
+    {
+     "type": "team",
+     "teamId": 252,
+     "description": "Brigham Young University"
+    },
+    {
+     "type": "team",
+     "teamId": 2390,
+     "description": "Miami Hurricanes"
+    },
+    {
+     "type": "team",
+     "teamId": 2390,
+     "description": "University of Miami"
+    },
+    {
+     "type": "team",
+     "teamId": 84,
+     "description": "Indiana Hoosiers"
+    },
+    {
+     "type": "team",
+     "teamId": 84,
+     "description": "Indiana University"
+    },
+    {
+     "type": "team",
+     "teamId": 2641,
+     "description": "Texas Tech Red Raiders"
+    },
+    {
+     "type": "team",
+     "teamId": 2641,
+     "description": "Texas Tech University"
+    },
+    {
+     "type": "team",
+     "teamId": 99,
+     "description": "LSU Tigers"
+    },
+    {
+     "type": "team",
+     "teamId": 99,
+     "description": "Louisiana State University"
+    },
+    {
+     "type": "team",
+     "teamId": 30,
+     "description": "USC Trojans"
+    },
+    {
+     "type": "team",
+     "teamId": 30,
+     "description": "University of Southern California"
+    },
+    {
+     "type": "team",
+     "teamId": 145,
+     "description": "Ole Miss Rebels"
+    },
+    {
+     "type": "team",
+     "teamId": 145,
+     "description": "University of Mississippi"
+    },
+    {
+     "type": "team",
+     "teamId": 333,
+     "description": "Alabama Crimson Tide"
+    },
+    {
+     "type": "team",
+     "teamId": 333,
+     "description": "University of Alabama"
+    },
+    {
+     "type": "team",
+     "teamId": 254,
+     "description": "Utah Utes"
+    },
+    {
+     "type": "team",
+     "teamId": 254,
+     "description": "University of Utah"
+    },
+    {
+     "type": "team",
+     "teamId": 2294,
+     "description": "Iowa Hawkeyes"
+    },
+    {
+     "type": "team",
+     "teamId": 2294,
+     "description": "University of Iowa"
+    },
+    {
+     "type": "team",
+     "teamId": 57,
+     "description": "Florida Gators"
+    },
+    {
+     "type": "team",
+     "teamId": 57,
+     "description": "University of Florida"
+    },
+    {
+     "type": "team",
+     "teamId": 2633,
+     "description": "Tennessee Volunteers"
+    },
+    {
+     "type": "team",
+     "teamId": 2633,
+     "description": "University of Tennessee"
+    },
+    {
+     "type": "team",
+     "teamId": 344,
+     "description": "Mississippi State Bulldogs"
+    },
+    {
+     "type": "team",
+     "teamId": 344,
+     "description": "Mississippi State University"
+    },
+    {
+     "type": "team",
+     "teamId": 248,
+     "description": "Houston Cougars"
+    },
+    {
+     "type": "team",
+     "teamId": 248,
+     "description": "University of Houston"
+    },
+    {
+     "type": "team",
+     "teamId": 68,
+     "description": "Boise State Broncos"
+    },
+    {
+     "type": "team",
+     "teamId": 68,
+     "description": "Boise State University"
+    },
+    {
+     "type": "team",
+     "teamId": 26,
+     "description": "UCLA Bruins"
+    },
+    {
+     "type": "team",
+     "teamId": 26,
+     "description": "University of California at Los Angeles"
+    },
+    {
+     "type": "team",
+     "teamId": 150,
+     "description": "Duke Blue Devils"
+    },
+    {
+     "type": "team",
+     "teamId": 150,
+     "description": "Duke University"
+    },
+    {
+     "type": "team",
+     "teamId": 197,
+     "description": "Oklahoma State Cowboys"
+    },
+    {
+     "type": "team",
+     "teamId": 197,
+     "description": "Oklahoma State University"
+    },
+    {
+     "type": "team",
+     "teamId": 142,
+     "description": "Missouri Tigers"
+    },
+    {
+     "type": "team",
+     "teamId": 142,
+     "description": "University of Missouri"
+    },
+    {
+     "type": "team",
+     "teamId": 221,
+     "description": "Pittsburgh Panthers"
+    },
+    {
+     "type": "team",
+     "teamId": 221,
+     "description": "University of Pittsburgh"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/college-football/story/_/id/50086951/2026-college-football-power-rankings-top-25-week-5"
+    }
+   }
+  },
+  {
+   "id": 50102185,
+   "type": "Story",
+   "headline": "2026-27 Week 5 College Football Playoff, bowl projections",
+   "description": "Following dominant victories and a few close calls in Week 5, here are our postseason projections.",
+   "published": "2026-10-05T13:47:11Z",
+   "premium": false,
+   "byline": "Kyle Bonagura and Mark Schlabach",
+   "images": [
+    {
+     "url": "https://a.espncdn.com/photo/2026/1004/r1725987_608x342_16-9.jpg",
+     "width": 608,
+     "height": 342,
+     "type": "header"
+    }
+   ],
+   "categories": [
+    {
+     "type": "league"
+    },
+    {
+     "type": "team",
+     "teamId": 194,
+     "description": "Ohio State Buckeyes"
+    },
+    {
+     "type": "team",
+     "teamId": 194,
+     "description": "The Ohio State University"
+    },
+    {
+     "type": "team",
+     "teamId": 251,
+     "description": "Texas Longhorns"
+    },
+    {
+     "type": "team",
+     "teamId": 251,
+     "description": "University of Texas"
+    },
+    {
+     "type": "team",
+     "teamId": 68,
+     "description": "Boise State Broncos"
+    },
+    {
+     "type": "team",
+     "teamId": 68,
+     "description": "Boise State University"
+    },
+    {
+     "type": "team",
+     "teamId": 2641,
+     "description": "Texas Tech Red Raiders"
+    },
+    {
+     "type": "team",
+     "teamId": 2641,
+     "description": "Texas Tech University"
+    },
+    {
+     "type": "team",
+     "teamId": 84,
+     "description": "Indiana Hoosiers"
+    },
+    {
+     "type": "team",
+     "teamId": 84,
+     "description": "Indiana University"
+    },
+    {
+     "type": "team",
+     "teamId": 245,
+     "description": "Texas A&M Aggies"
+    },
+    {
+     "type": "team",
+     "teamId": 245,
+     "description": "Texas A&M University"
+    },
+    {
+     "type": "team",
+     "teamId": 252,
+     "description": "BYU Cougars"
+    },
+    {
+     "type": "team",
+     "teamId": 252,
+     "description": "Brigham Young University"
+    },
+    {
+     "type": "team",
+     "teamId": 99,
+     "description": "LSU Tigers"
+    },
+    {
+     "type": "team",
+     "teamId": 99,
+     "description": "Louisiana State University"
+    },
+    {
+     "type": "team",
+     "teamId": 2390,
+     "description": "Miami Hurricanes"
+    },
+    {
+     "type": "team",
+     "teamId": 2390,
+     "description": "University of Miami"
+    },
+    {
+     "type": "team",
+     "teamId": 2483,
+     "description": "Oregon Ducks"
+    },
+    {
+     "type": "team",
+     "teamId": 2483,
+     "description": "University of Oregon"
+    },
+    {
+     "type": "team",
+     "teamId": 87,
+     "description": "Notre Dame Fighting Irish"
+    },
+    {
+     "type": "team",
+     "teamId": 87,
+     "description": "University of Notre Dame"
+    },
+    {
+     "type": "team",
+     "teamId": 61,
+     "description": "Georgia Bulldogs"
+    },
+    {
+     "type": "team",
+     "teamId": 61,
+     "description": "University of Georgia"
+    },
+    {
+     "type": "team",
+     "teamId": 333,
+     "description": "Alabama Crimson Tide"
+    },
+    {
+     "type": "team",
+     "teamId": 333,
+     "description": "University of Alabama"
+    },
+    {
+     "type": "team",
+     "teamId": 30,
+     "description": "USC Trojans"
+    },
+    {
+     "type": "team",
+     "teamId": 30,
+     "description": "University of Southern California"
+    },
+    {
+     "type": "team",
+     "teamId": 57,
+     "description": "Florida Gators"
+    },
+    {
+     "type": "team",
+     "teamId": 57,
+     "description": "University of Florida"
+    },
+    {
+     "type": "team",
+     "teamId": 2567,
+     "description": "SMU Mustangs"
+    },
+    {
+     "type": "team",
+     "teamId": 2567,
+     "description": "Southern Methodist University"
+    },
+    {
+     "type": "team",
+     "teamId": 2294,
+     "description": "Iowa Hawkeyes"
+    },
+    {
+     "type": "team",
+     "teamId": 2294,
+     "description": "University of Iowa"
+    },
+    {
+     "type": "team",
+     "teamId": 2579,
+     "description": "South Carolina Gamecocks"
+    },
+    {
+     "type": "team",
+     "teamId": 2579,
+     "description": "University of South Carolina"
+    },
+    {
+     "type": "team",
+     "teamId": 201,
+     "description": "Oklahoma Sooners"
+    },
+    {
+     "type": "team",
+     "teamId": 201,
+     "description": "University of Oklahoma"
+    },
+    {
+     "type": "team",
+     "teamId": 12,
+     "description": "Arizona Wildcats"
+    },
+    {
+     "type": "team",
+     "teamId": 12,
+     "description": "University of Arizona"
+    },
+    {
+     "type": "team",
+     "teamId": 264,
+     "description": "Washington Huskies"
+    },
+    {
+     "type": "team",
+     "teamId": 264,
+     "description": "University of Washington"
+    },
+    {
+     "type": "team",
+     "teamId": 145,
+     "description": "Ole Miss Rebels"
+    },
+    {
+     "type": "team",
+     "teamId": 145,
+     "description": "University of Mississippi"
+    },
+    {
+     "type": "team",
+     "teamId": 2633,
+     "description": "Tennessee Volunteers"
+    },
+    {
+     "type": "team",
+     "teamId": 2633,
+     "description": "University of Tennessee"
+    },
+    {
+     "type": "team",
+     "teamId": 213,
+     "description": "Penn State Nittany Lions"
+    },
+    {
+     "type": "team",
+     "teamId": 213,
+     "description": "Penn State University"
+    },
+    {
+     "type": "team",
+     "teamId": 254,
+     "description": "Utah Utes"
+    },
+    {
+     "type": "team",
+     "teamId": 254,
+     "description": "University of Utah"
+    },
+    {
+     "type": "team",
+     "teamId": 2449,
+     "description": "North Dakota State Bison"
+    },
+    {
+     "type": "team",
+     "teamId": 2449,
+     "description": "North Dakota State University"
+    },
+    {
+     "type": "team",
+     "teamId": 152,
+     "description": "NC State Wolfpack"
+    },
+    {
+     "type": "team",
+     "teamId": 152,
+     "description": "North Carolina State University"
+    },
+    {
+     "type": "team",
+     "teamId": 150,
+     "description": "Duke Blue Devils"
+    },
+    {
+     "type": "team",
+     "teamId": 150,
+     "description": "Duke University"
+    },
+    {
+     "type": "team",
+     "teamId": 259,
+     "description": "Virginia Tech Hokies"
+    },
+    {
+     "type": "team",
+     "teamId": 259,
+     "description": "Virginia Tech"
+    },
+    {
+     "type": "team",
+     "teamId": 153,
+     "description": "North Carolina Tar Heels"
+    },
+    {
+     "type": "team",
+     "teamId": 153,
+     "description": "University of North Carolina"
+    },
+    {
+     "type": "team",
+     "teamId": 2,
+     "description": "Auburn Tigers"
+    },
+    {
+     "type": "team",
+     "teamId": 2,
+     "description": "Auburn"
+    },
+    {
+     "type": "team",
+     "teamId": 97,
+     "description": "Louisville Cardinals"
+    },
+    {
+     "type": "team",
+     "teamId": 97,
+     "description": "University of Louisville"
+    },
+    {
+     "type": "team",
+     "teamId": 130,
+     "description": "Michigan Wolverines"
+    },
+    {
+     "type": "team",
+     "teamId": 130,
+     "description": "University of Michigan"
+    },
+    {
+     "type": "team",
+     "teamId": 228,
+     "description": "Clemson Tigers"
+    },
+    {
+     "type": "team",
+     "teamId": 228,
+     "description": "Clemson University"
+    },
+    {
+     "type": "team",
+     "teamId": 239,
+     "description": "Baylor Bears"
+    },
+    {
+     "type": "team",
+     "teamId": 239,
+     "description": "Baylor University"
+    },
+    {
+     "type": "team",
+     "teamId": 9,
+     "description": "Arizona State Sun Devils"
+    },
+    {
+     "type": "team",
+     "teamId": 9,
+     "description": "Arizona State University"
+    },
+    {
+     "type": "team",
+     "teamId": 135,
+     "description": "Minnesota Golden Gophers"
+    },
+    {
+     "type": "team",
+     "teamId": 135,
+     "description": "University of Minnesota"
+    },
+    {
+     "type": "team",
+     "teamId": 2306,
+     "description": "Kansas State Wildcats"
+    },
+    {
+     "type": "team",
+     "teamId": 2306,
+     "description": "Kansas State University"
+    },
+    {
+     "type": "team",
+     "teamId": 142,
+     "description": "Missouri Tigers"
+    },
+    {
+     "type": "team",
+     "teamId": 142,
+     "description": "University of Missouri"
+    },
+    {
+     "type": "team",
+     "teamId": 25,
+     "description": "California Golden Bears"
+    },
+    {
+     "type": "team",
+     "teamId": 25,
+     "description": "University of California"
+    },
+    {
+     "type": "team",
+     "teamId": 258,
+     "description": "Virginia Cavaliers"
+    },
+    {
+     "type": "team",
+     "teamId": 258,
+     "description": "University of Virginia"
+    },
+    {
+     "type": "team",
+     "teamId": 59,
+     "description": "Georgia Tech Yellow Jackets"
+    },
+    {
+     "type": "team",
+     "teamId": 59,
+     "description": "Georgia Tech"
+    },
+    {
+     "type": "team",
+     "teamId": 113,
+     "description": "Massachusetts Minutemen"
+    },
+    {
+     "type": "team",
+     "teamId": 113,
+     "description": "University of Massachusetts"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/college-football/story/_/id/50102185/2026-27-week-5-college-football-playoff-cfp-bowl-projections"
+    }
+   }
+  },
+  {
+   "id": 50102594,
+   "type": "Preview",
+   "headline": "Washington and No. 20 Iowa meet in Big Ten play",
+   "description": "No. 20 Iowa (4-1) at Washington (3-2), Oct. 9 at 9 p.m. EDT.",
+   "published": "2026-10-04T19:47:20Z",
+   "premium": false,
+   "images": [
+    {
+     "url": "https://s.espncdn.com/stitcher/sports/football/college-football/events/401858487.png?templateId=espn.applewatch.awayhome.1",
+     "type": "stitcher"
+    }
+   ],
+   "categories": [
+    {
+     "type": "league"
+    },
+    {
+     "type": "team",
+     "teamId": 264,
+     "description": "Washington Huskies"
+    },
+    {
+     "type": "team",
+     "teamId": 264,
+     "description": "University of Washington"
+    },
+    {
+     "type": "team",
+     "teamId": 2294,
+     "description": "Iowa Hawkeyes"
+    },
+    {
+     "type": "team",
+     "teamId": 2294,
+     "description": "University of Iowa"
+    },
+    {
+     "type": "event"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "http://www.espn.com/ncf/preview?gameId=401858487"
+    }
+   }
+  },
+  {
+   "id": 50101357,
+   "type": "HeadlineNews",
+   "headline": "Missouri jumps to 14th in AP Top 25; Florida tumbles 8 spots",
+   "description": "Missouri jumped to No. 14 in the AP Top 25 following its rout of Florida, while the Gators dropped eight spots to No. 16 and were replaced by LSU in the top 10.",
+   "published": "2026-10-04T19:51:36Z",
+   "premium": false,
+   "images": [
+    {
+     "url": "https://a.espncdn.com/photo/2026/1004/r1725887_1296x729_16-9.jpg",
+     "width": 1296,
+     "height": 729,
+     "type": "header"
+    }
+   ],
+   "categories": [
+    {
+     "type": "team",
+     "teamId": 142,
+     "description": "Missouri Tigers"
+    },
+    {
+     "type": "team",
+     "teamId": 142,
+     "description": "University of Missouri"
+    },
+    {
+     "type": "team",
+     "teamId": 57,
+     "description": "Florida Gators"
+    },
+    {
+     "type": "team",
+     "teamId": 57,
+     "description": "University of Florida"
+    },
+    {
+     "type": "team",
+     "teamId": 99,
+     "description": "LSU Tigers"
+    },
+    {
+     "type": "team",
+     "teamId": 99,
+     "description": "Louisiana State University"
+    },
+    {
+     "type": "team",
+     "teamId": 251,
+     "description": "Texas Longhorns"
+    },
+    {
+     "type": "team",
+     "teamId": 251,
+     "description": "University of Texas"
+    },
+    {
+     "type": "team",
+     "teamId": 194,
+     "description": "Ohio State Buckeyes"
+    },
+    {
+     "type": "team",
+     "teamId": 194,
+     "description": "The Ohio State University"
+    },
+    {
+     "type": "team",
+     "teamId": 87,
+     "description": "Notre Dame Fighting Irish"
+    },
+    {
+     "type": "team",
+     "teamId": 87,
+     "description": "University of Notre Dame"
+    },
+    {
+     "type": "team",
+     "teamId": 84,
+     "description": "Indiana Hoosiers"
+    },
+    {
+     "type": "team",
+     "teamId": 84,
+     "description": "Indiana University"
+    },
+    {
+     "type": "team",
+     "teamId": 61,
+     "description": "Georgia Bulldogs"
+    },
+    {
+     "type": "team",
+     "teamId": 61,
+     "description": "University of Georgia"
+    },
+    {
+     "type": "team",
+     "teamId": 145,
+     "description": "Ole Miss Rebels"
+    },
+    {
+     "type": "team",
+     "teamId": 145,
+     "description": "University of Mississippi"
+    },
+    {
+     "type": "team",
+     "teamId": 2390,
+     "description": "Miami Hurricanes"
+    },
+    {
+     "type": "team",
+     "teamId": 2390,
+     "description": "University of Miami"
+    },
+    {
+     "type": "team",
+     "teamId": 333,
+     "description": "Alabama Crimson Tide"
+    },
+    {
+     "type": "team",
+     "teamId": 333,
+     "description": "University of Alabama"
+    },
+    {
+     "type": "team",
+     "teamId": 254,
+     "description": "Utah Utes"
+    },
+    {
+     "type": "team",
+     "teamId": 254,
+     "description": "University of Utah"
+    },
+    {
+     "type": "team",
+     "teamId": 2641,
+     "description": "Texas Tech Red Raiders"
+    },
+    {
+     "type": "team",
+     "teamId": 2641,
+     "description": "Texas Tech University"
+    },
+    {
+     "type": "team",
+     "teamId": 2483,
+     "description": "Oregon Ducks"
+    },
+    {
+     "type": "team",
+     "teamId": 2483,
+     "description": "University of Oregon"
+    },
+    {
+     "type": "team",
+     "teamId": 197,
+     "description": "Oklahoma State Cowboys"
+    },
+    {
+     "type": "team",
+     "teamId": 197,
+     "description": "Oklahoma State University"
+    },
+    {
+     "type": "team",
+     "teamId": 26,
+     "description": "UCLA Bruins"
+    },
+    {
+     "type": "team",
+     "teamId": 26,
+     "description": "University of California at Los Angeles"
+    },
+    {
+     "type": "team",
+     "teamId": 30,
+     "description": "USC Trojans"
+    },
+    {
+     "type": "team",
+     "teamId": 30,
+     "description": "University of Southern California"
+    },
+    {
+     "type": "team",
+     "teamId": 68,
+     "description": "Boise State Broncos"
+    },
+    {
+     "type": "team",
+     "teamId": 68,
+     "description": "Boise State University"
+    },
+    {
+     "type": "team",
+     "teamId": 221,
+     "description": "Pittsburgh Panthers"
+    },
+    {
+     "type": "team",
+     "teamId": 221,
+     "description": "University of Pittsburgh"
+    },
+    {
+     "type": "team",
+     "teamId": 96,
+     "description": "Kentucky Wildcats"
+    },
+    {
+     "type": "team",
+     "teamId": 96,
+     "description": "University of Kentucky"
+    },
+    {
+     "type": "team",
+     "teamId": 2567,
+     "description": "SMU Mustangs"
+    },
+    {
+     "type": "team",
+     "teamId": 2567,
+     "description": "Southern Methodist University"
+    },
+    {
+     "type": "team",
+     "teamId": 2633,
+     "description": "Tennessee Volunteers"
+    },
+    {
+     "type": "team",
+     "teamId": 2633,
+     "description": "University of Tennessee"
+    },
+    {
+     "type": "team",
+     "teamId": 344,
+     "description": "Mississippi State Bulldogs"
+    },
+    {
+     "type": "team",
+     "teamId": 344,
+     "description": "Mississippi State University"
+    },
+    {
+     "type": "team",
+     "teamId": 2294,
+     "description": "Iowa Hawkeyes"
+    },
+    {
+     "type": "team",
+     "teamId": 2294,
+     "description": "University of Iowa"
+    },
+    {
+     "type": "team",
+     "teamId": 252,
+     "description": "BYU Cougars"
+    },
+    {
+     "type": "team",
+     "teamId": 252,
+     "description": "Brigham Young University"
+    },
+    {
+     "type": "team",
+     "teamId": 248,
+     "description": "Houston Cougars"
+    },
+    {
+     "type": "team",
+     "teamId": 248,
+     "description": "University of Houston"
+    },
+    {
+     "type": "league"
+    },
+    {
+     "type": "topic"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/college-football/story/_/id/50101357/missouri-jumps-14th-ap-top-25-florida-tumbles-8-spots"
+    }
+   }
+  },
+  {
+   "id": 50099734,
+   "type": "Story",
+   "headline": "AP college football Week 5 poll reaction: What's next for each Top 25 team",
+   "description": "A look at this week's Top 25.",
+   "published": "2026-10-04T19:59:04Z",
+   "premium": false,
+   "byline": "ESPN",
+   "images": [
+    {
+     "url": "https://a.espncdn.com/photo/2026/0926/r1722143_608x342_16-9.jpg",
+     "width": 608,
+     "height": 342,
+     "type": "header"
+    }
+   ],
+   "categories": [
+    {
+     "type": "topic"
+    },
+    {
+     "type": "league"
+    },
+    {
+     "type": "team",
+     "teamId": 194,
+     "description": "Ohio State Buckeyes"
+    },
+    {
+     "type": "team",
+     "teamId": 194,
+     "description": "The Ohio State University"
+    },
+    {
+     "type": "team",
+     "teamId": 333,
+     "description": "Alabama Crimson Tide"
+    },
+    {
+     "type": "team",
+     "teamId": 333,
+     "description": "University of Alabama"
+    },
+    {
+     "type": "team",
+     "teamId": 61,
+     "description": "Georgia Bulldogs"
+    },
+    {
+     "type": "team",
+     "teamId": 61,
+     "description": "University of Georgia"
+    },
+    {
+     "type": "team",
+     "teamId": 2483,
+     "description": "Oregon Ducks"
+    },
+    {
+     "type": "team",
+     "teamId": 2483,
+     "description": "University of Oregon"
+    },
+    {
+     "type": "team",
+     "teamId": 2390,
+     "description": "Miami Hurricanes"
+    },
+    {
+     "type": "team",
+     "teamId": 2390,
+     "description": "University of Miami"
+    },
+    {
+     "type": "team",
+     "teamId": 87,
+     "description": "Notre Dame Fighting Irish"
+    },
+    {
+     "type": "team",
+     "teamId": 87,
+     "description": "University of Notre Dame"
+    },
+    {
+     "type": "team",
+     "teamId": 84,
+     "description": "Indiana Hoosiers"
+    },
+    {
+     "type": "team",
+     "teamId": 84,
+     "description": "Indiana University"
+    },
+    {
+     "type": "team",
+     "teamId": 245,
+     "description": "Texas A&M Aggies"
+    },
+    {
+     "type": "team",
+     "teamId": 245,
+     "description": "Texas A&M University"
+    },
+    {
+     "type": "team",
+     "teamId": 2641,
+     "description": "Texas Tech Red Raiders"
+    },
+    {
+     "type": "team",
+     "teamId": 2641,
+     "description": "Texas Tech University"
+    },
+    {
+     "type": "team",
+     "teamId": 2633,
+     "description": "Tennessee Volunteers"
+    },
+    {
+     "type": "team",
+     "teamId": 2633,
+     "description": "University of Tennessee"
+    },
+    {
+     "type": "team",
+     "teamId": 145,
+     "description": "Ole Miss Rebels"
+    },
+    {
+     "type": "team",
+     "teamId": 145,
+     "description": "University of Mississippi"
+    },
+    {
+     "type": "team",
+     "teamId": 201,
+     "description": "Oklahoma Sooners"
+    },
+    {
+     "type": "team",
+     "teamId": 201,
+     "description": "University of Oklahoma"
+    },
+    {
+     "type": "team",
+     "teamId": 142,
+     "description": "Missouri Tigers"
+    },
+    {
+     "type": "team",
+     "teamId": 142,
+     "description": "University of Missouri"
+    },
+    {
+     "type": "team",
+     "teamId": 252,
+     "description": "BYU Cougars"
+    },
+    {
+     "type": "team",
+     "teamId": 252,
+     "description": "Brigham Young University"
+    },
+    {
+     "type": "team",
+     "teamId": 99,
+     "description": "LSU Tigers"
+    },
+    {
+     "type": "team",
+     "teamId": 99,
+     "description": "Louisiana State University"
+    },
+    {
+     "type": "team",
+     "teamId": 251,
+     "description": "Texas Longhorns"
+    },
+    {
+     "type": "team",
+     "teamId": 251,
+     "description": "University of Texas"
+    },
+    {
+     "type": "team",
+     "teamId": 30,
+     "description": "USC Trojans"
+    },
+    {
+     "type": "team",
+     "teamId": 30,
+     "description": "University of Southern California"
+    },
+    {
+     "type": "team",
+     "teamId": 130,
+     "description": "Michigan Wolverines"
+    },
+    {
+     "type": "team",
+     "teamId": 130,
+     "description": "University of Michigan"
+    },
+    {
+     "type": "team",
+     "teamId": 264,
+     "description": "Washington Huskies"
+    },
+    {
+     "type": "team",
+     "teamId": 264,
+     "description": "University of Washington"
+    },
+    {
+     "type": "team",
+     "teamId": 213,
+     "description": "Penn State Nittany Lions"
+    },
+    {
+     "type": "team",
+     "teamId": 213,
+     "description": "Penn State University"
+    },
+    {
+     "type": "team",
+     "teamId": 2567,
+     "description": "SMU Mustangs"
+    },
+    {
+     "type": "team",
+     "teamId": 2567,
+     "description": "Southern Methodist University"
+    },
+    {
+     "type": "team",
+     "teamId": 254,
+     "description": "Utah Utes"
+    },
+    {
+     "type": "team",
+     "teamId": 254,
+     "description": "University of Utah"
+    },
+    {
+     "type": "team",
+     "teamId": 2294,
+     "description": "Iowa Hawkeyes"
+    },
+    {
+     "type": "team",
+     "teamId": 2294,
+     "description": "University of Iowa"
+    },
+    {
+     "type": "team",
+     "teamId": 248,
+     "description": "Houston Cougars"
+    },
+    {
+     "type": "team",
+     "teamId": 248,
+     "description": "University of Houston"
+    },
+    {
+     "type": "team",
+     "teamId": 97,
+     "description": "Louisville Cardinals"
+    },
+    {
+     "type": "team",
+     "teamId": 97,
+     "description": "University of Louisville"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/college-football/story/_/id/50099734/ap-college-football-2026-week-5-poll-reaction"
+    }
+   }
+  },
+  {
+   "id": 50099306,
+   "type": "Recap",
+   "headline": "Julian Sayin, Jeremiah Smith lead No. 5 Ohio State past No. 14 Iowa, 31-14",
+   "description": "— Julian Sayin threw for 324 yards and three touchdowns, two to Jeremiah Smith, and No. 5 Ohio State beat No. 14 Iowa 31-14 on Saturday.",
+   "published": "2026-10-04T12:02:46Z",
+   "premium": false,
+   "images": [
+    {
+     "url": "https://s.espncdn.com/stitcher/sports/football/college-football/events/401858473.png?templateId=espn.applewatch.awayhome.1",
+     "type": "stitcher"
+    }
+   ],
+   "categories": [
+    {
+     "type": "league"
+    },
+    {
+     "type": "team",
+     "teamId": 2294,
+     "description": "Iowa Hawkeyes"
+    },
+    {
+     "type": "team",
+     "teamId": 2294,
+     "description": "University of Iowa"
+    },
+    {
+     "type": "team",
+     "teamId": 194,
+     "description": "Ohio State Buckeyes"
+    },
+    {
+     "type": "team",
+     "teamId": 194,
+     "description": "The Ohio State University"
+    },
+    {
+     "type": "event"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "http://www.espn.com/ncf/recap?gameId=401858473"
+    }
+   }
+  },
+  {
+   "id": 50091015,
+   "type": "Story",
+   "headline": "Week 5 reality check: Alabama looks like, well, Alabama; Jeremiah Smith is undeniable",
+   "description": "Alabama and Ohio State restore order in CFB as Florida, Mississippi State and Iowa get a tough dose of reality.",
+   "published": "2026-10-04T04:46:29Z",
+   "premium": false,
+   "byline": "Kyle Bonagura",
+   "images": [
+    {
+     "url": "https://a.espncdn.com/photo/2026/1003/r1725484_608x342_16-9.jpg",
+     "width": 608,
+     "height": 342,
+     "type": "header"
+    }
+   ],
+   "categories": [
+    {
+     "type": "league"
+    },
+    {
+     "type": "topic"
+    },
+    {
+     "type": "team",
+     "teamId": 333,
+     "description": "Alabama Crimson Tide"
+    },
+    {
+     "type": "team",
+     "teamId": 333,
+     "description": "University of Alabama"
+    },
+    {
+     "type": "team",
+     "teamId": 344,
+     "description": "Mississippi State Bulldogs"
+    },
+    {
+     "type": "team",
+     "teamId": 344,
+     "description": "Mississippi State University"
+    },
+    {
+     "type": "team",
+     "teamId": 87,
+     "description": "Notre Dame Fighting Irish"
+    },
+    {
+     "type": "team",
+     "teamId": 87,
+     "description": "University of Notre Dame"
+    },
+    {
+     "type": "team",
+     "teamId": 153,
+     "description": "North Carolina Tar Heels"
+    },
+    {
+     "type": "team",
+     "teamId": 153,
+     "description": "University of North Carolina"
+    },
+    {
+     "type": "team",
+     "teamId": 213,
+     "description": "Penn State Nittany Lions"
+    },
+    {
+     "type": "team",
+     "teamId": 213,
+     "description": "Penn State University"
+    },
+    {
+     "type": "team",
+     "teamId": 77,
+     "description": "Northwestern Wildcats"
+    },
+    {
+     "type": "team",
+     "teamId": 77,
+     "description": "Northwestern University"
+    },
+    {
+     "type": "team",
+     "teamId": 70,
+     "description": "Idaho Vandals"
+    },
+    {
+     "type": "team",
+     "teamId": 70,
+     "description": "University of Idaho"
+    },
+    {
+     "type": "team",
+     "teamId": 147,
+     "description": "Montana State Bobcats"
+    },
+    {
+     "type": "team",
+     "teamId": 147,
+     "description": "Montana State University"
+    },
+    {
+     "type": "team",
+     "teamId": 43,
+     "description": "Yale Bulldogs"
+    },
+    {
+     "type": "team",
+     "teamId": 43,
+     "description": "Yale University"
+    },
+    {
+     "type": "team",
+     "teamId": 2449,
+     "description": "North Dakota State Bison"
+    },
+    {
+     "type": "team",
+     "teamId": 2449,
+     "description": "North Dakota State University"
+    },
+    {
+     "type": "team",
+     "teamId": 57,
+     "description": "Florida Gators"
+    },
+    {
+     "type": "team",
+     "teamId": 57,
+     "description": "University of Florida"
+    },
+    {
+     "type": "team",
+     "teamId": 142,
+     "description": "Missouri Tigers"
+    },
+    {
+     "type": "team",
+     "teamId": 142,
+     "description": "University of Missouri"
+    },
+    {
+     "type": "team",
+     "teamId": 113,
+     "description": "Massachusetts Minutemen"
+    },
+    {
+     "type": "team",
+     "teamId": 113,
+     "description": "University of Massachusetts"
+    },
+    {
+     "type": "team",
+     "teamId": 194,
+     "description": "Ohio State Buckeyes"
+    },
+    {
+     "type": "team",
+     "teamId": 194,
+     "description": "The Ohio State University"
+    },
+    {
+     "type": "team",
+     "teamId": 2294,
+     "description": "Iowa Hawkeyes"
+    },
+    {
+     "type": "team",
+     "teamId": 2294,
+     "description": "University of Iowa"
+    },
+    {
+     "type": "team",
+     "teamId": 167,
+     "description": "New Mexico Lobos"
+    },
+    {
+     "type": "team",
+     "teamId": 167,
+     "description": "University of New Mexico"
+    },
+    {
+     "type": "team",
+     "teamId": 59,
+     "description": "Georgia Tech Yellow Jackets"
+    },
+    {
+     "type": "team",
+     "teamId": 59,
+     "description": "Georgia Tech"
+    },
+    {
+     "type": "team",
+     "teamId": 30,
+     "description": "USC Trojans"
+    },
+    {
+     "type": "team",
+     "teamId": 30,
+     "description": "University of Southern California"
+    },
+    {
+     "type": "team",
+     "teamId": 2390,
+     "description": "Miami Hurricanes"
+    },
+    {
+     "type": "team",
+     "teamId": 2390,
+     "description": "University of Miami"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/college-football/story/_/page/gamedayfinal100326/2026-college-football-week-5-highlights-top-plays-games-takeaways"
+    }
+   }
+  },
+  {
+   "id": 50073099,
+   "type": "Story",
+   "headline": "Live Week 5 in college football: Ohio State-Iowa and more",
+   "description": "Get the best plays, moments and reactions from the week in college football.",
+   "published": "2026-10-04T04:54:48Z",
+   "premium": false,
+   "byline": "ESPN staff",
+   "images": [
+    {
+     "url": "https://a.espncdn.com/photo/2026/0910/r1714378_608x342_16-9.jpg",
+     "width": 608,
+     "height": 342,
+     "type": "header"
+    }
+   ],
+   "categories": [
+    {
+     "type": "league"
+    },
+    {
+     "type": "topic"
+    },
+    {
+     "type": "team",
+     "teamId": 194,
+     "description": "Ohio State Buckeyes"
+    },
+    {
+     "type": "team",
+     "teamId": 194,
+     "description": "The Ohio State University"
+    },
+    {
+     "type": "team",
+     "teamId": 2294,
+     "description": "Iowa Hawkeyes"
+    },
+    {
+     "type": "team",
+     "teamId": 2294,
+     "description": "University of Iowa"
+    },
+    {
+     "type": "team",
+     "teamId": 130,
+     "description": "Michigan Wolverines"
+    },
+    {
+     "type": "team",
+     "teamId": 130,
+     "description": "University of Michigan"
+    },
+    {
+     "type": "team",
+     "teamId": 135,
+     "description": "Minnesota Golden Gophers"
+    },
+    {
+     "type": "team",
+     "teamId": 135,
+     "description": "University of Minnesota"
+    },
+    {
+     "type": "team",
+     "teamId": 153,
+     "description": "North Carolina Tar Heels"
+    },
+    {
+     "type": "team",
+     "teamId": 153,
+     "description": "University of North Carolina"
+    },
+    {
+     "type": "team",
+     "teamId": 248,
+     "description": "Houston Cougars"
+    },
+    {
+     "type": "team",
+     "teamId": 248,
+     "description": "University of Houston"
+    },
+    {
+     "type": "team",
+     "teamId": 87,
+     "description": "Notre Dame Fighting Irish"
+    },
+    {
+     "type": "team",
+     "teamId": 87,
+     "description": "University of Notre Dame"
+    },
+    {
+     "type": "team",
+     "teamId": 275,
+     "description": "Wisconsin Badgers"
+    },
+    {
+     "type": "team",
+     "teamId": 275,
+     "description": "University of Wisconsin"
+    },
+    {
+     "type": "contributor"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/college-football/story/_/id/50073099/live-college-footballl-scores-highlights-ohio-state-iowa-more"
+    }
+   }
+  },
+  {
+   "id": 50094562,
+   "type": "Media",
+   "headline": "Ohio State vs. Iowa: Game Highlights",
+   "description": "Ohio State vs. Iowa: Game Highlights",
+   "published": "2026-10-03T23:45:25Z",
+   "premium": false,
+   "images": [
+    {
+     "url": "https://espnmedia-cdn.akamaized.net/espn/media/common/wsc/2026/1003/473851a8-e371-4748-995f-aa573e28641a/473851a8-e371-4748-995f-aa573e28641a.jpg",
+     "width": 576,
+     "height": 324
+    }
+   ],
+   "categories": [
+    {
+     "type": "team",
+     "teamId": 2294,
+     "description": "Iowa Hawkeyes"
+    },
+    {
+     "type": "team",
+     "teamId": 2294,
+     "description": "University of Iowa"
+    },
+    {
+     "type": "league"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "athlete"
+    },
+    {
+     "type": "team",
+     "teamId": 194,
+     "description": "Ohio State Buckeyes"
+    },
+    {
+     "type": "team",
+     "teamId": 194,
+     "description": "The Ohio State University"
+    },
+    {
+     "type": "editorialindicator"
+    },
+    {
+     "type": "editorialindicator"
+    },
+    {
+     "type": "event"
+    }
+   ],
+   "links": {
+    "web": {
+     "href": "https://www.espn.com/video/clip/_/id/50094562/game-highlights"
+    }
+   }
+  }
+ ]
+}

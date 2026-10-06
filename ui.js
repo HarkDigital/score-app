@@ -2,6 +2,7 @@
 // fetching, team logos, empty states and formatting.
 
 import { fallbackUrl } from './espn.js';
+import { newsAge, newsImage } from './news.js';
 
 const icon = (size, body, extra = '') =>
   `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true"${extra}>${body}</svg>`;
@@ -30,6 +31,7 @@ export const ICONS = {
   bellOff: icon(16, stroke('M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0M4 4l16 16')),
   ball: icon(14, '<circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7.5l3.8 2.7-1.4 4.5H9.6l-1.4-4.5z" fill="currentColor"/>'),
   redCard: '<svg viewBox="0 0 10 14" width="9" height="12" aria-hidden="true"><rect width="10" height="14" rx="1.5" fill="currentColor"/></svg>',
+  news: icon(30, stroke('M5 5h11v14H6.5A1.5 1.5 0 0 1 5 17.5zM16 9h3v8.5a1.5 1.5 0 0 1-3 0M8 9h5M8 12.5h5M8 16h3')),
   clipboard: icon(30, stroke('M9 4h6v3H9zM7 5.5H5.5A1.5 1.5 0 0 0 4 7v12.5A1.5 1.5 0 0 0 5.5 21h13a1.5 1.5 0 0 0 1.5-1.5V7a1.5 1.5 0 0 0-1.5-1.5H17M8 12h8M8 16h5')),
 };
 
@@ -68,6 +70,8 @@ export function oddsHtml(odds, league) {
 
 // ESPN's logo, or Phade's fallback: the team's color with its abbreviation.
 export const failedLogos = new Set();
+// News photos that failed to load (ESPN lists some that are gone): left out.
+export const failedImages = new Set();
 
 // Puts new markup into an element, keeping every node that's already right.
 // Live scores redraw every 5 seconds; rebuilding the markup made every logo a
@@ -99,6 +103,36 @@ function patchElement(el, next) {
   for (const { name } of [...el.attributes]) if (!next.hasAttribute(name) && !keep(name)) el.removeAttribute(name);
   for (const { name, value } of [...next.attributes]) if (!keep(name) && el.getAttribute(name) !== value) el.setAttribute(name, value);
   patchChildren(el, next);
+}
+
+// A news list (news.js parseNews): the newest article as a lead with its
+// picture and summary, the rest as rows with a thumbnail. Every article opens
+// on ESPN (in the apps, the phone's browser).
+export function newsHtml(articles, { empty = 'No news right now.' } = {}) {
+  if (!articles.length) return emptyState({ icon: ICONS.news, title: 'No news yet', text: empty });
+  const meta = (a) => [newsAge(a.published), a.kind, a.premium ? 'ESPN+' : ''].filter(Boolean).map(esc).join(' · ');
+  const link = (a, cls, body) => `<a class="${cls}" href="${esc(a.url)}" target="_blank" rel="noopener">${body}</a>`;
+  // At twice the size shown, for sharp phones.
+  const photo = (a, w, h) => {
+    const src = a.image && newsImage(a.image, w, h);
+    return src && !failedImages.has(src) ? src : null;
+  };
+  const [lead, ...rest] = articles;
+  const leadImage = photo(lead, 750, 500);
+  const leadHtml = link(lead, 'card news-lead', `
+    ${leadImage ? `<img class="news-lead-img news-photo" src="${esc(leadImage)}" alt="" loading="lazy" decoding="async">` : ''}
+    <span class="news-body">
+      <span class="news-headline">${esc(lead.headline)}</span>
+      ${lead.description ? `<span class="news-desc">${esc(lead.description)}</span>` : ''}
+      <span class="news-meta">${meta(lead)}</span>
+    </span>`);
+  const rows = rest.map((a) => link(a, 'news-row', `
+    <span class="news-body">
+      <span class="news-headline">${esc(a.headline)}</span>
+      <span class="news-meta">${meta(a)}</span>
+    </span>
+    ${photo(a, 192, 128) ? `<img class="news-thumb news-photo" src="${esc(photo(a, 192, 128))}" alt="" width="96" height="64" loading="lazy" decoding="async">` : ''}`)).join('');
+  return leadHtml + (rows ? `<div class="card news-list">${rows}</div>` : '');
 }
 
 export function logoHtml(team, size = 28) {

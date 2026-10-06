@@ -11,9 +11,10 @@ import {
   alertsFor, setAlerts, alertTeams,
 } from './myteams.js';
 import {
-  ICONS, getJson, TROUBLE, oddsHtml, failedLogos, logoHtml, fallbackLogo, emptyState, errorState, fullDate, formatClock, esc,
-  patchHtml,
+  ICONS, getJson, TROUBLE, oddsHtml, failedLogos, failedImages, logoHtml, fallbackLogo, emptyState, errorState, fullDate, formatClock, esc,
+  patchHtml, newsHtml,
 } from './ui.js';
+import { newsUrl, parseNews } from './news.js';
 import {
   initPages, parseRoute, showPage, hidePage, pageOpen, refreshPage, pageVisible, gameHref, teamHref,
 } from './pages.js';
@@ -33,7 +34,7 @@ const startLeague = initialLeague();
 const view = {
   league: startLeague,
   filter: savedFilter(startLeague),  // college football's conference or division, else null
-  mode: 'scores',  // 'scores' | 'standings' | 'rankings'
+  mode: 'scores',  // 'scores' | 'standings' | 'rankings' | 'news'
   dayOffset: 0,    // days from today, so "Today" survives midnight
   week: null,      // weekly leagues: null means the current week
   poll: 0,         // rankings: which poll is showing
@@ -88,6 +89,7 @@ async function fetchView() {
   if (league.mine) return fetchMyTeams(date);
   if (mode === 'standings') return parseStandings(await getJson(standingsUrl(league, filterStandingsGroup(view.filter))), league);
   if (mode === 'rankings') return parseRankings(await getJson(rankingsUrl(league)));
+  if (mode === 'news') return parseNews(await getJson(newsUrl(league)));
   return parseScoreboard(await getJson(scoreboardUrl(league, { date, week: view.week, groups: view.filter?.groups })), league);
 }
 
@@ -160,12 +162,12 @@ function renderModes() {
       </nav>` : '';
     return;
   }
-  const modes = [['scores', 'Scores'], ['standings', 'Standings'], ...(league.rankings ? [['rankings', 'Rankings']] : [])];
+  const modes = [['scores', 'Scores'], ['standings', 'Standings'], ...(league.rankings ? [['rankings', 'Rankings']] : []), ['news', 'News']];
   els.modes.innerHTML = `
     <div class="segmented" role="tablist" aria-label="View">
       ${modes.map(([id, label]) => `<button role="tab" data-mode="${id}" aria-selected="${mode === id}">${label}</button>`).join('')}
     </div>
-    ${view.filter && mode !== 'rankings' ? filterHtml(league, view.filter) : ''}`;
+    ${view.filter && (mode === 'scores' || mode === 'standings') ? filterHtml(league, view.filter) : ''}`;
 }
 
 // College football's conference picker: a native select, so the phone shows
@@ -307,6 +309,8 @@ function renderContent() {
     patchHtml(els.content, standingsHtml(data));
   } else if (mode === 'rankings') {
     patchHtml(els.content, rankingsHtml(data));
+  } else if (mode === 'news') {
+    patchHtml(els.content, newsHtml(data.articles, { empty: `ESPN has no ${view.league.label} news right now.` }));
   } else {
     patchHtml(els.content, gamesHtml(data.games));
   }
@@ -850,7 +854,7 @@ document.addEventListener('change', (event) => {
 // In the iPhone app every button press taps the haptic engine: a selection
 // tick for tabs, view switches, days and polls, a light tap for the rest.
 // Captured first, so it buzzes even for buttons whose handlers stop the click.
-const SELECTION = '[role="tab"], .day, [data-poll], [data-standings]';
+const SELECTION = '[role="tab"], .day, [data-poll], [data-standings], [data-team-tab]';
 document.addEventListener('click', (event) => {
   const button = event.target.closest('button');
   if (button && !button.disabled) haptic(button.matches(SELECTION) ? 'selection' : 'light');
@@ -864,10 +868,17 @@ document.addEventListener('visibilitychange', () => {
   else schedule();
 });
 
-// A logo that fails to load becomes the team-color badge, and stays one.
+// A logo that fails to load becomes the team-color badge, and stays one. A
+// news photo that fails is left out.
 document.addEventListener('error', (event) => {
   const img = event.target;
-  if (!(img instanceof HTMLImageElement) || !img.classList.contains('logo')) return;
+  if (!(img instanceof HTMLImageElement)) return;
+  if (img.classList.contains('news-photo')) {
+    failedImages.add(img.getAttribute('src'));
+    img.remove();
+    return;
+  }
+  if (!img.classList.contains('logo')) return;
   failedLogos.add(img.getAttribute('src'));
   img.outerHTML = fallbackLogo(img.dataset.abbr, img.dataset.color);
 }, true);
