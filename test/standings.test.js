@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { leagueById } from '../espn.js';
 import {
   standingsUrl, filterStandingsGroup, teamListUrls, rankingsUrl, parseStandings, parseRankings, teamsFromStandings,
-  searchTeams, fold, standingsView, STANDINGS_VIEWS, PLAYOFF_ZONES, clinchLegend,
+  searchTeams, fold, standingsView, standingsViews, PLAYOFF_ZONES, clinchLegend,
 } from '../standings.js';
 import { leagueFilter } from '../espn.js';
 
@@ -18,7 +18,8 @@ const polls = parseRankings(fixture('ncaaf-rankings'));
 test('standings come from /apis/v2, college limited to its division', () => {
   // The NFL's by division (level=3); its other views are built from those.
   assert.equal(standingsUrl(leagueById('nfl')), 'https://site.api.espn.com/apis/v2/sports/football/nfl/standings?level=3');
-  assert.equal(standingsUrl(leagueById('nba')), 'https://site.api.espn.com/apis/v2/sports/basketball/nba/standings');
+  assert.equal(standingsUrl(leagueById('nba')), 'https://site.api.espn.com/apis/v2/sports/basketball/nba/standings?level=3');
+  assert.equal(standingsUrl(leagueById('wnba')), 'https://site.api.espn.com/apis/v2/sports/basketball/wnba/standings');
   assert.equal(new URL(standingsUrl(leagueById('ncaaf'))).searchParams.get('group'), '80');
   assert.equal(new URL(standingsUrl(leagueById('ncaam'))).searchParams.get('group'), '50');
   assert.equal(rankingsUrl(leagueById('ncaam')), 'https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/rankings');
@@ -60,9 +61,11 @@ test('pro standings are ordered by playoff seed, not feed order', () => {
 // The 2024 regular season's final standings by division (level=3).
 const nflDivisions = parseStandings(fixture('nfl-standings-divisions'), leagueById('nfl'));
 const abbrs = (group) => group.rows.map((r) => r.team.abbr);
+const NFL_RULES = leagueById('nfl').standingsViews;
 
 test('NFL standings by division: eight tables in division order, each in its conference', () => {
-  assert.deepEqual(STANDINGS_VIEWS.map((v) => v.label), ['Division', 'Conference', 'Playoff Picture']);
+  assert.deepEqual(standingsViews(leagueById('nfl')).map((v) => v.label), ['Division', 'Conference', 'Playoff Picture']);
+  assert.deepEqual(standingsViews(leagueById('mlb')).map((v) => v.label), ['Division', 'League', 'Playoff Picture']);
   const { groups } = standingsView(nflDivisions, 'division');
   assert.deepEqual(groups.map((g) => g.name), ['AFC East', 'AFC North', 'AFC South', 'AFC West', 'NFC East', 'NFC North', 'NFC South', 'NFC West']);
   assert.deepEqual(groups[0].conference, { name: 'American Football Conference', abbr: 'AFC' });
@@ -82,7 +85,7 @@ test('NFL conference standings: all 16 teams by record, ties by ESPN seed', () =
 });
 
 test('the NFL playoff picture: division winners 1 to 4, then three wild cards, then the hunt', () => {
-  const [afc, afcHunt, nfc, nfcHunt] = standingsView(nflDivisions, 'playoffs').groups;
+  const [afc, afcHunt, nfc, nfcHunt] = standingsView(nflDivisions, 'playoffs', NFL_RULES).groups;
   // The real 2024 playoff seeds.
   assert.deepEqual(abbrs(afc), ['KC', 'BUF', 'BAL', 'HOU', 'LAC', 'PIT', 'DEN']);
   assert.deepEqual(abbrs(nfc), ['DET', 'PHI', 'TB', 'LAR', 'MIN', 'WSH', 'GB']);
@@ -99,18 +102,66 @@ test('the NFL playoff picture: division winners 1 to 4, then three wild cards, t
   assert.equal(nfcHunt.rows.length, 9);
   assert.equal(nfcHunt.rows[0].team.abbr, 'SEA');
   // Clinch marks: the legend lists the ones in use, in a fixed order.
-  assert.deepEqual(clinchLegend([...afc.rows, ...afcHunt.rows]).map(([mark]) => mark), ['*', 'z', 'y', 'e']);
+  assert.deepEqual(clinchLegend([...afc.rows, ...afcHunt.rows], leagueById('nfl')).map(([mark]) => mark), ['*', 'z', 'y', 'e']);
+  assert.deepEqual(clinchLegend(afc.rows, leagueById('mlb')), []);
   assert.deepEqual(clinchLegend([]), []);
 });
 
 test('the playoff picture follows the rules even without ESPN seeds', () => {
   // Preseason or a feed without seeds: records alone decide.
   const noSeeds = { groups: nflDivisions.groups.map((g) => ({ ...g, rows: g.rows.map((r) => ({ ...r, seed: null })) })) };
-  const nfc = standingsView(noSeeds, 'playoffs').groups[2];
+  const nfc = standingsView(noSeeds, 'playoffs', NFL_RULES).groups[2];
   assert.deepEqual(abbrs(nfc).slice(0, 4).sort(), ['DET', 'LAR', 'PHI', 'TB']);
   assert.deepEqual(abbrs(nfc).slice(4), ['MIN', 'WSH', 'GB']);
   // Leagues without conferences have no picture to build.
   assert.deepEqual(standingsView(nfl, 'division'), nfl);
+});
+
+// The 2025-26 NBA and NHL and 2026 MLB final standings by division: ESPN's
+// clinch marks say who made it, so each picture must match them.
+const picture = (fixtureName, id) => {
+  const league = leagueById(id);
+  return standingsView(parseStandings(fixture(fixtureName), league), 'playoffs', league.standingsViews).groups;
+};
+const marks = (group) => group.rows.map((r) => r.clincher);
+
+test('MLB: division winners 1 to 3 (byes for 1 and 2), then three wild cards', () => {
+  const [al, alHunt, nl] = picture('mlb-standings-divisions', 'mlb');
+  assert.equal(al.name, 'AL');
+  assert.deepEqual(abbrs(al), ['TB', 'CLE', 'HOU', 'NYY', 'BOS', 'CHW']);
+  // 93-68 New York is a wild card behind 81-81 Houston, a division winner.
+  assert.deepEqual(al.rows.map((r) => r.note.description), ['First-round bye', 'First-round bye', 'Division leader', 'Wild card', 'Wild card', 'Wild card']);
+  assert.ok(marks(al).every((m) => m && m !== 'e'));
+  assert.ok(marks(alHunt).every((m) => m === 'e'));
+  assert.deepEqual(abbrs(nl).slice(0, 3), ['MIL', 'LAD', 'ATL']);
+  const divisions = parseStandings(fixture('mlb-standings-divisions'), leagueById('mlb')).groups;
+  assert.deepEqual(divisions.map((g) => g.name), ['AL East', 'AL Central', 'AL West', 'NL East', 'NL Central', 'NL West']);
+  assert.equal(divisions[0].conference.abbr, 'AL');
+});
+
+test('NBA: seeds 1 to 6 are in, 7 to 10 play in, divisions don\'t count', () => {
+  const [east, eastHunt, west] = picture('nba-standings-divisions', 'nba');
+  assert.equal(east.name, 'Eastern Conference');
+  assert.equal(east.rows.length, 10);
+  assert.ok(east.rows.slice(0, 6).every((r) => r.note === PLAYOFF_ZONES.playoffs && /^[xyz*]$/.test(r.clincher)));
+  assert.ok(east.rows.slice(6).every((r) => r.note === PLAYOFF_ZONES.playIn && /^(xp|pb)$/.test(r.clincher)));
+  assert.ok(marks(eastHunt).every((m) => m === 'e'));
+  // ESPN's seeds already include the play-in's results: 42-40 Portland is
+  // the 7 seed, above 45-37 Phoenix.
+  assert.deepEqual(abbrs(west).slice(6, 8), ['POR', 'PHX']);
+});
+
+test('NHL: the top 3 in each division, then two wild cards by points', () => {
+  const [east, eastHunt] = picture('nhl-standings-divisions', 'nhl');
+  assert.deepEqual(east.rows.map((r) => r.pos), ['A1', 'A2', 'A3', 'M1', 'M2', 'M3', 'WC1', 'WC2']);
+  assert.ok(marks(east).every((m) => m && m !== 'e'));
+  assert.ok(marks(eastHunt).every((m) => m === 'e'));
+  assert.equal(eastHunt.rows[0].pos, 9);
+  const divisions = parseStandings(fixture('nhl-standings-divisions'), leagueById('nhl')).groups;
+  assert.deepEqual(divisions.map((g) => g.name), ['Atlantic', 'Metropolitan', 'Central', 'Pacific']);
+  // Conference standings go by points.
+  const [eastTable] = standingsView({ groups: divisions }, 'conference').groups;
+  assert.ok(eastTable.rows.every((r, i) => i === 0 || Number(r.stats.pts) <= Number(eastTable.rows[i - 1].stats.pts)));
 });
 
 test('soccer tables use league position, goal difference and zone notes', () => {

@@ -16,10 +16,13 @@ import {
 export const gameHref = (leagueId, id) => `#/game/${leagueId}/${encodeURIComponent(id)}`;
 export const teamHref = (leagueId, id) => `#/team/${leagueId}/${encodeURIComponent(id)}`;
 
+// A team page can open on a tab ("#/team/nfl/12/news", where a news alert
+// lands); the tab isn't part of the page's key.
 export function parseRoute(hash) {
-  const match = /^#\/(game|team)\/([a-z0-9]+)\/([\w-]+)$/.exec(hash ?? '');
+  const match = /^#\/(game|team)\/([a-z0-9]+)\/([\w-]+)(?:\/(schedule|stats|news))?$/.exec(hash ?? '');
   const league = match && leagueById(match[2]);
-  return league ? { kind: match[1], league, id: match[3], key: match[0] } : null;
+  if (!league || (match[4] && match[1] !== 'team')) return null;
+  return { kind: match[1], league, id: match[3], key: `#/${match[1]}/${match[2]}/${match[3]}`, tab: match[4] ?? null };
 }
 
 // What the page needs from the app: follows, the header title and spinner.
@@ -90,16 +93,37 @@ export const pageOpen = () => Boolean(page.route);
 
 // True when the page rendered with content, so its scroll can be restored.
 export function showPage(route) {
-  if (page.route?.key === route.key) return Boolean(page.data);
+  if (page.route?.key === route.key) {
+    if (route.tab && route.tab !== page.tab) openTab(route.tab);
+    return Boolean(page.data);
+  }
   leave();
   const seen = recent.get(route.key);
   Object.assign(page, { route, data: null, error: null, updatedAt: null, side: 0, tab: 'schedule', news: null, newsError: null, stats: null, statsError: null }, seen);
+  if (route.tab) page.tab = route.tab;
   Object.assign(native, { lockError: '', alertNote: '', alertsOpen: false });
   refreshNative();
   render();
   if (stale()) load();
-  else schedule();
+  else {
+    schedule();
+    if (page.data) loadTab();
+  }
   return Boolean(page.data);
+}
+
+// The team page's tabs: News and Stats load the first time they open.
+function openTab(tab) {
+  page.tab = tab;
+  if (tab === 'news' && !page.news) page.newsError = null;
+  if (tab === 'stats' && !page.stats) page.statsError = null;
+  render();
+  loadTab();
+}
+
+function loadTab() {
+  if (page.tab === 'news' && !page.news) loadNews();
+  if (page.tab === 'stats' && !page.stats) loadStats();
 }
 
 export function hidePage() {
@@ -241,7 +265,7 @@ async function quick() {
     }
     // A new clock, spot or down redraws the page; patchHtml touches only
     // what changed.
-    const situation = (g) => g && JSON.stringify([g.statusText, g.ball, g.detail, g.teams.map((t) => [t.possession, t.timeouts])]);
+    const situation = (g) => g && JSON.stringify([g.statusText, g.ball, g.diamond, g.detail, g.teams.map((t) => [t.possession, t.timeouts])]);
     if (game && situation(game) !== situation(page.live)) {
       Object.assign(data, { statusText: game.statusText, statusName: game.statusName });
       page.live = game;
@@ -398,8 +422,34 @@ function matchupHtml(game, league, id) {
       <div class="matchup-status">${statusHtml(game)}</div>
       <div class="matchup-teams">${a ? side(a) : ''}${middle}${b ? side(b) : ''}</div>
       ${live ? fieldHtml(game, league) : ''}
+      ${live ? diamondHtml(league) : ''}
       ${meta.length ? `<div class="matchup-meta">${meta.map(esc).join(' · ')}</div>` : ''}
     </div>`;
+}
+
+// Live baseball: the diamond, as on the Lock Screen card. The bases taken
+// in amber, the outs as dots beside the count, and who's batting against
+// whom with their lines for the day. From the 5s scoreboard check, like the
+// football field.
+function diamondHtml(league) {
+  const live = page.live;
+  if (!league.path.startsWith('baseball/') || !live?.diamond || live.id !== String(page.route?.id)) return '';
+  const d = live.diamond;
+  const base = (n, x, y) => `<rect class="base${d.bases.includes(n) ? ' on' : ''}" x="${x - 7}" y="${y - 7}" width="14" height="14" rx="2" transform="rotate(45 ${x} ${y})"/>`;
+  const ordinal = { 1: 'first', 2: 'second', 3: 'third' };
+  const runners = d.bases.length ? `Runners on ${d.bases.map((b) => ordinal[b]).join(' and ')}` : 'Bases empty';
+  const label = `${runners}, ${d.outs} out${d.outs === 1 ? '' : 's'}, count ${d.balls}-${d.strikes}`;
+  const outs = [0, 1, 2].map((i) => `<i${i < d.outs ? ' class="on"' : ''}></i>`).join('');
+  const who = (role, name, line) => (name ? `<p class="diamond-who"><span>${role}</span> <b>${esc(name)}</b>${line ? ` ${esc(line)}` : ''}</p>` : '');
+  return `
+    <div class="diamond" role="img" aria-label="${esc(label)}">
+      <svg class="diamond-svg" viewBox="0 0 72 52" aria-hidden="true">${base(2, 36, 13)}${base(3, 17, 32)}${base(1, 55, 32)}</svg>
+      <div class="diamond-side">
+        <span class="diamond-count">${d.balls}-${d.strikes}</span>
+        <span class="diamond-outs" title="${d.outs} out${d.outs === 1 ? '' : 's'}">${outs}</span>
+      </div>
+    </div>
+    ${who('At bat', d.batter, d.batterLine)}${who('Pitching', d.pitcher, d.pitcherLine)}`;
 }
 
 // Live football: the field, as on the Lock Screen cards. Each end zone in its
@@ -653,6 +703,12 @@ function alertsPanel(league, team) {
   if (native.info?.teamLockScreen) {
     rows.push(['lock', 'Lock Screen', 'Every game on your Lock Screen']);
   }
+  // News: the push server sends the team's new stories. The iPhone app
+  // passes the switch on from build 15 (teamNews); every Android build with
+  // Firebase passes the teams through as they are.
+  if (native.info?.teamNews || (native.info?.platform === 'android' && native.info?.teamLockScreen)) {
+    rows.push(['news', 'News', 'Stories about the team as ESPN posts them']);
+  }
   return `
     <div class="alert-panel" role="group" aria-label="${esc(team.name)} alerts">
       ${rows.map(([kind, title, sub]) => `
@@ -720,12 +776,7 @@ document.addEventListener('click', (event) => {
     page.side = Number(target.dataset.side);
     render();
   } else if (target.dataset.teamTab) {
-    page.tab = target.dataset.teamTab;
-    if (page.tab === 'news' && !page.news) page.newsError = null;
-    if (page.tab === 'stats' && !page.stats) page.statsError = null;
-    render();
-    if (page.tab === 'news' && !page.news) loadNews();
-    if (page.tab === 'stats' && !page.stats) loadStats();
+    openTab(target.dataset.teamTab);
   } else if (target.hasAttribute('data-follow') && page.data?.team) {
     const { team } = page.data;
     app.toggleFollow(page.route.league.id, team);

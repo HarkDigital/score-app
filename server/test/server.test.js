@@ -5,8 +5,9 @@ import { readFileSync } from 'node:fs';
 import { leagueById, parseScoreboard } from '../../espn.js';
 import {
   contentState, activityPlan, activityPayload, gameAlerts, gameMemo, wantsAlert, parseActivity, parseDevice,
-  parseScheduled, startDue, startPayload,
+  parseScheduled, startDue, startPayload, newsPlan, newsPayload, newsTeams,
 } from '../live.js';
+import { parseNews } from '../../news.js';
 import { providerToken, tokenIsDead } from '../apns.js';
 import { createWatcher, pollDelay } from '../watcher.js';
 
@@ -50,6 +51,8 @@ test('pushes go out only on change, scores at high priority', () => {
   assert.deepEqual(activityPlan({ ...live, awayTimeouts: 3, homeTimeouts: 3 }, { ...live, awayTimeouts: 2, homeTimeouts: 3 }), { priority: 5, end: false });
   assert.deepEqual(activityPlan({ ...live, possession: 'away' }, { ...live, possession: 'home' }), { priority: 5, end: false });
   assert.deepEqual(activityPlan({ ...live, yardLine: 63, toGo: 10 }, { ...live, yardLine: 58, toGo: 5 }), { priority: 5, end: false });
+  assert.deepEqual(activityPlan({ ...live, bases: '1', outs: 1 }, { ...live, bases: '12', outs: 1 }), { priority: 5, end: false });
+  assert.equal(activityPlan({ ...live, bases: '13', outs: 2, balls: 1, strikes: 2 }, { ...live, bases: '13', outs: 2, balls: 1, strikes: 2 }), null);
   assert.deepEqual(activityPlan(live, { ...live, home: '24' }), { priority: 10, end: false });
   assert.deepEqual(activityPlan(live, { ...live, state: 'post', status: 'Final' }), { priority: 10, end: true });
 });
@@ -120,9 +123,9 @@ test('requests are validated', () => {
   assert.equal(parseActivity({ token: TOKEN, env: 'staging', league: 'nfl', eventId: '1' }), null);
   assert.equal(parseActivity({ token: TOKEN, env: 'sandbox', league: 'nfl', eventId: '1; drop' }), null);
   assert.deepEqual(parseDevice({ env: 'sandbox', teams: [{ league: 'nfl', id: 21, start: true, score: true }] }),
-    { platform: 'ios', env: 'sandbox', teams: [{ league: 'nfl', id: '21', start: true, score: true, end: false, lock: false }] });
+    { platform: 'ios', env: 'sandbox', teams: [{ league: 'nfl', id: '21', start: true, score: true, end: false, lock: false, news: false }] });
   // An early build sends bare teams: starts and finals.
-  assert.deepEqual(parseDevice({ env: 'sandbox', teams: [{ league: 'nfl', id: '21' }] }).teams[0], { league: 'nfl', id: '21', start: true, score: false, end: true, lock: false });
+  assert.deepEqual(parseDevice({ env: 'sandbox', teams: [{ league: 'nfl', id: '21' }] }).teams[0], { league: 'nfl', id: '21', start: true, score: false, end: true, lock: false, news: false });
   assert.deepEqual(parseDevice({ env: 'sandbox', teams: [{ league: 'nfl', id: '21', start: false }] }).teams, [], 'all switches off is no team');
   assert.equal(parseDevice({ env: 'sandbox', teams: [{ league: 'nfl', id: '<x>' }] }), null);
 });
@@ -294,7 +297,7 @@ test('every game on the Lock Screen: the iPhone gets a push-to-start, once, when
   const START = 'cd'.repeat(32);
   const device = parseDevice({ env: 'production', startToken: START, teams: [{ league: 'nfl', id: '14', lock: true }] });
   assert.equal(device.startToken, START);
-  assert.deepEqual(device.teams, [{ league: 'nfl', id: '14', start: false, score: false, end: false, lock: true }], 'Lock Screen alone keeps the team');
+  assert.deepEqual(device.teams, [{ league: 'nfl', id: '14', start: false, score: false, end: false, lock: true, news: false }], 'Lock Screen alone keeps the team');
   const h = harness({ devices: { [TOKEN]: device } });
   await h.watcher.tick(); // 18:00Z, SF @ LAR (404) is 2h25 away
   assert.equal(h.sent.length, 0);
@@ -325,4 +328,65 @@ test('every game on the Lock Screen: nothing for an iPhone without a push-to-sta
   h2.later(2 * 3600_000 + 10 * 60_000 + 1_000);
   await h2.watcher.tick();
   assert.equal(h2.sent.filter((s) => s.payload.aps.event === 'start').length, 1, 'the scheduled card only, not a second one');
+});
+
+// ---- Team news alerts ----
+
+test('news alerts: the first look only notes what\'s there; then new stories, once', () => {
+  const now = Date.parse('2026-10-06T12:00:00Z');
+  const at = (hours) => new Date(now - hours * 3600_000);
+  const story = (id, hours, kind = '') => ({ id, headline: `Story ${id}`, kind, published: at(hours), teamName: 'Kansas City Chiefs' });
+  const first = newsPlan(null, [story('a', 1), story('b', 2)], now);
+  assert.deepEqual(first.fresh, []);
+  assert.deepEqual(first.memo.seen, ['a', 'b']);
+  // A new story, a video (left to game alerts' kind of thing), an old one
+  // ESPN lists late: only the story goes.
+  const next = newsPlan(first.memo, [story('c', 0.2), story('v', 0.1, 'Video'), story('old', 30), story('a', 1)], now);
+  assert.deepEqual(next.fresh.map((a) => a.id), ['c']);
+  assert.ok(next.memo.seen.includes('c') && next.memo.seen.includes('a'));
+  assert.deepEqual(newsPlan(next.memo, [story('c', 0.2)], now).fresh, []);
+  // At most two per look.
+  assert.equal(newsPlan(first.memo, [story('x', 0.1), story('y', 0.2), story('z', 0.3)], now).fresh.length, 2);
+});
+
+test('a news alert is the team over the headline, and opens the team\'s News tab', () => {
+  const [article] = parseNews(fixture('nfl-news-team12'), { teamId: '12' }).articles;
+  const payload = newsPayload(article, nfl, '12');
+  assert.equal(payload.aps.alert.title, 'Kansas City Chiefs');
+  assert.equal(payload.aps.alert.body, article.headline);
+  assert.equal(payload.route, '#/team/nfl/12/news');
+  assert.equal(payload.aps['thread-id'], 'news-nfl-12');
+  const devices = { a: parseDevice({ env: 'production', teams: [{ league: 'nfl', id: '12', news: true }] }), b: parseDevice({ env: 'production', teams: [{ league: 'nfl', id: '12', start: true }] }) };
+  assert.deepEqual([...newsTeams(devices).keys()], ['nfl:12']);
+  assert.equal(devices.a.teams[0].news, true, 'news alone keeps the team');
+});
+
+test('the watcher sends a followed team\'s new story to phones that want it, once', async () => {
+  const sent = [];
+  const apns = { alert: async (token, env, payload) => { sent.push({ token, payload }); return { status: 200, reason: '', dead: false }; } };
+  const feed = structuredClone(fixture('nfl-news-team12'));
+  const store = { data: { activities: {}, scheduled: {}, games: {}, sent: {}, devices: {
+    [TOKEN]: parseDevice({ env: 'production', teams: [{ league: 'nfl', id: '12', news: true }] }),
+    ['cd'.repeat(32)]: parseDevice({ env: 'production', teams: [{ league: 'nfl', id: '12', start: true }] }),
+  } }, save() {} };
+  let clock = Date.parse('2026-10-06T00:00:00Z');
+  const fetchJson = async (url) => (url.includes('/news') ? feed : fixture('nfl-scoreboard'));
+  const watcher = createWatcher({ store, apns, fetchJson, log: () => {}, now: () => clock });
+  await watcher.tick();
+  assert.equal(sent.length, 0, 'the first look sends nothing');
+  // ESPN posts a Chiefs story.
+  const [first] = feed.articles;
+  feed.articles.unshift({ ...structuredClone(first), id: 999, headline: 'Chiefs sign a kicker', type: 'HeadlineNews', published: new Date(clock).toISOString(),
+    links: { web: { href: 'https://www.espn.com/nfl/story/_/id/999' } }, categories: [{ type: 'team', teamId: 12, description: 'Kansas City Chiefs' }] });
+  clock += 5 * 60_000;
+  await watcher.tick();
+  assert.equal(sent.length, 0, 'not before the next look');
+  clock += 6 * 60_000;
+  await watcher.tick();
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0].token, TOKEN);
+  assert.equal(sent[0].payload.aps.alert.body, 'Chiefs sign a kicker');
+  clock += 11 * 60_000;
+  await watcher.tick();
+  assert.equal(sent.length, 1, 'once');
 });

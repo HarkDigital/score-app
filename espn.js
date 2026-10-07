@@ -10,10 +10,12 @@ const BASE = 'https://site.api.espn.com/apis/site/v2/sports';
 // linesteam: the league's slug on linesteam.com, which charts FanDuel line
 // movement for these five; game pages link there.
 export const LEAGUES = [
-  { id: 'nfl', label: 'NFL', path: 'football/nfl', weekly: true, linesteam: 'nfl', standingsParams: { level: '3' }, standingsViews: true },
-  { id: 'nba', label: 'NBA', path: 'basketball/nba', linesteam: 'nba' },
-  { id: 'mlb', label: 'MLB', path: 'baseball/mlb', linesteam: 'mlb' },
-  { id: 'nhl', label: 'NHL', path: 'hockey/nhl', linesteam: 'nhl' },
+  // standingsViews: the Division, Conference and Playoff Picture views
+  // (standings.js), with the league's playoff format.
+  { id: 'nfl', label: 'NFL', path: 'football/nfl', weekly: true, linesteam: 'nfl', standingsParams: { level: '3' }, standingsViews: { format: 'divisions', wildCards: 3, byes: 1 } },
+  { id: 'nba', label: 'NBA', path: 'basketball/nba', linesteam: 'nba', standingsParams: { level: '3' }, standingsViews: { format: 'seeds', playoffs: 6, playIn: 4 } },
+  { id: 'mlb', label: 'MLB', path: 'baseball/mlb', linesteam: 'mlb', standingsParams: { level: '3' }, standingsViews: { format: 'divisions', wildCards: 3, byes: 2 } },
+  { id: 'nhl', label: 'NHL', path: 'hockey/nhl', linesteam: 'nhl', standingsParams: { level: '3' }, standingsViews: { format: 'divisionTop', perDivision: 3, wildCards: 2 } },
   { id: 'ncaaf', label: 'NCAAF', path: 'football/college-football', weekly: true, college: true, rankings: true, linesteam: 'cfb', params: { groups: '80', limit: '300' }, standingsParams: { group: '80' }, filters: cfbFilters(), divisions: ['80', '81'] },
   { id: 'ncaam', label: 'NCAAM', path: 'basketball/mens-college-basketball', college: true, rankings: true, params: { groups: '50', limit: '400' }, standingsParams: { group: '50' } },
   { id: 'wnba', label: 'WNBA', path: 'basketball/wnba' },
@@ -135,6 +137,7 @@ export function parseGame(event, league) {
     broadcast: [...new Set((comp.broadcasts ?? []).flatMap((b) => b.names ?? [b.media?.shortName]).filter(Boolean))].join(', '),
     detail: situationText(situation),
     ball: ballSpot(situation),
+    diamond: diamondOf(situation),
     note: comp.notes?.[0]?.headline ?? '',
     // Once a game is under way ESPN's entry is a stale pre-game line or nothing.
     odds: state === 'pre' ? parseOdds(comp.odds, home, away) : null,
@@ -244,13 +247,33 @@ export function fieldView(game, league) {
   return { ball, firstDown, heading };
 }
 
+// Live baseball's diamond: the bases taken (1, 2, 3), the outs and the
+// count, and who's batting against whom ("J. Cronenworth", with his line
+// for the day). null outside baseball (no outs in the situation).
+function diamondOf(s) {
+  if (!s || !Number.isInteger(s.outs)) return null;
+  const n = (v) => (Number.isInteger(v) && v >= 0 ? v : 0);
+  return {
+    bases: [s.onFirst && 1, s.onSecond && 2, s.onThird && 3].filter(Boolean),
+    outs: n(s.outs),
+    balls: n(s.balls),
+    strikes: n(s.strikes),
+    batter: s.batter?.athlete?.shortName ?? '',
+    batterLine: s.batter?.summary ?? '',
+    pitcher: s.pitcher?.athlete?.shortName ?? '',
+    pitcherLine: s.pitcher?.summary ?? '',
+  };
+}
+
 // The Lock Screen card's football extras, from a parsed home and away team
 // and the game's ball spot: each side's timeouts left, who has the ball,
 // where it is (yardLine, from the home goal line) and the yards to go. Only
 // the keys ESPN gave (GameAttributes.ContentState has them as optionals).
-// Shared by the web app's first card (details.js lockScreenCard, which has
-// no spot) and the push server's updates (server/live.js contentState).
-export function cardSituation(away, home, ball = null) {
+// Live baseball adds its diamond: bases ("13": first and third), outs,
+// balls and strikes. Shared by the web app's first card (details.js
+// lockScreenCard, which has no spot) and the push server's updates
+// (server/live.js contentState).
+export function cardSituation(away, home, ball = null, diamond = null) {
   const out = {};
   if (Number.isInteger(away?.timeouts) && Number.isInteger(home?.timeouts)) {
     out.awayTimeouts = away.timeouts;
@@ -262,6 +285,7 @@ export function cardSituation(away, home, ball = null) {
     out.yardLine = ball.yardLine;
     if (ball.toGo) out.toGo = ball.toGo;
   }
+  if (diamond) Object.assign(out, { bases: diamond.bases.join(''), outs: diamond.outs, balls: diamond.balls, strikes: diamond.strikes });
   return out;
 }
 

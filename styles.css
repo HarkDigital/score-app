@@ -1734,6 +1734,58 @@ a.team-cell:hover .team-name { color: var(--accent); }
 
 .field-ball svg { width: 16px; height: 10px; }
 
+/* Live baseball's diamond: the bases taken in amber, the count and the outs
+   beside it, then who's batting and pitching. */
+.diamond {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.diamond-svg { width: 72px; height: 52px; }
+
+.diamond-svg .base {
+  fill: rgb(255 255 255 / 0.06);
+  stroke: var(--gray-500);
+  stroke-width: 1.5;
+}
+
+.diamond-svg .base.on { fill: var(--warn); stroke: var(--warn); }
+
+.diamond-side {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+
+.diamond-count {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--white);
+}
+
+.diamond-outs { display: flex; gap: 5px; }
+
+.diamond-outs i {
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid var(--gray-500);
+  border-radius: 50%;
+}
+
+.diamond-outs i.on { background: var(--white); border-color: var(--white); }
+
+.diamond-who {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--gray-400);
+}
+
+.diamond-who span { color: var(--gray-500); }
+.diamond-who b { font-weight: 600; color: var(--gray-300); }
+
 .page-odds { margin-top: 12px; }
 .page-odds .game-odds:first-child { border-top: 0; }
 

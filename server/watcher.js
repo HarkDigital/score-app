@@ -9,8 +9,10 @@ import {
   contentState, activityPlan, activityPayload, gameAlerts, gameMemo, wantsAlert, followsGame, startDue, startPayload, SCHEDULE_LEAD,
   isAndroid, activityKey, androidCardMessage, androidStartMessage, androidAlertMessage, wantsLock, cardFromGame,
   gameProgress, gamePeriods,
+  newsTeams, newsPlan, newsPayload, wantsNews, NEWS_EVERY,
 } from './live.js';
 import { prune } from './store.js';
+import { newsUrl, parseNews } from '../news.js';
 
 const MIN = 60_000;
 const HOUR = 60 * MIN;
@@ -53,6 +55,7 @@ export function pollDelay(games, nowMs) {
 
 export function createWatcher({ store, apns, fcm = null, fetchJson: getJson = fetchJson, log = console.log, now = () => Date.now() }) {
   const nextFetch = new Map();
+  const nextNews = new Map();
   let running = false;
 
   const watched = (leagueId, game) => {
@@ -174,6 +177,46 @@ export function createWatcher({ store, apns, fcm = null, fetchJson: getJson = fe
     }
   }
 
+  // Team news alerts: each wanted team's news every NEWS_EVERY, its new
+  // stories to every phone that wants them. True when it looked at any.
+  async function checkNews() {
+    const { data } = store;
+    data.news ??= {};
+    const teams = newsTeams(data.devices);
+    for (const key of Object.keys(data.news)) if (!teams.has(key)) delete data.news[key];
+    let looked = false;
+    for (const [key, team] of teams) {
+      if ((nextNews.get(key) ?? 0) > now()) continue;
+      nextNews.set(key, now() + NEWS_EVERY);
+      const league = leagueById(team.league);
+      if (!league) continue;
+      let articles;
+      try {
+        articles = parseNews(await getJson(newsUrl(league, team.id, 25)), { teamId: team.id }).articles;
+      } catch (err) {
+        log(`espn news ${key}: ${err.message}`);
+        continue;
+      }
+      looked = true;
+      const { fresh, memo } = newsPlan(data.news[key] ?? null, articles, now());
+      data.news[key] = memo;
+      for (const article of fresh) {
+        const payload = newsPayload(article, league, team.id);
+        for (const [token, device] of Object.entries(data.devices)) {
+          if (!wantsNews(device, team.league, team.id)) continue;
+          const mark = `${token}|news|${article.id}`;
+          if (data.sent[mark]) continue;
+          data.sent[mark] = now();
+          const result = isAndroid(device)
+            ? await sendAndroid(token, androidAlertMessage(payload))
+            : await push('alert', token, device.env, payload);
+          if (result.dead) delete data.devices[token];
+        }
+      }
+    }
+    return looked;
+  }
+
   async function tick() {
     if (running) return;
     running = true;
@@ -217,6 +260,7 @@ export function createWatcher({ store, apns, fcm = null, fetchJson: getJson = fe
         ].filter((t) => t > now());
         nextFetch.set(id, Math.min(now() + pollDelay(mine, now()), ...due));
       }
+      if (await checkNews()) fetched = true;
       if (fetched) store.save();
     } catch (err) {
       log(`tick failed: ${err.stack ?? err.message}`);

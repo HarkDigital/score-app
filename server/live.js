@@ -26,7 +26,7 @@ export function contentState(game, league) {
     state: game.state,
     status: scheduled ? '' : game.statusText,
     detail: game.detail ?? '',
-    ...cardSituation(away, home, game.ball),
+    ...cardSituation(away, home, game.ball, game.diamond),
   };
 }
 
@@ -36,7 +36,7 @@ export function activityPlan(last, next) {
   const end = next.state === 'post';
   if (!last) return { priority: 10, end };
   const same = (k) => last[k] === next[k];
-  if (['away', 'home', 'state', 'status', 'detail', 'awayTimeouts', 'homeTimeouts', 'possession', 'yardLine', 'toGo'].every(same)) return null;
+  if (['away', 'home', 'state', 'status', 'detail', 'awayTimeouts', 'homeTimeouts', 'possession', 'yardLine', 'toGo', 'bases', 'outs', 'balls', 'strikes'].every(same)) return null;
   const big = !same('away') || !same('home') || !same('state');
   return { priority: big ? 10 : 5, end };
 }
@@ -382,7 +382,7 @@ export function parseDevice(body) {
   for (const t of teams) {
     if (!leagueById(t?.league) || !TEAM.test(String(t?.id ?? ''))) return null;
     // A team without switches comes from an early build: starts and finals.
-    const legacy = !['start', 'score', 'end', 'lock'].some((k) => k in t);
+    const legacy = !['start', 'score', 'end', 'lock', 'news'].some((k) => k in t);
     list.push({
       league: t.league,
       id: String(t.id),
@@ -390,13 +390,63 @@ export function parseDevice(body) {
       score: !legacy && t.score === true,
       end: legacy || t.end === true,
       lock: t.lock === true,
+      news: t.news === true,
     });
   }
   const startToken = !android && typeof body.startToken === 'string' && APNS_TOKEN.test(body.startToken) ? body.startToken.toLowerCase() : null;
   return {
     platform: android ? 'android' : 'ios',
     env,
-    teams: list.filter((t) => t.start || t.score || t.end || t.lock),
+    teams: list.filter((t) => t.start || t.score || t.end || t.lock || t.news),
     ...(startToken ? { startToken } : {}),
+  };
+}
+
+// ---- Team news alerts ----
+
+// A follower's "news" switch: ESPN's new stories about the team (news.js
+// parseNews with its teamId), each sent once. Videos, recaps and previews
+// stay out: the game alerts cover games. The first look at a team only notes
+// what's there, so turning the switch on never sends a backlog, and a story
+// more than a day old is never news.
+export const NEWS_EVERY = 10 * 60_000;
+const NEWS_KEEP = 200;
+const NEWS_FRESH = 24 * 3600_000;
+const NEWS_PER_LOOK = 2;
+
+export const wantsNews = (device, leagueId, teamId) => device?.teams?.some((t) => t.league === leagueId && t.id === teamId && t.news === true);
+
+// Every team someone wants news for, as "league:id" → {league, id}.
+export function newsTeams(devices) {
+  const teams = new Map();
+  for (const device of Object.values(devices ?? {})) {
+    for (const t of device.teams ?? []) if (t.news) teams.set(`${t.league}:${t.id}`, { league: t.league, id: t.id });
+  }
+  return teams;
+}
+
+// memo: what the server has seen of this team's news ({seen: [ids]}), or
+// null the first time. Returns the stories to send and the new memo.
+export function newsPlan(memo, articles, nowMs) {
+  const stories = articles.filter((a) => !a.kind);
+  if (!memo) return { fresh: [], memo: { seen: stories.map((a) => a.id).slice(0, NEWS_KEEP) } };
+  const seen = new Set(memo.seen);
+  const fresh = stories
+    .filter((a) => !seen.has(a.id) && a.published && nowMs - a.published.getTime() < NEWS_FRESH)
+    .slice(0, NEWS_PER_LOOK);
+  const ids = [...new Set([...stories.map((a) => a.id), ...memo.seen])].slice(0, NEWS_KEEP);
+  return { fresh, memo: { seen: ids } };
+}
+
+// The alert for a story: the team's name over the headline. A tap opens the
+// team page's News tab.
+export function newsPayload(article, league, teamId) {
+  return {
+    aps: {
+      alert: { title: article.teamName || `${league.label} news`, body: article.headline },
+      sound: 'default',
+      'thread-id': `news-${league.id}-${teamId}`,
+    },
+    route: `#/team/${league.id}/${teamId}/news`,
   };
 }

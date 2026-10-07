@@ -155,6 +155,23 @@ test('the ball spot needs a team with the ball and a yard line on the field; no 
   assert.equal(spot({ possession: '3', yardLine: 120, down: 1, distance: 10 }), null);
 });
 
+test('live baseball\'s diamond: runners, outs, the count, batter and pitcher', () => {
+  // Captured Oct 6 2026: MIL @ SD in the bottom of the 5th, bases empty.
+  const board = parseScoreboard(fixture('mlb-scoreboard-live'), league('mlb'));
+  const live = board.games.find((g) => g.state === 'in');
+  assert.deepEqual(live.diamond, {
+    bases: [], outs: 0, balls: 0, strikes: 0,
+    batter: 'J. Cronenworth', batterLine: '0-0', pitcher: 'J. Romero', pitcherLine: '1.0 IP, 0 ER, 0 H, K, 0 BB',
+  });
+  assert.deepEqual(cardSituation(...live.teams, live.ball, live.diamond), { bases: '', outs: 0, balls: 0, strikes: 0 });
+  const corners = parseGame({ competitions: [{ status: { type: { state: 'in' } }, competitors: [], situation: { onFirst: true, onThird: true, outs: 2, balls: 3, strikes: 2 } }] }, league('mlb'));
+  assert.deepEqual(corners.diamond.bases, [1, 3]);
+  assert.equal(cardSituation({}, {}, null, corners.diamond).bases, '13');
+  // Football has no outs: no diamond.
+  assert.equal(game(parseScoreboard(fixture('nfl-scoreboard-live'), league('nfl')), '401872971').diamond, null);
+  assert.equal(board.games.find((g) => g.state === 'post').diamond, null);
+});
+
 test('baseball situation shows outs and runners', () => {
   const board = parseScoreboard({ events: [{
     id: '1',
