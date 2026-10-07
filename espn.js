@@ -139,6 +139,7 @@ export function parseGame(event, league) {
     ball: ballSpot(situation),
     diamond: diamondOf(situation),
     note: comp.notes?.[0]?.headline ?? '',
+    series: seriesOf(comp.series),
     // Once a game is under way ESPN's entry is a stale pre-game line or nothing.
     odds: state === 'pre' ? parseOdds(comp.odds, home, away) : null,
   };
@@ -245,6 +246,26 @@ export function fieldView(game, league) {
   const heading = left.possession ? 1 : right.possession ? -1 : 0;
   const firstDown = game.ball.toGo && heading ? Math.min(100, Math.max(0, ball + heading * game.ball.toGo)) : null;
   return { ball, firstDown, heading };
+}
+
+// A playoff series (MLB, NBA and NHL playoffs) from a competition's
+// `series`: the scoreboard's is the playoff series itself; a summary header
+// lists several (the current one, the regular season's head-to-head and the
+// playoff one), so it's picked by type. {summary: "LAD lead series 2-1",
+// bestOf: 5, wins: {teamId: wins}, completed, games: [event ids in order]},
+// or null outside the playoffs.
+export function seriesOf(series) {
+  const list = Array.isArray(series) ? series : series ? [series] : [];
+  const s = list.find((x) => x?.type === 'playoff');
+  if (!s) return null;
+  const total = Number(s.totalCompetitions);
+  return {
+    summary: s.summary ?? '',
+    bestOf: total > 0 ? total : null,
+    wins: Object.fromEntries((s.competitors ?? []).filter((c) => c?.id != null).map((c) => [String(c.id), Number(c.wins) || 0])),
+    completed: s.completed === true,
+    games: (s.events ?? []).map((e) => String(e?.id ?? '')).filter(Boolean),
+  };
 }
 
 // Live baseball's diamond: the bases taken (1, 2, 3), the outs and the
