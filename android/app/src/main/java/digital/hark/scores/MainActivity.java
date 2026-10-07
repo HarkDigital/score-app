@@ -28,7 +28,8 @@ import org.json.JSONObject;
 public class MainActivity extends BridgeActivity {
 
     static final String EXTRA_ROUTE = "route";
-    private static final String ROUTE = "#/(game|team)/[\\w-]{1,20}/[\\w-]{1,20}";
+    // A team page may name its tab ("#/team/nfl/12/news", a news alert).
+    private static final String ROUTE = "#/(game|team)/[\\w-]{1,20}/[\\w-]{1,20}(/(schedule|stats|news))?";
 
     private String pendingRoute;
     private final List<Runnable> waitingForPermission = new ArrayList<>();

@@ -49,12 +49,13 @@ final class NativeBridge: NSObject, WKScriptMessageHandlerWithReply {
         case "enableAlerts":
             return await PushManager.shared.requestAuthorization()
         case "setAlertTeams":
-            // [{league, id, start, score, end, lock}]: which alerts each team
-            // wants (lock: every game on the Lock Screen).
+            // [{league, id, start, score, end, lock, news}]: which alerts each
+            // team wants (lock: every game on the Lock Screen; news: its new
+            // stories).
             let teams = (body["teams"] as? [[String: Any]] ?? []).compactMap { team -> [String: Any]? in
                 guard let league = team["league"] as? String, let id = team["id"] as? String else { return nil }
                 var entry: [String: Any] = ["league": league, "id": id]
-                for kind in ["start", "score", "end", "lock"] { entry[kind] = (team[kind] as? Bool) ?? false }
+                for kind in ["start", "score", "end", "lock", "news"] { entry[kind] = (team[kind] as? Bool) ?? false }
                 return entry
             }
             PushManager.shared.setTeams(teams)
@@ -72,6 +73,8 @@ final class NativeBridge: NSObject, WKScriptMessageHandlerWithReply {
             "active": [Any](),
             "scheduled": [Any](),
             "alerts": await PushManager.shared.status(),
+            // This build passes a team's news switch on (setAlertTeams).
+            "teamNews": true,
         ]
         if #available(iOS 16.2, *) {
             let manager = LiveGameManager.shared

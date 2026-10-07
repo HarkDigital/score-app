@@ -41,6 +41,9 @@ export function parseNews(data, { teamId } = {}) {
       if (!teams.has(String(teamId)) || teams.size > 2) continue;
     }
     seen.add(key);
+    // The team as the article tags it ("Kansas City Chiefs"), for alerts.
+    const teamName = teamId === undefined ? ''
+      : (a.categories ?? []).find((c) => c?.type === 'team' && String(c.teamId) === String(teamId))?.description ?? '';
     const published = new Date(a.published ?? a.lastModified);
     const image = (a.images ?? []).find((i) => typeof i?.url === 'string' && i.url.startsWith('https://'));
     articles.push({
@@ -52,6 +55,7 @@ export function parseNews(data, { teamId } = {}) {
       image: image?.url ?? null,
       url,
       premium: a.premium === true,
+      ...(teamName ? { teamName } : {}),
     });
   }
   return { articles: articles.sort((x, y) => (y.published ?? 0) - (x.published ?? 0)) };

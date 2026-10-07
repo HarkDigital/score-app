@@ -4,7 +4,7 @@ import {
 } from './espn.js';
 import {
   standingsUrl, filterStandingsGroup, teamListUrls, parseStandings, rankingsUrl, parseRankings, teamsFromStandings,
-  searchTeams, fold, STANDINGS_VIEWS, standingsView, clinchLegend,
+  searchTeams, fold, standingsViews, standingsView, clinchLegend,
 } from './standings.js';
 import {
   loadFollowed, saveFollowed, isFollowed, toggleFollowed, followedLeagues, countFollowed, gamesForTeams,
@@ -428,11 +428,11 @@ function standingsHtml(data) {
   }
   // The NFL's Division, Conference and Playoff Picture, all from one download.
   if (view.league.standingsViews) {
-    const shown = standingsView(data, view.standings);
+    const shown = standingsView(data, view.standings, view.league.standingsViews);
     return `
       <div class="toolbar toolbar-center">
         <div class="pills" role="group" aria-label="Standings view">
-          ${STANDINGS_VIEWS.map((v) => `<button data-standings="${v.id}" aria-pressed="${v.id === view.standings}">${esc(v.label)}</button>`).join('')}
+          ${standingsViews(view.league).map((v) => `<button data-standings="${v.id}" aria-pressed="${v.id === view.standings}">${esc(v.label)}</button>`).join('')}
         </div>
       </div>
       ${standingsTables(shown.groups)}
@@ -480,7 +480,7 @@ function standingsRow(row, i, columns) {
 
 // What the letters by a team mean (the playoff picture's clinch marks).
 function clinchHtml(groups) {
-  const marks = clinchLegend(groups.flatMap((g) => g.rows));
+  const marks = clinchLegend(groups.flatMap((g) => g.rows), view.league);
   if (!marks.length) return '';
   return `<p class="others">${marks.map(([mark, text]) => `<b>${esc(mark)}</b> ${esc(text)}`).join(' · ')}</p>`;
 }

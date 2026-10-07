@@ -38,6 +38,12 @@ struct GameAttributes: ActivityAttributes {
         /// count), and the yards to go; only while a team has the ball.
         var yardLine: Int?
         var toGo: Int?
+        /// Live baseball: the bases taken ("13": first and third), the outs
+        /// and the count.
+        var bases: String?
+        var outs: Int?
+        var balls: Int?
+        var strikes: Int?
     }
 
     var league: String

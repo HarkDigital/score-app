@@ -96,6 +96,12 @@ struct Game {
     /// the left team's goal line (0...100).
     let ballFromLeft: Double?
     let firstDownFromLeft: Double?
+    /// Live baseball: the bases taken ("13"), the outs and the count; nil
+    /// outs means no diamond.
+    let bases: String
+    let outs: Int?
+    let balls: Int
+    let strikes: Int
 
     init(_ a: GameAttributes, _ s: GameAttributes.ContentState) {
         start = a.start
@@ -110,6 +116,10 @@ struct Game {
         let live = s.state == "in"
         leftTimeouts = live ? (a.homeFirst ? s.homeTimeouts : s.awayTimeouts) : nil
         rightTimeouts = live ? (a.homeFirst ? s.awayTimeouts : s.homeTimeouts) : nil
+        bases = live ? (s.bases ?? "") : ""
+        outs = live ? s.outs : nil
+        balls = s.balls ?? 0
+        strikes = s.strikes ?? 0
         leftHasBall = live && s.possession == (a.homeFirst ? "home" : "away")
         rightHasBall = live && s.possession == (a.homeFirst ? "away" : "home")
         // The left team defends the left goal line; the home team's is the
@@ -383,7 +393,21 @@ struct CenterStatus: View {
 
     var body: some View {
         Group {
-            if game.live {
+            if game.live, let outs = game.outs {
+                // Baseball: the inning over the diamond, the count and outs.
+                VStack(spacing: 5) {
+                    Text(game.clock).foregroundStyle(.white)
+                    HStack(spacing: 8) {
+                        DiamondView(bases: game.bases)
+                        VStack(spacing: 4) {
+                            Text("\(game.balls)-\(game.strikes)")
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundStyle(.white)
+                            OutsView(outs: outs)
+                        }
+                    }
+                }
+            } else if game.live {
                 Text(game.clock).foregroundStyle(.white)
             } else if game.final {
                 Text(game.status.isEmpty ? "Final" : game.status).foregroundStyle(Phade.gray400)
@@ -403,6 +427,47 @@ struct CenterStatus: View {
         .lineLimit(1)
         .minimumScaleFactor(0.7)
         .multilineTextAlignment(.center)
+    }
+}
+
+/// Live baseball's diamond: second at the top, third left, first right; a
+/// base with a runner on it in amber.
+struct DiamondView: View {
+    let bases: String
+    private let side: CGFloat = 10
+
+    var body: some View {
+        ZStack {
+            base("2").offset(y: -side * 0.75)
+            base("3").offset(x: -side * 1.05, y: side * 0.3)
+            base("1").offset(x: side * 1.05, y: side * 0.3)
+        }
+        .frame(width: side * 3.4, height: side * 2.6)
+    }
+
+    private func base(_ number: Character) -> some View {
+        let on = bases.contains(number)
+        return RoundedRectangle(cornerRadius: 1.5)
+            .fill(on ? Phade.amber : Color.white.opacity(0.08))
+            .overlay(RoundedRectangle(cornerRadius: 1.5).stroke(on ? Phade.amber : Color.white.opacity(0.55), lineWidth: 1.2))
+            .frame(width: side, height: side)
+            .rotationEffect(.degrees(45))
+    }
+}
+
+/// The outs: three dots, filled for each out.
+struct OutsView: View {
+    let outs: Int
+
+    var body: some View {
+        HStack(spacing: 3) {
+            ForEach(0..<3, id: \.self) { i in
+                Circle()
+                    .fill(Color.white.opacity(i < outs ? 1 : 0))
+                    .overlay(Circle().stroke(Color.white.opacity(i < outs ? 1 : 0.5), lineWidth: 1))
+                    .frame(width: 6, height: 6)
+            }
+        }
     }
 }
 

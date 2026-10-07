@@ -67,13 +67,13 @@ test('alerts are per followed team, per kind, and go when the team does', () => 
   const eagles = { id: '21', name: 'Eagles', abbr: 'PHI' };
   const phillies = { id: '22', name: 'Phillies', abbr: 'PHI' };
   let list = toggleFollowed(toggleFollowed([], 'nfl', eagles), 'mlb', phillies);
-  assert.deepEqual(alertsFor(list, 'nfl', '21'), { start: false, score: false, end: false, lock: false }, 'off until asked for');
+  assert.deepEqual(alertsFor(list, 'nfl', '21'), { start: false, score: false, end: false, lock: false, news: false }, 'off until asked for');
   assert.equal(hasAlerts(list, 'nfl', '21'), false);
   list = setAlerts(list, 'nfl', 21, { start: true });
   list = setAlerts(list, 'nfl', 21, { end: true });
-  assert.deepEqual(alertsFor(list, 'nfl', '21'), { start: true, score: false, end: true, lock: false });
+  assert.deepEqual(alertsFor(list, 'nfl', '21'), { start: true, score: false, end: true, lock: false, news: false });
   assert.equal(hasAlerts(list, 'mlb', '22'), false);
-  assert.deepEqual(alertTeams(list), [{ league: 'nfl', id: '21', start: true, score: false, end: true, lock: false }]);
+  assert.deepEqual(alertTeams(list), [{ league: 'nfl', id: '21', start: true, score: false, end: true, lock: false, news: false }]);
   // Turning the last one off drops the setting entirely.
   list = setAlerts(list, 'nfl', '21', { start: false, end: false });
   assert.equal(list.find((t) => t.id === '21').alerts, undefined);
@@ -82,8 +82,11 @@ test('alerts are per followed team, per kind, and go when the team does', () => 
   list = toggleFollowed(list, 'nfl', eagles);
   assert.deepEqual(alertTeams(list), [], 'unfollowing drops them');
   // Early builds stored true for starts and finals.
-  assert.deepEqual(alertsFor([{ league: 'nfl', id: '1', alerts: true }], 'nfl', '1'), { start: true, score: false, end: true, lock: false });
+  assert.deepEqual(alertsFor([{ league: 'nfl', id: '1', alerts: true }], 'nfl', '1'), { start: true, score: false, end: true, lock: false, news: false });
   // Lock Screen alone is enough to keep a team with the server.
-  const lockOnly = setAlerts([{ league: 'nfl', id: '2', name: 'Bills' }], 'nfl', '2', { lock: true });
-  assert.deepEqual(alertTeams(lockOnly), [{ league: 'nfl', id: '2', start: false, score: false, end: false, lock: true }]);
+  // News alone is a reason to send the team.
+  const newsOnly = setAlerts([{ league: 'nfl', id: '3', name: 'Dolphins' }], 'nfl', '3', { news: true });
+  assert.deepEqual(alertTeams(newsOnly), [{ league: 'nfl', id: '3', start: false, score: false, end: false, lock: false, news: true }]);
+  const lockOnly = setAlerts([{ league: 'nfl', id: '2', name: 'Bills' }], 'nfl', '2', { lock: true, news: false });
+  assert.deepEqual(alertTeams(lockOnly), [{ league: 'nfl', id: '2', start: false, score: false, end: false, lock: true, news: false }]);
 });

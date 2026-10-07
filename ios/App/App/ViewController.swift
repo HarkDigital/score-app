@@ -34,9 +34,11 @@ class ViewController: CAPBridgeViewController {
         open(route: "#/game" + url.path)
     }
 
-    /// Shows a route ("#/game/nfl/401547417") in the web app, loaded or not.
+    /// Shows a route ("#/game/nfl/401547417", "#/team/nfl/12/news") in the
+    /// web app, loaded or not.
     func open(route: String) {
-        guard route.range(of: #"^#/(game|team)/[a-z0-9]+/[\w-]+$"#, options: .regularExpression) != nil,
+        // A team page may name its tab ("#/team/nfl/12/news", a news alert).
+        guard route.range(of: #"^#/(game|team)/[a-z0-9]+/[\w-]+(/(schedule|stats|news))?$"#, options: .regularExpression) != nil,
               let webView, let base = bridge?.config.appStartServerURL else { return }
         if let current = webView.url, current.host == base.host, current.path == base.path, !webView.isLoading {
             webView.evaluateJavaScript("location.hash = '\(route)'")

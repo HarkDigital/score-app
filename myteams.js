@@ -35,8 +35,8 @@ export function toggleFollowed(list, leagueId, team) {
 // each break) and the final. Unfollowing a team drops its alerts with it.
 // start, score, end: notifications. lock: every game on the Lock Screen,
 // put up by the push server 15 minutes before it starts.
-export const ALERT_KINDS = ['start', 'score', 'end', 'lock'];
-const NO_ALERTS = { start: false, score: false, end: false, lock: false };
+export const ALERT_KINDS = ['start', 'score', 'end', 'lock', 'news'];
+const NO_ALERTS = { start: false, score: false, end: false, lock: false, news: false };
 
 export function alertsFor(list, leagueId, teamId) {
   const team = list.find((t) => t.league === leagueId && t.id === String(teamId));

@@ -77,6 +77,8 @@ public class NativeBridge extends Plugin implements WebViewCompat.WebMessageList
                     .put("liveActivities", ready)
                     .put("canSchedule", ready)
                     .put("teamLockScreen", ready)
+                    // News alerts: the teams go to the server as they are.
+                    .put("teamNews", ready)
                     .put("active", LiveCards.list(Store.cards(c)))
                     .put("scheduled", LiveCards.list(Store.scheduled(c)))
                     .put("alerts", ready ? Alerts.status(c) : "unavailable");
