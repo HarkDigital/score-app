@@ -3,7 +3,7 @@
 // is covered by tests (test/details.test.js, fixtures trimmed from real
 // responses).
 
-import { parseGame, parseOdds, teamColor, fallbackUrl, cardSituation } from './espn.js';
+import { parseGame, parseOdds, teamColor, fallbackUrl, cardSituation, seriesOf } from './espn.js';
 
 const BASE = 'https://site.api.espn.com/apis/site/v2/sports';
 
@@ -87,6 +87,9 @@ export function parseSummary(data, league) {
     attendance: Number(data.gameInfo?.attendance) > 0 ? Number(data.gameInfo.attendance).toLocaleString('en-US') : '',
     broadcast: [...new Set((comp.broadcasts ?? []).map((b) => b.media?.shortName ?? b.names?.[0]).filter(Boolean))].join(', '),
     odds: state === 'pre' ? parseOdds(data.pickcenter, home, away) : null,
+    // The playoffs: "NLDS - Game 3" and the series (espn.js seriesOf).
+    note: data.header?.gameNote ?? '',
+    series: seriesOf(comp.series),
   };
 }
 

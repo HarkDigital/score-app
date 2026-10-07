@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import {
   LEAGUES, scoreboardUrl, parseScoreboard, groupGames, refreshDelay,
   statusLabel, formatStart, dayLabel, weekLabel, weekInfo, adjacentWeek, teamColor, fallbackUrl, parseOdds,
-  lineSteamUrl, leagueFilter, dayUrls, mergeGames, cardSituation, parseGame, fieldView,
+  lineSteamUrl, leagueFilter, dayUrls, mergeGames, cardSituation, parseGame, fieldView, seriesOf,
 } from '../espn.js';
 
 const league = (id) => LEAGUES.find((l) => l.id === id);
@@ -170,6 +170,17 @@ test('live baseball\'s diamond: runners, outs, the count, batter and pitcher', (
   // Football has no outs: no diamond.
   assert.equal(game(parseScoreboard(fixture('nfl-scoreboard-live'), league('nfl')), '401872971').diamond, null);
   assert.equal(board.games.find((g) => g.state === 'post').diamond, null);
+});
+
+test('playoff games carry their series; the summary\'s list is picked by type', () => {
+  const board = parseScoreboard(fixture('mlb-scoreboard-playoffs'), league('mlb'));
+  const [lad, mil] = board.games.sort((a, b) => a.id.localeCompare(b.id)).reverse();
+  assert.equal(lad.note, 'NLDS - Game 3');
+  assert.deepEqual(lad.series, { summary: 'LAD lead series 2-1', bestOf: 5, wins: { 15: 1, 19: 2 }, completed: false, games: [] });
+  assert.equal(mil.series.summary, 'MIL leads series 2-1');
+  assert.equal(seriesOf([{ type: 'season', summary: 'ATL wins series 5-1' }]), null);
+  assert.equal(seriesOf(undefined), null);
+  assert.equal(game(nfl, '402').series, null);
 });
 
 test('baseball situation shows outs and runners', () => {

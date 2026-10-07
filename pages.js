@@ -318,8 +318,44 @@ function gameHtml(game, league, id) {
   if (game.state === 'pre' && sections.length <= 2) {
     sections.push(emptyState({ icon: ICONS.clipboard, title: 'Box score at kickoff', text: 'Player and team stats show up here once the game starts.' }));
   }
-  sections.splice(1, 0, lockHtml(game, league, id));
+  sections.splice(1, 0, seriesHtml(game, league, id), lockHtml(game, league, id));
   return sections.join('');
+}
+
+// A playoff series: the round and game ("NLDS - Game 3"), best of N, each
+// side's wins as dots toward the wins the series takes, ESPN's summary, and
+// a link to every game in it.
+function seriesHtml(game, league, id) {
+  const s = game.series;
+  if (!s) return '';
+  const need = s.bestOf ? Math.ceil(s.bestOf / 2) : 0;
+  const side = (team) => {
+    const wins = s.wins[team.id] ?? 0;
+    const pips = Array.from({ length: need }, (_, i) => `<i${i < wins ? ' class="on"' : ''}></i>`).join('');
+    return `
+      <div class="series-team">
+        ${logoHtml(team, 24)}
+        <span class="series-abbr">${esc(team.abbr || team.shortName)}</span>
+        ${pips ? `<span class="series-pips" aria-hidden="true">${pips}</span>` : ''}
+        <span class="series-wins">${wins}</span>
+      </div>`;
+  };
+  const games = s.games.length > 1 ? `
+    <nav class="series-games" aria-label="Games in the series">
+      ${s.games.map((g, i) => (g === String(id)
+        ? `<span class="series-game" aria-current="page">Game ${i + 1}</span>`
+        : `<a class="series-game" href="${gameHref(league.id, g)}">Game ${i + 1}</a>`)).join('')}
+    </nav>` : '';
+  return `
+    <div class="card series-card">
+      <div class="series-head">
+        <span class="series-title">${esc(game.note || 'Playoff series')}</span>
+        ${s.bestOf ? `<span class="series-best">Best of ${s.bestOf}</span>` : ''}
+      </div>
+      ${game.teams.map(side).join('')}
+      ${s.summary ? `<p class="series-summary">${esc(s.summary)}</p>` : ''}
+      ${games}
+    </div>`;
 }
 
 // The apps only: a toggle on every game page that hasn't finished. A game

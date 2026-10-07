@@ -391,7 +391,7 @@ function gameCard(game, now) {
   // No line on a game that won't be played as scheduled.
   const odds = TROUBLE.test(game.statusName) ? null : game.odds;
   const rows = game.teams.map((team) => teamRow(team, league, done, decided, odds?.moneyline[team.id]));
-  const foot = [game.detail, game.note].filter(Boolean).join(' · ');
+  const foot = [game.detail, game.note, game.series?.summary].filter(Boolean).join(' · ');
   return `
     <a class="card game${live ? ' live' : ''}" href="${gameHref(league.id, game.id)}">
       <div class="game-head">

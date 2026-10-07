@@ -163,6 +163,21 @@ test('a live football card starts with timeouts left and who has the ball', () =
   assert.equal('awayTimeouts' in lockScreenCard(summary('nfl-summary', 'nfl'), nfl, '1').state, false);
 });
 
+test('a playoff game knows its round and its series', () => {
+  // Captured Oct 7 2026: NLDS Game 3, LAD @ ATL.
+  const game = summary('mlb-summary-playoffs', 'mlb');
+  assert.equal(game.note, 'NLDS - Game 3');
+  // The summary lists the current series, the regular season's (ATL 5-1)
+  // and the playoff one; the playoff one counts.
+  assert.equal(game.series.summary, 'LAD lead series 2-1');
+  assert.equal(game.series.bestOf, 5);
+  assert.deepEqual(game.series.wins, { 15: 1, 19: 2 });
+  assert.equal(game.series.games.length, 5);
+  assert.ok(game.series.games.includes(game.id));
+  // A regular-season game has none.
+  assert.equal(summary('nfl-summary', 'nfl').series, null);
+});
+
 test('the lock-screen card goes up now for live games and ones within 15 minutes; later ones are scheduled', () => {
   const now = new Date('2026-10-04T16:00:00Z');
   const pre = (minutes) => ({ state: 'pre', statusName: 'STATUS_SCHEDULED', start: new Date(now.getTime() + minutes * 60_000) });
