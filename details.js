@@ -281,6 +281,9 @@ export function parseSchedule(responses, league, teamId) {
       standing: team.standingSummary ?? '',
     },
     season: first?.requestedSeason?.displayName ?? first?.season?.displayName ?? '',
+    // The season's year, for its stats (stats.js statsSeasons). The requested
+    // season, as the current one can be last year's during the off season.
+    seasonYear: first?.requestedSeason?.year ?? first?.season?.year ?? null,
     games,
   };
 }
