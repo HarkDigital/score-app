@@ -62,16 +62,21 @@ async function call(action, args = {}) {
 //   canSchedule (iOS 17.2+, Android with Firebase), teamLockScreen (a team's
 //   every game on the Lock Screen: iPhone build 12, Android build 5 on),
 //   active: [{league, eventId}], scheduled: [{league, eventId}],
-//   alerts: 'authorized' | 'denied' | ... }
+//   alerts: 'authorized' | 'denied' | ..., openSettings (Android versionCode 9 on) }
 export const nativeInfo = () => call('info');
 
-// card: details.js lockScreenCard(). Each resolves to {ok: bool} or null.
+// card: details.js lockScreenCard(). Each resolves to {ok: bool} or null;
+// Android from versionCode 9 adds reason: 'notifications' when they're off.
 // Show now: a game that's on or starts within 15 minutes.
 export const showOnLockScreen = (card) => call('showGame', { card });
 // Later games: the push server puts the card up 15 minutes before the start.
 export const scheduleOnLockScreen = (card) => call('scheduleGame', { card });
 // Takes one game off the Lock Screen, or cancels it if it's scheduled.
 export const removeFromLockScreen = (league, eventId) => call('removeGame', { league, eventId });
+
+// Opens the app's notification settings (Android from versionCode 9, which
+// reports info.openSettings). Resolves to {ok} or null.
+export const openNotificationSettings = () => call('openSettings');
 
 // Asks for notification permission if it hasn't been asked yet. Resolves to
 // the permission status.
