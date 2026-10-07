@@ -8,6 +8,7 @@ import {
 } from './details.js';
 import { ICONS, getJson, TROUBLE, oddsHtml, logoHtml, emptyState, errorState, formatClock, esc, patchHtml, textOn, newsHtml } from './ui.js';
 import { newsUrl, parseNews } from './news.js';
+import { teamStatsUrl, statsSeasons, parseTeamStats } from './stats.js';
 import {
   inApp, appPlatform, nativeInfo, showOnLockScreen, scheduleOnLockScreen, removeFromLockScreen, enableAlerts,
 } from './native.js';
@@ -32,9 +33,11 @@ const page = {
   updatedAt: null,
   loading: false,
   side: 0,       // game page: whose box score is showing
-  tab: 'schedule', // team page: 'schedule' | 'news'
+  tab: 'schedule', // team page: 'schedule' | 'stats' | 'news'
   news: null,    // team page: its news (parseNews), once the News tab is opened
   newsError: null,
+  stats: null,   // team page: its season stats (parseTeamStats), once the Stats tab is opened
+  statsError: null,
   timer: null,
   quick: null,   // live game: the 5s score and clock check
   board: null,   // live game: the scoreboard URL that has it
@@ -62,10 +65,10 @@ const RECENT = 8;
 const stale = () => !page.updatedAt || Date.now() - page.updatedAt > 10_000;
 
 function remember() {
-  const { route, data, updatedAt, side, tab, news } = page;
+  const { route, data, updatedAt, side, tab, news, stats } = page;
   if (!route || !data) return;
   recent.delete(route.key);
-  recent.set(route.key, { data, updatedAt, side, tab, news });
+  recent.set(route.key, { data, updatedAt, side, tab, news, stats });
   if (recent.size > RECENT) recent.delete(recent.keys().next().value);
 }
 
@@ -90,7 +93,7 @@ export function showPage(route) {
   if (page.route?.key === route.key) return Boolean(page.data);
   leave();
   const seen = recent.get(route.key);
-  Object.assign(page, { route, data: null, error: null, updatedAt: null, side: 0, tab: 'schedule', news: null, newsError: null }, seen);
+  Object.assign(page, { route, data: null, error: null, updatedAt: null, side: 0, tab: 'schedule', news: null, newsError: null, stats: null, statsError: null }, seen);
   Object.assign(native, { lockError: '', alertNote: '', alertsOpen: false });
   refreshNative();
   render();
@@ -136,11 +139,12 @@ async function load() {
       const ok = results.filter((r) => r.status === 'fulfilled').map((r) => r.value);
       if (!ok.length) throw results[0].reason;
       data = parseSchedule(ok, route.league, route.id);
-      if (page.tab === 'news') loadNews();
     }
     if (!data) throw new Error('No data');
     if (id !== page.requestId) return;
     Object.assign(page, { data, error: null, updatedAt: new Date() });
+    if (route.kind === 'team' && page.tab === 'news') loadNews();
+    if (route.kind === 'team' && page.tab === 'stats') loadStats();
   } catch (err) {
     if (id !== page.requestId) return;
     page.error = err;
@@ -165,6 +169,31 @@ async function loadNews() {
     if (id !== page.requestId || page.route !== route) return;
     page.newsError = err;
   }
+  render();
+}
+
+// The team page's Stats tab (stats.js): the season the schedule is for, or
+// the one before when it has no games yet (the core API answers 404).
+async function loadStats() {
+  const { route, data } = page;
+  if (route?.kind !== 'team' || !data) return;
+  const id = page.requestId;
+  let stats = null;
+  let error = null;
+  for (const season of statsSeasons(route.league, data)) {
+    try {
+      const parsed = parseTeamStats(await getJson(teamStatsUrl(route.league, route.id, season)), route.league);
+      if (parsed) {
+        stats = { ...parsed, season: season.label };
+        break;
+      }
+    } catch (err) {
+      // A 404 is a season without stats; anything else is trouble.
+      if (!/HTTP 404/.test(err?.message)) error = err;
+    }
+  }
+  if (id !== page.requestId || page.route !== route) return;
+  Object.assign(page, { stats, statsError: stats ? null : (error ?? 'none') });
   render();
 }
 
@@ -530,10 +559,11 @@ function teamHtml(data, league) {
   const tabs = `
     <div class="toolbar toolbar-center team-tabs">
       <div class="pills" role="group" aria-label="Team view">
-        ${[['schedule', 'Schedule'], ['news', 'News']].map(([id, label]) => `<button data-team-tab="${id}" aria-pressed="${page.tab === id}">${label}</button>`).join('')}
+        ${[['schedule', 'Schedule'], ['stats', 'Stats'], ['news', 'News']].map(([id, label]) => `<button data-team-tab="${id}" aria-pressed="${page.tab === id}">${label}</button>`).join('')}
       </div>
     </div>`;
   if (page.tab === 'news') return head + tabs + teamNewsHtml(team, league);
+  if (page.tab === 'stats') return head + tabs + seasonStatsHtml(team, league);
   if (!games.length) {
     return head + tabs + emptyState({ icon: ICONS.calendar, title: 'No games listed', text: `ESPN has no ${league.label} schedule for this team right now.` });
   }
@@ -542,6 +572,45 @@ function teamHtml(data, league) {
   const results = games.filter((g) => g.state === 'post').reverse();
   const list = (heading, items, cls = '') => (items.length ? section(heading, `<div class="card list-card">${items.map((g) => scheduleRow(g, league)).join('')}</div>`, cls) : '');
   return head + tabs + list('Live', live, 'in') + list('Upcoming', upcoming, 'pre') + list('Results', results);
+}
+
+// The season's key stats as tiles with the league rank, then every stat by
+// category, folded.
+function seasonStatsHtml(team, league) {
+  const { stats } = page;
+  if (!stats) {
+    if (page.statsError === 'none') {
+      return emptyState({ icon: ICONS.trophy, title: 'No stats yet', text: `ESPN has no ${league.label} stats for the ${team.name} yet.` });
+    }
+    if (page.statsError) {
+      return emptyState({
+        error: true,
+        icon: ICONS.alert,
+        title: "Couldn't load the stats",
+        text: 'Check your connection and try again.',
+        action: '<button class="btn-primary" data-team-tab="stats">Try again</button>',
+      });
+    }
+    const bar = (w, h) => `<span class="skeleton" style="width:${w};height:${h}px"></span>`;
+    return `<div class="card skeleton-card">${`<div class="skeleton-row">${bar('30%', 22)}${bar('30%', 22)}${bar('30%', 22)}</div>`.repeat(3)}</div>`;
+  }
+  const games = stats.games ? ` · ${stats.games} game${stats.games === 1 ? '' : 's'}` : '';
+  const tiles = stats.key.map((k) => `
+    <div class="stat-tile">
+      <span class="stat-value">${esc(k.value)}</span>
+      <span class="stat-label">${esc(k.label)}</span>
+      ${k.rank ? `<span class="stat-rank">${esc(k.rank)}</span>` : ''}
+    </div>`).join('');
+  const category = (c) => `
+    <details class="box-group stat-group"><summary class="box-title">${esc(c.name)}</summary>
+      <div class="card stat-list">
+        ${c.stats.map((s) => `<div class="stat-row"><span class="stat-row-label">${esc(s.label)}</span><span class="stat-row-value">${esc(s.value)}</span><span class="stat-row-rank">${esc(s.rank)}</span></div>`).join('')}
+      </div>
+    </details>`;
+  return `
+    <p class="stats-season">${esc(stats.season)}${games}</p>
+    ${tiles ? `<div class="card stat-grid">${tiles}</div>` : ''}
+    ${stats.categories.length ? section('All stats', stats.categories.map(category).join('')) : ''}`;
 }
 
 function teamNewsHtml(team, league) {
@@ -653,8 +722,10 @@ document.addEventListener('click', (event) => {
   } else if (target.dataset.teamTab) {
     page.tab = target.dataset.teamTab;
     if (page.tab === 'news' && !page.news) page.newsError = null;
+    if (page.tab === 'stats' && !page.stats) page.statsError = null;
     render();
     if (page.tab === 'news' && !page.news) loadNews();
+    if (page.tab === 'stats' && !page.stats) loadStats();
   } else if (target.hasAttribute('data-follow') && page.data?.team) {
     const { team } = page.data;
     app.toggleFollow(page.route.league.id, team);
