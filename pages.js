@@ -11,6 +11,7 @@ import { newsUrl, parseNews } from './news.js';
 import { teamStatsUrl, statsSeasons, parseTeamStats } from './stats.js';
 import {
   inApp, appPlatform, nativeInfo, showOnLockScreen, scheduleOnLockScreen, removeFromLockScreen, enableAlerts,
+  openNotificationSettings,
 } from './native.js';
 
 export const gameHref = (leagueId, id) => `#/game/${leagueId}/${encodeURIComponent(id)}`;
@@ -51,14 +52,26 @@ const root = () => document.getElementById('page');
 
 // The apps only: what the app says about Lock Screen cards and alerts, and
 // the state of the game page's Lock Screen card and the team page's bell.
-const native = { info: null, busy: false, lockError: '', alertNote: '', alertsOpen: false };
+// notificationsOff: the last error was the app's notifications being off.
+const native = { info: null, busy: false, lockError: '', alertNote: '', alertsOpen: false, notificationsOff: false };
 
 function refreshNative() {
   if (!inApp()) return;
   nativeInfo().then((info) => {
     native.info = info;
+    // Back from Settings with notifications on: the error no longer holds.
+    if (native.notificationsOff && info?.alerts === 'authorized') {
+      Object.assign(native, { lockError: '', alertNote: '', notificationsOff: false });
+    }
     if (page.route) render();
   });
+}
+
+// Android from versionCode 9 (info.openSettings): a button that opens the
+// app's notification settings, under an error that says they're off.
+function settingsButton() {
+  if (!native.notificationsOff || !native.info?.openSettings) return '';
+  return '<div class="settings-help"><button class="pill-btn" data-open-settings>Open settings</button></div>';
 }
 
 // The last few pages, so going back (button or swipe) shows the page as it
@@ -101,7 +114,7 @@ export function showPage(route) {
   const seen = recent.get(route.key);
   Object.assign(page, { route, data: null, error: null, updatedAt: null, side: 0, tab: 'schedule', news: null, newsError: null, stats: null, statsError: null }, seen);
   if (route.tab) page.tab = route.tab;
-  Object.assign(native, { lockError: '', alertNote: '', alertsOpen: false });
+  Object.assign(native, { lockError: '', alertNote: '', alertsOpen: false, notificationsOff: false });
   refreshNative();
   render();
   if (stale()) load();
@@ -392,7 +405,18 @@ function lockHtml(game, league, id) {
       <span class="ext-icon">${on ? ICONS.lockCheck : ICONS.lock}</span>
       <span class="ext-text"><span class="ext-title">Show on Lock Screen</span><span class="ext-sub${native.lockError ? ' error' : ''}">${esc(sub)}</span></span>
       <span class="switch" aria-hidden="true"></span>
-    </button>`;
+    </button>${settingsButton()}`;
+}
+
+// Android from versionCode 9 says why a card couldn't go up: reason
+// 'notifications' when the app's notifications (or its Live games category)
+// are off, none for anything else. Older builds and the iPhone app don't say.
+function lockErrorText(result, removing) {
+  if (removing) return "Couldn't turn it off. Try again.";
+  if (result?.reason === 'notifications') return 'Notifications are off for Phade Scores. Turn them on, then try again.';
+  if (native.info?.openSettings) return "Couldn't add it. Try again.";
+  const setting = appPlatform() === 'android' ? 'notifications are' : 'Live Activities are';
+  return `Couldn't add it. Check that ${setting} on for Phade Scores in Settings.`;
 }
 
 async function toggleLock() {
@@ -401,6 +425,7 @@ async function toggleLock() {
   const { showing, scheduled } = lockState(route.league, route.id);
   native.busy = true;
   native.lockError = '';
+  native.notificationsOff = false;
   render();
   let result;
   if (showing || scheduled) result = await removeFromLockScreen(route.league.id, route.id);
@@ -410,8 +435,8 @@ async function toggleLock() {
   else result = await scheduleOnLockScreen(lockScreenCard(data, route.league, route.id));
   native.busy = false;
   if (!result?.ok) {
-    const setting = appPlatform() === 'android' ? 'notifications are' : 'Live Activities are';
-    native.lockError = showing || scheduled ? "Couldn't turn it off. Try again." : `Couldn't add it. Check that ${setting} on for Phade Scores in Settings.`;
+    native.lockError = lockErrorText(result, showing || scheduled);
+    native.notificationsOff = result?.reason === 'notifications';
   }
   native.info = await nativeInfo();
   render();
@@ -640,7 +665,7 @@ function teamHtml(data, league) {
         ${alertsButton(league, team, following)}
       </div>
       ${following && native.alertsOpen ? alertsPanel(league, team) : ''}
-      ${native.alertNote ? `<p class="sub alert-note">${esc(native.alertNote)}</p>` : ''}
+      ${native.alertNote ? `<p class="sub alert-note">${esc(native.alertNote)}</p>${settingsButton()}` : ''}
     </div>`;
   const tabs = `
     <div class="toolbar toolbar-center team-tabs">
@@ -762,12 +787,16 @@ async function toggleAlertKind(kind) {
   if (on) {
     const status = await enableAlerts();
     if (!['authorized', 'provisional', 'ephemeral'].includes(status)) {
-      native.alertNote = 'Notifications are off for Phade Scores. Turn them on in Settings, then try again.';
+      native.notificationsOff = true;
+      native.alertNote = native.info?.openSettings
+        ? 'Notifications are off for Phade Scores. Turn them on, then try again.'
+        : 'Notifications are off for Phade Scores. Turn them on in Settings, then try again.';
       render();
       return;
     }
   }
   native.alertNote = '';
+  native.notificationsOff = false;
   app.setAlerts(route.league.id, data.team.id, { [kind]: on });
   render();
 }
@@ -800,9 +829,10 @@ function scheduleRow(game, league) {
 
 document.addEventListener('click', (event) => {
   if (!page.route) return;
-  const target = event.target.closest('[data-side], [data-follow], [data-lock], [data-alerts], [data-alert-kind], [data-team-tab]');
+  const target = event.target.closest('[data-side], [data-follow], [data-lock], [data-alerts], [data-alert-kind], [data-team-tab], [data-open-settings]');
   if (!target || !root().contains(target) || target.disabled) return;
   if (target.hasAttribute('data-lock')) toggleLock();
+  else if (target.hasAttribute('data-open-settings')) openNotificationSettings();
   else if (target.dataset.alertKind) toggleAlertKind(target.dataset.alertKind);
   else if (target.hasAttribute('data-alerts')) {
     native.alertsOpen = !native.alertsOpen;

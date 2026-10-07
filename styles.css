@@ -1912,6 +1912,15 @@ button.ext-link:not(:disabled):active { transform: scale(0.99); }
 .lock-card .switch { margin-left: auto; }
 .ext-sub.error { color: var(--live); }
 
+/* Android: Open settings, under an error that says notifications are off. */
+.settings-help {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.settings-help .pill-btn { min-height: 44px; }
+
 /* Team page: Follow, and in the iPhone app the alerts bell beside it. */
 .team-actions {
   display: flex;

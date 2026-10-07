@@ -1,8 +1,13 @@
 package digital.hark.scores;
 
+import android.app.Activity;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.provider.Settings;
 import android.view.HapticFeedbackConstants;
 import android.webkit.WebView;
 import androidx.annotation.NonNull;
@@ -79,13 +84,15 @@ public class NativeBridge extends Plugin implements WebViewCompat.WebMessageList
                     .put("teamLockScreen", ready)
                     // News alerts: the teams go to the server as they are.
                     .put("teamNews", ready)
+                    // openSettings, and showGame/scheduleGame's reason.
+                    .put("openSettings", true)
                     .put("active", LiveCards.list(Store.cards(c)))
                     .put("scheduled", LiveCards.list(Store.scheduled(c)))
                     .put("alerts", ready ? Alerts.status(c) : "unavailable");
             }
             case "showGame": {
                 JSONObject card = request.getJSONObject("card");
-                if (!notificationsOn(c)) return ok(false);
+                if (!notificationsOn(c)) return notificationsOff();
                 LiveCards.show(c, card);
                 String token = Push.token(c);
                 if (token != null) Push.registerCard(c, token, card);
@@ -93,7 +100,7 @@ public class NativeBridge extends Plugin implements WebViewCompat.WebMessageList
             }
             case "scheduleGame": {
                 JSONObject card = request.getJSONObject("card");
-                if (!notificationsOn(c)) return ok(false);
+                if (!notificationsOn(c)) return notificationsOff();
                 String token = Push.token(c);
                 if (token == null || !Push.schedule(c, token, card)) return ok(false);
                 Store.putScheduled(c, Store.key(card.getString("league"), card.getString("eventId")), card);
@@ -111,6 +118,9 @@ public class NativeBridge extends Plugin implements WebViewCompat.WebMessageList
                 if (!Push.ready(c)) return "unavailable";
                 askForNotifications();
                 return Alerts.status(c);
+            case "openSettings":
+                openNotificationSettings(c);
+                return ok(true);
             case "setAlertTeams": {
                 JSONArray teams = request.optJSONArray("teams");
                 if (teams == null) teams = new JSONArray();
@@ -125,10 +135,31 @@ public class NativeBridge extends Plugin implements WebViewCompat.WebMessageList
     }
 
     // Asks for the notification permission if Android would still show the
-    // prompt, then says whether notifications are on.
+    // prompt, then says whether notifications are on, the Live games
+    // category included (a card in a category that's off never shows).
     private boolean notificationsOn(Context c) {
         askForNotifications();
-        return NotificationManagerCompat.from(c).areNotificationsEnabled();
+        if (!NotificationManagerCompat.from(c).areNotificationsEnabled()) return false;
+        if (Build.VERSION.SDK_INT < 26) return true;
+        NotificationChannel live = c.getSystemService(NotificationManager.class).getNotificationChannel(LiveCards.CHANNEL);
+        return live == null || live.getImportance() != NotificationManager.IMPORTANCE_NONE;
+    }
+
+    // Once Android has been told no twice (or the prompt was dismissed), it
+    // won't ask again: Settings is the only way back, so the page offers it.
+    private void openNotificationSettings(Context c) {
+        Intent intent = Build.VERSION.SDK_INT >= 26
+            ? new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, c.getPackageName())
+            : new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", c.getPackageName(), null));
+        Activity activity = getActivity();
+        if (activity == null) return;
+        activity.runOnUiThread(() -> {
+            try {
+                activity.startActivity(intent);
+            } catch (Exception e) {
+                // No settings screen to open.
+            }
+        });
     }
 
     private void askForNotifications() {
@@ -152,6 +183,14 @@ public class NativeBridge extends Plugin implements WebViewCompat.WebMessageList
                 return Build.VERSION.SDK_INT >= 30 ? HapticFeedbackConstants.CONFIRM : HapticFeedbackConstants.LONG_PRESS;
             default:
                 return HapticFeedbackConstants.KEYBOARD_TAP;
+        }
+    }
+
+    private static JSONObject notificationsOff() {
+        try {
+            return new JSONObject().put("ok", false).put("reason", "notifications");
+        } catch (Exception e) {
+            return ok(false);
         }
     }
 

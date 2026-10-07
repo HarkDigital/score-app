@@ -92,7 +92,7 @@ It has the iPhone app's features too:
 - **Swipes**: swipe anywhere to go back or forward, as on iPhone (the screen's edges are Android's own Back gesture).
 - **Haptics** on every button.
 
-Android asks for permission to send notifications the first time you turn on a card or an alert. The card and alerts come through Google's Firebase (the Phade project): a build needs `android/app/google-services.json` (from the Firebase console, kept out of git), and the push server needs its own Firebase key (see `server/README.md`). Without the config file the app still works, minus those two switches.
+Android asks for permission to send notifications the first time you turn on a card or an alert. If they're off (Android stops asking after two refusals), the switch says so, with an **Open settings** button that goes straight to Phade Scores' notification settings (APK versionCode 9 on). The status bar icon is Phade's arrow P. The card and alerts come through Google's Firebase (the Phade project): a build needs `android/app/google-services.json` (from the Firebase console, kept out of git), and the push server needs its own Firebase key (see `server/README.md`). Without the config file the app still works, minus those two switches.
 
 **Make a build for testers:**
 
