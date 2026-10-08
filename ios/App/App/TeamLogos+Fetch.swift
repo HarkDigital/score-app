@@ -5,23 +5,30 @@ import UIKit
 // (plenty for a 40pt badge at 3x, and small enough for the extension's tight
 // memory) and save it where the LiveGame extension can read it.
 extension TeamLogos {
-    static func fetch(_ urls: [String?]) async {
-        await withTaskGroup(of: Void.self) { group in
+    /// True when it saved a logo that wasn't there before.
+    @discardableResult
+    static func fetch(_ urls: [String?]) async -> Bool {
+        await withTaskGroup(of: Bool.self) { group in
             for case let url? in urls where url.hasPrefix("https://") {
                 group.addTask { await save(url) }
             }
+            return await group.reduce(false) { $0 || $1 }
         }
     }
 
-    private static func save(_ url: String) async {
-        guard let file = file(for: url) else { return }
-        if FileManager.default.fileExists(atPath: file.path) { return }
+    private static func save(_ url: String) async -> Bool {
+        guard let file = file(for: url) else { return false }
+        if FileManager.default.fileExists(atPath: file.path) { return false }
+        // The team's own logo (dark, then plain), then the URL as given.
+        let plain = plainURL(url)
+        var candidates = [darkURL(plain), plain].compactMap { $0 }
+        if url != plain { candidates.append(url) }
         var image: UIImage?
-        for candidate in [darkURL(url), url].compactMap({ $0 }) {
+        for candidate in candidates {
             image = await download(candidate)
             if image != nil { break }
         }
-        guard let image else { return }
+        guard let image else { return false }
         let side: CGFloat = 120
         let scale = min(side / image.size.width, side / image.size.height, 1)
         let size = CGSize(width: (image.size.width * scale).rounded(), height: (image.size.height * scale).rounded())
@@ -31,7 +38,7 @@ extension TeamLogos {
             image.draw(in: CGRect(origin: .zero, size: size))
         }
         try? FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try? png.write(to: file, options: .atomic)
+        return (try? png.write(to: file, options: .atomic)) != nil
     }
 
     private static func download(_ url: String) async -> UIImage? {

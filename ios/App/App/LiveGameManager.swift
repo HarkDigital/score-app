@@ -74,10 +74,16 @@ final class LiveGameManager {
                 }
                 watch(activity)
                 forgetScheduled(league: activity.attributes.league, eventId: activity.attributes.eventId)
-                // Started by the server: make sure its logos are saved, then
-                // redraw it with them.
-                await TeamLogos.fetch([activity.attributes.away.logo, activity.attributes.home.logo])
-                await activity.update(activity.content)
+                // Started by the server, so iOS drew it before the app ran: if
+                // that was without a logo the app now saves, draw it again.
+                // The same content again wouldn't redraw it, so the state's
+                // redraw count changes.
+                if await TeamLogos.fetch([activity.attributes.away.logo, activity.attributes.home.logo]) {
+                    let content = activity.content
+                    var state = content.state
+                    state.redraw = (state.redraw ?? 0) + 1
+                    await activity.update(ActivityContent(state: state, staleDate: content.staleDate, relevanceScore: content.relevanceScore))
+                }
             }
         }
         if #available(iOS 17.2, *) {
