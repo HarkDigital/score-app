@@ -32,6 +32,7 @@ public class MainActivity extends BridgeActivity {
     private static final String ROUTE = "#/(game|team)/[\\w-]{1,20}/[\\w-]{1,20}(/(schedule|stats|news))?";
 
     private String pendingRoute;
+    private int routeTries;
     private final List<Runnable> waitingForPermission = new ArrayList<>();
     private final ActivityResultLauncher<String> notificationPermission =
         registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
@@ -67,6 +68,7 @@ public class MainActivity extends BridgeActivity {
                 openPendingRoute();
             }
         });
+        openPendingRoute();
 
         // Remind the server of this phone's cards and teams (its token may
         // have changed while the app was closed).
@@ -83,6 +85,7 @@ public class MainActivity extends BridgeActivity {
         String route = routeOf(intent);
         if (route != null) {
             pendingRoute = route;
+            routeTries = 0;
             openPendingRoute();
         }
     }
@@ -92,14 +95,34 @@ public class MainActivity extends BridgeActivity {
         return route != null && route.matches(ROUTE) ? route : null;
     }
 
-    // Opens a tapped card's or alert's game once the page is there.
+    // Opens a tapped card's or alert's route once the page is there, and keeps
+    // it until the page says it has it. Capacitor reports a page loaded only
+    // when its progress is already 100 as it finishes, which a launch can
+    // miss (the alert then opened the scoreboard), so a page not there yet
+    // (still loading, or not the site yet) is looked at again shortly, for
+    // up to 15 seconds.
     private void openPendingRoute() {
         WebView webView = getBridge() == null ? null : getBridge().getWebView();
-        if (pendingRoute == null || webView == null || webView.getProgress() < 100) return;
+        if (pendingRoute == null || webView == null) return;
+        webView.removeCallbacks(retryRoute);
+        String url = webView.getUrl();
+        if (webView.getProgress() < 100 || url == null || !url.startsWith(getBridge().getAppUrl())) {
+            if (++routeTries < 60) webView.postDelayed(retryRoute, 250);
+            return;
+        }
         String route = pendingRoute;
-        pendingRoute = null;
-        webView.evaluateJavascript("location.hash = " + JSONObject.quote(route), null);
+        // The same hash sets nothing, so it's announced again: a team page
+        // showing another tab still turns to News.
+        String script = "(function (r) { if (location.hash === r) dispatchEvent(new HashChangeEvent('hashchange'));"
+            + " else location.hash = r; return location.hash === r; })(" + JSONObject.quote(route) + ")";
+        webView.evaluateJavascript(script, result -> {
+            if (!route.equals(pendingRoute)) return;
+            if ("true".equals(result)) pendingRoute = null;
+            else if (++routeTries < 60) webView.postDelayed(retryRoute, 250);
+        });
     }
+
+    private final Runnable retryRoute = this::openPendingRoute;
 
     // Android 13 and later ask before an app may post notifications. Runs
     // done once the person has answered (or straight away when there's
