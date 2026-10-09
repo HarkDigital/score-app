@@ -11,15 +11,23 @@ enum TeamLogos {
     /// Where a logo URL's file lives: a.espncdn.com/i/teamlogos/ncaa/500/87.png
     /// → logos/dark-a-espncdn-com-i-teamlogos-ncaa-500-87-png.png. "dark-"
     /// since the files hold ESPN's dark-background logos (darkURL), so the
-    /// plain ones saved by earlier builds aren't read.
+    /// plain ones saved by earlier builds aren't read. One file per team
+    /// (plainURL), whichever feed the card's URL came from.
     static func file(for url: String) -> URL? {
         guard let dir = FileManager.default
             .containerURL(forSecurityApplicationGroupIdentifier: group)?
             .appendingPathComponent("logos", isDirectory: true) else { return nil }
-        let safe = String(url.replacingOccurrences(of: "https://", with: "")
+        let safe = String(plainURL(url).replacingOccurrences(of: "https://", with: "")
             .map { $0.isLetter || $0.isNumber ? $0 : "-" }
             .suffix(120))
         return dir.appendingPathComponent("dark-" + safe + ".png")
+    }
+
+    /// A team's logo without the scoreboard's variant: game pages (summaries)
+    /// carry .../nhl/500/phi.png, scoreboards (so the cards the server starts)
+    /// .../nhl/500/scoreboard/phi.png.
+    static func plainURL(_ url: String) -> String {
+        url.replacingOccurrences(of: "/500/scoreboard/", with: "/500/")
     }
 
     /// ESPN's version of a logo for dark backgrounds (.../500-dark/...), which

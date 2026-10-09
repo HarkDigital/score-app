@@ -44,6 +44,10 @@ struct GameAttributes: ActivityAttributes {
         var outs: Int?
         var balls: Int?
         var strikes: Int?
+        /// The app's own, never pushed: counted up when the app saves logos
+        /// for a card iOS drew without them (one the server started), since an
+        /// update with the same content doesn't draw the card again.
+        var redraw: Int?
     }
 
     var league: String
