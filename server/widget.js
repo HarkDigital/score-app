@@ -114,6 +114,8 @@ export function widgetTeam(schedule, board, league, nowMs) {
     color: team.color,
     record: team.record,
     standing: team.standing,
+    // Soccer lists the home side first.
+    homeFirst: Boolean(league.homeFirst),
     ...pickShow(live, last, next, nowSec),
     live,
     last,

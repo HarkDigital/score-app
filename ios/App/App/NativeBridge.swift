@@ -1,5 +1,6 @@
 import UIKit
 import WebKit
+import WidgetKit
 
 // The web app's line to the Lock Screen card, team alerts and haptics, without any
 // Capacitor JS: native.js calls
@@ -59,6 +60,16 @@ final class NativeBridge: NSObject, WKScriptMessageHandlerWithReply {
                 return entry
             }
             PushManager.shared.setTeams(teams)
+            return ["ok": true]
+        case "setFollowedTeams":
+            // [{league, id, name, abbr, logo, color}]: every followed team,
+            // for the Home Screen and Lock Screen widgets.
+            let teams = (body["teams"] as? [[String: Any]] ?? []).compactMap { team -> FollowedTeam? in
+                guard let league = team["league"] as? String, let id = team["id"] as? String else { return nil }
+                return FollowedTeam(league: league, id: id, name: team["name"] as? String ?? "", abbr: team["abbr"] as? String ?? "",
+                                    logo: team["logo"] as? String, color: team["color"] as? String)
+            }
+            if FollowedTeams.save(teams) { WidgetCenter.shared.reloadAllTimelines() }
             return ["ok": true]
         default:
             return ["ok": false, "error": "unknown action"]

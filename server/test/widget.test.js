@@ -39,6 +39,8 @@ test('before the season: the next game, from the team side', () => {
   const team = widgetTeam(kc, new Map(), nfl, Date.parse('2026-09-10T12:00Z'));
   assert.equal(team.shortName, 'Chiefs');
   assert.equal(team.record, '6-11');
+  assert.equal(team.homeFirst, false);
+  assert.equal(widgetTeam({ team: { id: '359' }, games: [] }, new Map(), leagueById('epl'), 0).homeFirst, true, 'soccer: home first');
   assert.equal(team.show, 'next');
   assert.equal(team.showUntil, null);
   assert.equal(team.live, null);
