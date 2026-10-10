@@ -2003,6 +2003,48 @@ button.ext-link:not(:disabled):active { transform: scale(0.99); }
 }
 
 [role="switch"][aria-checked="true"] .switch { background: var(--accent); }
+
+/* The spoiler delay under the switches: Off, 15s, 30s, 60s or Custom. */
+.alert-delay {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px 14px;
+  border-top: 1px solid var(--hairline);
+  text-align: left;
+}
+
+.delay-choices { margin: 0; }
+.delay-choices button { min-height: 44px; font-size: 13px; }
+
+.segmented button[aria-checked="true"] {
+  background: var(--gray-800);
+  color: var(--white);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+}
+
+.delay-custom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--gray-300);
+}
+
+.delay-custom input {
+  width: 96px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  background: rgb(17 24 39 / 0.8);
+  color: var(--white);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.delay-custom input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 [role="switch"][aria-checked="true"] .switch::after { transform: translateX(18px); }
 
 .team-head .alert-note {

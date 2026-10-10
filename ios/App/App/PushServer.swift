@@ -48,9 +48,10 @@ enum PushServer {
     /// teams: [{league, id, start, score, end, lock}]. Empty forgets the
     /// device. startToken: the push-to-start token (iOS 17.2+), with which the
     /// server puts followed teams' games on the Lock Screen (lock).
-    static func registerDevice(token: String, teams: [[String: Any]], startToken: String?) async {
+    static func registerDevice(token: String, teams: [[String: Any]], startToken: String?, delay: Int = 0) async {
         var body: [String: Any] = ["env": environment, "teams": teams]
         if let startToken { body["startToken"] = startToken }
+        if delay > 0 { body["delay"] = delay }
         await send("PUT", "v1/devices/\(token)", body)
     }
 

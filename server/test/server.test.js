@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { leagueById, parseScoreboard } from '../../espn.js';
 import {
   contentState, activityPlan, activityPayload, gameAlerts, gameMemo, wantsAlert, parseActivity, parseDevice,
-  parseScheduled, startDue, startPayload, newsPlan, newsPayload, newsTeams,
+  parseScheduled, startDue, startPayload, newsPlan, newsPayload, newsTeams, alertDelay,
 } from '../live.js';
 import { parseNews } from '../../news.js';
 import { providerToken, tokenIsDead } from '../apns.js';
@@ -232,6 +232,41 @@ test('followers get the alerts they switched on, once each', async () => {
   assert.equal(h.sent[1].payload.aps.alert.body, 'Final: Chiefs 17, Bills 28');
   assert.equal(h.sent[1].token, TOKEN);
   assert.equal(h.sent[1].payload.route, '#/game/nfl/402');
+});
+
+test('a follower\'s delay holds their game alerts back that many seconds', async () => {
+  // Following Buffalo with scores on and a 15-second delay (a streamed game).
+  const h = harness({ devices: { [TOKEN]: { env: 'production', delay: 15, teams: [{ league: 'nfl', id: '2', start: false, score: true, end: false }] } } });
+  await h.watcher.tick();
+  h.setBoard((b) => {
+    b.events.find((e) => e.id === '402').competitions[0].competitors.find((c) => c.homeAway === 'home').score = '28';
+  });
+  h.later(20_000);
+  await h.watcher.tick();
+  assert.equal(h.sent.length, 0, 'held back');
+  assert.equal(h.store.data.pending.length, 1);
+  h.later(10_000);
+  await h.watcher.tick();
+  assert.equal(h.sent.length, 0, 'not yet');
+  h.later(5_000);
+  await h.watcher.tick();
+  assert.deepEqual(h.sent.map((s) => [s.token, s.payload.aps.alert.body]), [[TOKEN, 'Bills score: Chiefs 17, Bills 28']]);
+  assert.deepEqual(h.store.data.pending, []);
+
+  // One far past due (the server was down) is dropped, not sent late.
+  h.store.data.pending.push({ token: TOKEN, dueAt: Date.parse('2026-10-04T17:00:00Z'), payload: h.sent[0].payload });
+  h.later(1_000);
+  await h.watcher.tick();
+  assert.equal(h.sent.length, 1);
+  assert.deepEqual(h.store.data.pending, []);
+});
+
+test('the delay is whole seconds, 0 to 5 minutes, and kept with the device only when set', () => {
+  assert.deepEqual([alertDelay(15), alertDelay('30'), alertDelay(14.6), alertDelay(900), alertDelay(-5), alertDelay('x'), alertDelay(null)], [15, 30, 15, 300, 0, 0, 0]);
+  const teams = [{ league: 'nfl', id: '2', score: true }];
+  assert.equal(parseDevice({ env: 'production', teams, delay: 45 }).delay, 45);
+  assert.equal('delay' in parseDevice({ env: 'production', teams }), false);
+  assert.equal('delay' in parseDevice({ env: 'production', teams, delay: 0 }), false);
 });
 
 const card = (eventId, overrides = {}) => ({

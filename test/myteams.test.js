@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { LEAGUES, parseScoreboard } from '../espn.js';
 import {
   loadFollowed, saveFollowed, isFollowed, toggleFollowed, followedLeagues, countFollowed, gamesForTeams,
-  hasAlerts, setAlerts, alertTeams, alertsFor, widgetTeams,
+  hasAlerts, setAlerts, alertTeams, alertsFor, widgetTeams, loadAlertDelay, saveAlertDelay, clampDelay, ALERT_DELAY_MAX,
 } from '../myteams.js';
 
 function memoryStorage(initial = {}) {
@@ -100,4 +100,18 @@ test('the widgets get every followed team, alerts or not, without the alert sett
     { league: 'nfl', id: '21', name: 'Philadelphia Eagles', abbr: 'PHI', logo: '', color: null },
   ]);
   assert.deepEqual(widgetTeams([]), []);
+});
+
+test('the alert delay: whole seconds, off by default, at most 5 minutes, kept on the device', () => {
+  const storage = memoryStorage();
+  assert.equal(loadAlertDelay(storage), 0, 'off until set');
+  saveAlertDelay(storage, 15);
+  assert.equal(loadAlertDelay(storage), 15);
+  saveAlertDelay(storage, '42.4');
+  assert.equal(loadAlertDelay(storage), 42, 'typed into the custom field');
+  saveAlertDelay(storage, 9999);
+  assert.equal(loadAlertDelay(storage), ALERT_DELAY_MAX);
+  assert.deepEqual([clampDelay(-3), clampDelay(''), clampDelay('abc'), clampDelay(null)], [0, 0, 0, 0]);
+  assert.equal(loadAlertDelay(memoryStorage({ 'scores.alertDelay': 'junk' })), 0);
+  assert.equal(loadAlertDelay(null), 0, 'no storage (private mode)');
 });

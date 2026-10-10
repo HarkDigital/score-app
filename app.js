@@ -8,7 +8,7 @@ import {
 } from './standings.js';
 import {
   loadFollowed, saveFollowed, isFollowed, toggleFollowed, followedLeagues, countFollowed, gamesForTeams,
-  alertsFor, setAlerts, alertTeams, widgetTeams,
+  alertsFor, setAlerts, alertTeams, widgetTeams, loadAlertDelay, saveAlertDelay, clampDelay,
 } from './myteams.js';
 import {
   ICONS, getJson, TROUBLE, oddsHtml, failedLogos, failedImages, logoHtml, fallbackLogo, emptyState, errorState, fullDate, formatClock, esc,
@@ -29,6 +29,8 @@ const FILTER_KEY = 'scores.filters';
 const storage = (() => { try { return window.localStorage; } catch { return null; } })();
 
 let followed = loadFollowed(storage);
+// Seconds the push server holds game alerts (a streaming delay; 0 is off).
+let alertDelay = loadAlertDelay(storage);
 const startLeague = initialLeague();
 
 const view = {
@@ -880,7 +882,7 @@ document.addEventListener('change', (event) => {
 // In the iPhone app every button press taps the haptic engine: a selection
 // tick for tabs, view switches, days and polls, a light tap for the rest.
 // Captured first, so it buzzes even for buttons whose handlers stop the click.
-const SELECTION = '[role="tab"], .day, [data-poll], [data-standings], [data-team-tab]';
+const SELECTION = '[role="tab"], .day, [data-poll], [data-standings], [data-team-tab], [data-alert-delay]';
 document.addEventListener('click', (event) => {
   const button = event.target.closest('button');
   if (button && !button.disabled) haptic(button.matches(SELECTION) ? 'selection' : 'light');
@@ -1010,6 +1012,12 @@ initPages({
     saveFollowed(storage, followed);
     syncAlerts();
   },
+  alertDelay: () => alertDelay,
+  setAlertDelay(seconds) {
+    alertDelay = clampDelay(seconds);
+    saveAlertDelay(storage, alertDelay);
+    syncAlerts();
+  },
   setTitle: (text) => { els.pageTitle.textContent = text; },
   setLoading: (on) => els.refresh.classList.toggle('spinning', on),
 });
@@ -1019,7 +1027,7 @@ initPages({
 // token can change. The widgets get every followed team.
 function syncAlerts() {
   if (!inApp()) return;
-  setAlertTeams(alertTeams(followed));
+  setAlertTeams(alertTeams(followed), alertDelay);
   setFollowedTeams(widgetTeams(followed));
 }
 

@@ -59,7 +59,10 @@ final class NativeBridge: NSObject, WKScriptMessageHandlerWithReply {
                 for kind in ["start", "score", "end", "lock", "news"] { entry[kind] = (team[kind] as? Bool) ?? false }
                 return entry
             }
-            PushManager.shared.setTeams(teams)
+            // The spoiler delay in seconds: the push server holds the game
+            // alerts that long (0 is off).
+            let delay = (body["delay"] as? NSNumber)?.intValue ?? 0
+            PushManager.shared.setTeams(teams, delay: max(0, delay))
             return ["ok": true]
         case "setFollowedTeams":
             // [{league, id, name, abbr, logo, color}]: every followed team,
@@ -86,6 +89,8 @@ final class NativeBridge: NSObject, WKScriptMessageHandlerWithReply {
             "alerts": await PushManager.shared.status(),
             // This build passes a team's news switch on (setAlertTeams).
             "teamNews": true,
+            // ...and the spoiler delay (build 17 on).
+            "alertDelay": true,
         ]
         if #available(iOS 16.2, *) {
             let manager = LiveGameManager.shared
