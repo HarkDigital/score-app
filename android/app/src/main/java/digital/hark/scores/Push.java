@@ -92,7 +92,10 @@ final class Push {
     // PUT /v1/devices/:token: the teams that want alerts (none forgets the phone).
     static boolean setTeams(Context c, String token, JSONArray teams) {
         try {
-            return send(c, "PUT", "/v1/devices/" + encode(token), new JSONObject().put("platform", "android").put("teams", teams));
+            JSONObject body = new JSONObject().put("platform", "android").put("teams", teams);
+            int delay = Store.alertDelay(c);
+            if (delay > 0) body.put("delay", delay);
+            return send(c, "PUT", "/v1/devices/" + encode(token), body);
         } catch (JSONException e) {
             return false;
         }

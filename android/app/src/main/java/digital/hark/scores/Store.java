@@ -84,6 +84,15 @@ final class Store {
         prefs(c).edit().putString("teams", teams.toString()).apply();
     }
 
+    // Seconds the push server holds this phone's game alerts (0 is off).
+    static int alertDelay(Context c) {
+        return prefs(c).getInt("alertDelay", 0);
+    }
+
+    static void setAlertDelay(Context c, int seconds) {
+        prefs(c).edit().putInt("alertDelay", seconds).apply();
+    }
+
     // ---- The phone's FCM token, and whether notifications were asked for ----
 
     static String token(Context c) {

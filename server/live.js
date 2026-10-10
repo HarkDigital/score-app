@@ -373,6 +373,16 @@ export function parseScheduled(body) {
 // PUT /v1/devices/:token: {platform, env, teams, startToken}. The token is
 // in the path. startToken: an iPhone's push-to-start token (iOS 17.2+), for
 // followed teams' games on the Lock Screen.
+// A follower's spoiler delay: their game alerts (starts, scores, finals) wait
+// this many seconds, so a game streamed behind live (YouTube TV runs 15 to 60
+// seconds back) isn't spoiled. Whole seconds, 0 (off) to 5 minutes.
+export const MAX_ALERT_DELAY = 300;
+
+export function alertDelay(value) {
+  const seconds = Math.round(Number(value));
+  return Number.isFinite(seconds) && seconds > 0 ? Math.min(seconds, MAX_ALERT_DELAY) : 0;
+}
+
 export function parseDevice(body) {
   const android = body?.platform === 'android';
   const env = android ? 'production' : body?.env;
@@ -394,11 +404,13 @@ export function parseDevice(body) {
     });
   }
   const startToken = !android && typeof body.startToken === 'string' && APNS_TOKEN.test(body.startToken) ? body.startToken.toLowerCase() : null;
+  const delay = alertDelay(body.delay);
   return {
     platform: android ? 'android' : 'ios',
     env,
     teams: list.filter((t) => t.start || t.score || t.end || t.lock || t.news),
     ...(startToken ? { startToken } : {}),
+    ...(delay ? { delay } : {}),
   };
 }
 

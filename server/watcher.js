@@ -75,6 +75,28 @@ export function createWatcher({ store, apns, fcm = null, fetchJson: getJson = fe
     return { ok: result.status === 200, dead: result.dead };
   }
 
+  // A team alert to one device, by its platform.
+  function sendAlert(token, device, payload) {
+    return isAndroid(device) ? sendAndroid(token, androidAlertMessage(payload)) : push('alert', token, device.env, payload);
+  }
+
+  // Game alerts held back for a follower's delay go out once due. One more
+  // than 2 minutes past due (the server was down meanwhile) is dropped: the
+  // game has moved on. True when any came due.
+  async function sendDue() {
+    const { data } = store;
+    const due = (data.pending ?? []).filter((p) => p.dueAt <= now());
+    if (!due.length) return false;
+    data.pending = data.pending.filter((p) => p.dueAt > now());
+    for (const p of due) {
+      const device = data.devices[p.token];
+      if (!device || now() - p.dueAt > 2 * MIN) continue;
+      const result = await sendAlert(p.token, device, p.payload);
+      if (result.dead) delete data.devices[p.token];
+    }
+    return true;
+  }
+
   // The Android app's messages, through Firebase (or logged without a key).
   async function sendAndroid(token, message) {
     if (!fcm) {
@@ -169,9 +191,12 @@ export function createWatcher({ store, apns, fcm = null, fetchJson: getJson = fe
         const mark = `${token}|${key}|${kind}|${payload.aps.alert.body}`;
         if (data.sent[mark]) continue;
         data.sent[mark] = now();
-        const result = isAndroid(device)
-          ? await sendAndroid(token, androidAlertMessage(payload))
-          : await push('alert', token, device.env, payload);
+        // The follower's spoiler delay: held until it's due (sendDue).
+        if (device.delay > 0) {
+          (data.pending ??= []).push({ token, dueAt: now() + device.delay * 1000, payload });
+          continue;
+        }
+        const result = await sendAlert(token, device, payload);
         if (result.dead) delete data.devices[token];
       }
     }
@@ -207,9 +232,8 @@ export function createWatcher({ store, apns, fcm = null, fetchJson: getJson = fe
           const mark = `${token}|news|${article.id}`;
           if (data.sent[mark]) continue;
           data.sent[mark] = now();
-          const result = isAndroid(device)
-            ? await sendAndroid(token, androidAlertMessage(payload))
-            : await push('alert', token, device.env, payload);
+          // News isn't live: no delay.
+          const result = await sendAlert(token, device, payload);
           if (result.dead) delete data.devices[token];
         }
       }
@@ -228,7 +252,8 @@ export function createWatcher({ store, apns, fcm = null, fetchJson: getJson = fe
         ...Object.values(data.scheduled).map((s) => s.league),
         ...Object.values(data.devices).flatMap((d) => d.teams.map((t) => t.league)),
       ]);
-      let fetched = false;
+      // Every second, so a delayed alert goes out on time.
+      let fetched = await sendDue();
       for (const id of leagues) {
         if ((nextFetch.get(id) ?? 0) > now()) continue;
         fetched = true;

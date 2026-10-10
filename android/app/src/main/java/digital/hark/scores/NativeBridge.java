@@ -86,6 +86,8 @@ public class NativeBridge extends Plugin implements WebViewCompat.WebMessageList
                     .put("teamNews", ready)
                     // openSettings, and showGame/scheduleGame's reason.
                     .put("openSettings", true)
+                    // setAlertTeams passes the spoiler delay on (versionCode 11 on).
+                    .put("alertDelay", ready)
                     .put("active", LiveCards.list(Store.cards(c)))
                     .put("scheduled", LiveCards.list(Store.scheduled(c)))
                     .put("alerts", ready ? Alerts.status(c) : "unavailable");
@@ -125,6 +127,9 @@ public class NativeBridge extends Plugin implements WebViewCompat.WebMessageList
                 JSONArray teams = request.optJSONArray("teams");
                 if (teams == null) teams = new JSONArray();
                 Store.setTeams(c, teams);
+                // The spoiler delay in seconds: the push server holds the
+                // game alerts that long (0 is off).
+                Store.setAlertDelay(c, Math.max(0, request.optInt("delay", 0)));
                 String token = Push.token(c);
                 if (token != null) Push.setTeams(c, token, teams);
                 return ok(true);

@@ -14,6 +14,7 @@ final class PushManager: NSObject, NotificationHandlerProtocol {
     weak var navigator: ViewController?
 
     private let teamsKey = "alertTeams"
+    private let delayKey = "alertDelay"
     private var deviceToken: String?
     /// [{league, id, start, score, end, lock}], as the web app sent them.
     private var teams: [[String: Any]] {
@@ -41,9 +42,17 @@ final class PushManager: NSObject, NotificationHandlerProtocol {
         return result
     }
 
-    func setTeams(_ list: [[String: Any]]) {
-        let changed = !(list as NSArray).isEqual(to: teams)
+    /// Seconds the push server holds this phone's game alerts (a streaming
+    /// delay; 0 is off).
+    private var delay: Int {
+        get { UserDefaults.standard.integer(forKey: delayKey) }
+        set { UserDefaults.standard.set(newValue, forKey: delayKey) }
+    }
+
+    func setTeams(_ list: [[String: Any]], delay newDelay: Int = 0) {
+        let changed = !(list as NSArray).isEqual(to: teams) || newDelay != delay
         teams = list
+        delay = newDelay
         if deviceToken == nil {
             // The first token arrives from registerForRemoteNotifications.
             Task { await registerIfAllowed() }
@@ -74,7 +83,8 @@ final class PushManager: NSObject, NotificationHandlerProtocol {
         let list = teams
         var startToken: String?
         if #available(iOS 16.2, *) { startToken = LiveGameManager.shared.pushToStartToken }
-        Task { await PushServer.registerDevice(token: token, teams: list, startToken: startToken) }
+        let seconds = delay
+        Task { await PushServer.registerDevice(token: token, teams: list, startToken: startToken, delay: seconds) }
     }
 
     // MARK: NotificationHandlerProtocol

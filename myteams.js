@@ -74,6 +74,32 @@ export function widgetTeams(list) {
   return list.map(({ league, id, name = '', abbr = '', logo = '', color = null }) => ({ league, id, name, abbr, logo, color }));
 }
 
+// A spoiler delay for game alerts, so a game streamed behind live (YouTube
+// TV runs 15 to 60 seconds back) isn't given away: the push server holds
+// starts, scores and finals this many seconds. One setting for every
+// followed team, kept on this device. Whole seconds, 0 (off) to 5 minutes
+// (the server's MAX_ALERT_DELAY).
+const DELAY_KEY = 'scores.alertDelay';
+export const ALERT_DELAY_MAX = 300;
+export const ALERT_DELAY_CHOICES = [0, 15, 30, 60];
+
+export function clampDelay(value) {
+  const seconds = Math.round(Number(value));
+  return Number.isFinite(seconds) && seconds > 0 ? Math.min(seconds, ALERT_DELAY_MAX) : 0;
+}
+
+export function loadAlertDelay(storage) {
+  try {
+    return clampDelay(storage?.getItem(DELAY_KEY));
+  } catch {
+    return 0;
+  }
+}
+
+export function saveAlertDelay(storage, seconds) {
+  try { storage?.setItem(DELAY_KEY, String(clampDelay(seconds))); } catch { /* full or blocked */ }
+}
+
 // League ids with at least one followed team, in the app's league order.
 export function followedLeagues(list) {
   return LEAGUES.map((l) => l.id).filter((id) => list.some((t) => t.league === id));

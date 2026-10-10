@@ -1,13 +1,14 @@
 // Everything the server remembers, in one JSON file: the lock-screen cards
 // being kept current, the devices that want team alerts, the last state seen
 // for each watched game (so alerts fire on a change, even across restarts),
-// and the alerts already sent. Small enough to rewrite whole; writes are
+// the alerts already sent, and the ones held back for a follower's delay
+// (pending, so a restart doesn't lose them). Small enough to rewrite whole; writes are
 // atomic (temp file + rename) and batched.
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-const EMPTY = () => ({ activities: {}, scheduled: {}, devices: {}, games: {}, sent: {} });
+const EMPTY = () => ({ activities: {}, scheduled: {}, devices: {}, games: {}, sent: {}, pending: [] });
 
 export async function openStore(dir) {
   await fs.mkdir(dir, { recursive: true });

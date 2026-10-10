@@ -84,7 +84,10 @@ export const enableAlerts = () => call('enableAlerts');
 
 // The followed teams that want alerts, as [{league, id, start, score, end}]. The app hands them
 // to the push server with its device token.
-export const setAlertTeams = (teams) => call('setAlertTeams', { teams });
+// delay: the spoiler delay in seconds (myteams.js), which the apps pass on to
+// the push server with the teams (iPhone build 17 and Android versionCode 11
+// on, info.alertDelay; older builds ignore it).
+export const setAlertTeams = (teams, delay = 0) => call('setAlertTeams', { teams, delay });
 
 // Every followed team, [{league, id, name, abbr, logo, color}], for the
 // iPhone app's Home Screen and Lock Screen widgets (build 17 on; earlier

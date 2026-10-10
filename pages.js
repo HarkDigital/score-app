@@ -9,6 +9,7 @@ import {
 import { ICONS, getJson, TROUBLE, oddsHtml, logoHtml, emptyState, errorState, formatClock, esc, patchHtml, textOn, newsHtml } from './ui.js';
 import { newsUrl, parseNews } from './news.js';
 import { teamStatsUrl, statsSeasons, parseTeamStats } from './stats.js';
+import { ALERT_DELAY_CHOICES, ALERT_DELAY_MAX } from './myteams.js';
 import {
   inApp, appPlatform, nativeInfo, showOnLockScreen, scheduleOnLockScreen, removeFromLockScreen, enableAlerts,
   openNotificationSettings,
@@ -53,7 +54,7 @@ const root = () => document.getElementById('page');
 // The apps only: what the app says about Lock Screen cards and alerts, and
 // the state of the game page's Lock Screen card and the team page's bell.
 // notificationsOff: the last error was the app's notifications being off.
-const native = { info: null, busy: false, lockError: '', alertNote: '', alertsOpen: false, notificationsOff: false };
+const native = { info: null, busy: false, lockError: '', alertNote: '', alertsOpen: false, notificationsOff: false, delayCustom: false };
 
 function refreshNative() {
   if (!inApp()) return;
@@ -114,7 +115,7 @@ export function showPage(route) {
   const seen = recent.get(route.key);
   Object.assign(page, { route, data: null, error: null, updatedAt: null, side: 0, tab: 'schedule', news: null, newsError: null, stats: null, statsError: null }, seen);
   if (route.tab) page.tab = route.tab;
-  Object.assign(native, { lockError: '', alertNote: '', alertsOpen: false, notificationsOff: false });
+  Object.assign(native, { lockError: '', alertNote: '', alertsOpen: false, notificationsOff: false, delayCustom: false });
   refreshNative();
   render();
   if (stale()) load();
@@ -777,6 +778,31 @@ function alertsPanel(league, team) {
           <span class="alert-text"><span class="alert-title">${title}</span><span class="alert-sub">${sub}</span></span>
           <span class="switch" aria-hidden="true"></span>
         </button>`).join('')}
+      ${native.info?.alertDelay ? delayHtml() : ''}
+    </div>`;
+}
+
+// The spoiler delay, for every followed team: Off, 15s, 30s, 60s, or any
+// number of seconds. Only where the app passes it on (info.alertDelay).
+function delayHtml() {
+  const delay = app.alertDelay();
+  const custom = native.delayCustom || !ALERT_DELAY_CHOICES.includes(delay);
+  const choice = (value, label) => `<button type="button" role="radio" aria-checked="${value === 'custom' ? custom : !custom && delay === value}" data-alert-delay="${value}">${label}</button>`;
+  return `
+    <div class="alert-delay">
+      <span class="alert-text">
+        <span class="alert-title">Delay game alerts</span>
+        <span class="alert-sub">Starts, scores and finals wait this long, so a streamed game isn't spoiled. For all your teams.</span>
+      </span>
+      <div class="segmented delay-choices" role="radiogroup" aria-label="Alert delay">
+        ${ALERT_DELAY_CHOICES.map((s) => choice(s, s ? `${s}s` : 'Off')).join('')}
+        ${choice('custom', 'Custom')}
+      </div>
+      ${custom ? `
+        <label class="delay-custom">
+          <span>Seconds</span>
+          <input type="number" inputmode="numeric" min="0" max="${ALERT_DELAY_MAX}" step="1" value="${delay}" data-alert-delay-input>
+        </label>` : ''}
     </div>`;
 }
 
@@ -827,13 +853,36 @@ function scheduleRow(game, league) {
 
 // ---- Events ----
 
+// A custom delay takes effect when the field is left (the number pad has no
+// return key).
+document.addEventListener('change', (event) => {
+  const input = event.target.closest?.('[data-alert-delay-input]');
+  if (!page.route || !input) return;
+  app.setAlertDelay(input.value);
+  // What was kept (whole seconds, at most 5 minutes): the redraw changes the
+  // attribute, not what's typed in the field.
+  input.value = String(app.alertDelay());
+  render();
+});
+
 document.addEventListener('click', (event) => {
   if (!page.route) return;
-  const target = event.target.closest('[data-side], [data-follow], [data-lock], [data-alerts], [data-alert-kind], [data-team-tab], [data-open-settings]');
+  const target = event.target.closest('[data-side], [data-follow], [data-lock], [data-alerts], [data-alert-kind], [data-alert-delay], [data-team-tab], [data-open-settings]');
   if (!target || !root().contains(target) || target.disabled) return;
   if (target.hasAttribute('data-lock')) toggleLock();
   else if (target.hasAttribute('data-open-settings')) openNotificationSettings();
   else if (target.dataset.alertKind) toggleAlertKind(target.dataset.alertKind);
+  else if (target.dataset.alertDelay !== undefined) {
+    if (target.dataset.alertDelay === 'custom') {
+      native.delayCustom = true;
+      render();
+      root().querySelector('[data-alert-delay-input]')?.focus();
+    } else {
+      native.delayCustom = false;
+      app.setAlertDelay(Number(target.dataset.alertDelay));
+      render();
+    }
+  }
   else if (target.hasAttribute('data-alerts')) {
     native.alertsOpen = !native.alertsOpen;
     render();
