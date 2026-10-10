@@ -68,6 +68,12 @@ export function alertTeams(list) {
     .filter((t) => ALERT_KINDS.some((k) => t[k]));
 }
 
+// The followed teams as the iPhone app's widgets need them: who they are and
+// how to draw them, in the order they were followed.
+export function widgetTeams(list) {
+  return list.map(({ league, id, name = '', abbr = '', logo = '', color = null }) => ({ league, id, name, abbr, logo, color }));
+}
+
 // League ids with at least one followed team, in the app's league order.
 export function followedLeagues(list) {
   return LEAGUES.map((l) => l.id).filter((id) => list.some((t) => t.league === id));

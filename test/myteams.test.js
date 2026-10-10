@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { LEAGUES, parseScoreboard } from '../espn.js';
 import {
   loadFollowed, saveFollowed, isFollowed, toggleFollowed, followedLeagues, countFollowed, gamesForTeams,
-  hasAlerts, setAlerts, alertTeams, alertsFor,
+  hasAlerts, setAlerts, alertTeams, alertsFor, widgetTeams,
 } from '../myteams.js';
 
 function memoryStorage(initial = {}) {
@@ -89,4 +89,15 @@ test('alerts are per followed team, per kind, and go when the team does', () => 
   assert.deepEqual(alertTeams(newsOnly), [{ league: 'nfl', id: '3', start: false, score: false, end: false, lock: false, news: true }]);
   const lockOnly = setAlerts([{ league: 'nfl', id: '2', name: 'Bills' }], 'nfl', '2', { lock: true, news: false });
   assert.deepEqual(alertTeams(lockOnly), [{ league: 'nfl', id: '2', start: false, score: false, end: false, lock: true, news: false }]);
+});
+
+test('the widgets get every followed team, alerts or not, without the alert settings', () => {
+  let list = toggleFollowed([], 'nhl', { id: '15', name: 'Philadelphia Flyers', abbr: 'PHI', logo: 'https://a.espncdn.com/i/teamlogos/nhl/500/phi.png', color: '#f74902' });
+  list = toggleFollowed(list, 'nfl', { id: '21', name: 'Philadelphia Eagles', abbr: 'PHI' });
+  list = setAlerts(list, 'nfl', '21', { start: true });
+  assert.deepEqual(widgetTeams(list), [
+    { league: 'nhl', id: '15', name: 'Philadelphia Flyers', abbr: 'PHI', logo: 'https://a.espncdn.com/i/teamlogos/nhl/500/phi.png', color: '#f74902' },
+    { league: 'nfl', id: '21', name: 'Philadelphia Eagles', abbr: 'PHI', logo: '', color: null },
+  ]);
+  assert.deepEqual(widgetTeams([]), []);
 });

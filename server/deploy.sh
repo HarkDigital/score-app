@@ -22,8 +22,8 @@ $SSH "$HOST" "mkdir -p $REMOTE/app/server $REMOTE/data $REMOTE/secrets"
 rsync -az --delete -e "$SSH" --exclude test/ --exclude data/ --exclude secrets/ --exclude .env \
   --exclude deploy.sh --exclude docker-compose.yml --exclude '*.conf' --exclude README.md \
   server/ "$HOST:$REMOTE/app/server/"
-# espn.js and news.js are the app's own parsers; package.json makes Node treat .js as ES modules.
-rsync -az -e "$SSH" espn.js news.js package.json "$HOST:$REMOTE/app/"
+# espn.js, news.js and details.js are the app's own parsers; package.json makes Node treat .js as ES modules.
+rsync -az -e "$SSH" espn.js news.js details.js package.json "$HOST:$REMOTE/app/"
 rsync -az -e "$SSH" server/docker-compose.yml "$HOST:$REMOTE/docker-compose.yml"
 
 echo "==> restarting"
