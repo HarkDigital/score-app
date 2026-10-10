@@ -57,10 +57,7 @@ struct LiveGameActivity: Widget {
                 if game.started {
                     CompactSide(team: game.right, score: game.rightScore, trailing: true)
                 } else {
-                    Text(game.start, style: .time)
-                        .font(.caption2.weight(.semibold))
-                        .monospacedDigit()
-                        .foregroundStyle(Phade.mint)
+                    CompactStart(start: game.start)
                 }
             } minimal: {
                 if game.started {
@@ -603,6 +600,31 @@ struct CompactSide: View {
         Text(score)
             .font(font.weight(.bold))
             .monospacedDigit()
+            .lineLimit(1)
+            .fixedSize()
+    }
+}
+
+/// The start time beside the logo before the game, on one line: "7:00 PM",
+/// else "7:00", else "7" when iOS squeezes the island (another app's Live
+/// Activity running too). Left to itself the time wrapped onto two lines and
+/// was cut off ("12:0" over "0 PM").
+struct CompactStart: View {
+    let start: Date
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            label(start.formatted(date: .omitted, time: .shortened))
+            label(start.formatted(.dateTime.hour(.defaultDigits(amPM: .omitted)).minute()))
+            label(start.formatted(.dateTime.hour(.defaultDigits(amPM: .omitted))))
+        }
+    }
+
+    private func label(_ text: String) -> some View {
+        Text(text)
+            .font(.caption2.weight(.semibold))
+            .monospacedDigit()
+            .foregroundStyle(Phade.mint)
             .lineLimit(1)
             .fixedSize()
     }
