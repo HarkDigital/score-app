@@ -8,7 +8,7 @@ import {
 } from './standings.js';
 import {
   loadFollowed, saveFollowed, isFollowed, toggleFollowed, followedLeagues, countFollowed, gamesForTeams,
-  alertsFor, setAlerts, alertTeams,
+  alertsFor, setAlerts, alertTeams, widgetTeams,
 } from './myteams.js';
 import {
   ICONS, getJson, TROUBLE, oddsHtml, failedLogos, failedImages, logoHtml, fallbackLogo, emptyState, errorState, fullDate, formatClock, esc,
@@ -21,7 +21,7 @@ import {
 import { initAutoUpdate } from './update.js';
 import { initPullToRefresh } from './pull.js';
 import { initSwipeNav } from './swipe.js';
-import { inApp, setAlertTeams, haptic } from './native.js';
+import { inApp, setAlertTeams, setFollowedTeams, haptic } from './native.js';
 
 const MINE = { id: 'mine', label: 'My Teams', mine: true };
 const LEAGUE_KEY = 'scores.league';
@@ -1016,9 +1016,11 @@ initPages({
 
 // iPhone app: hand the teams that want alerts to the app, which registers
 // them with the push server. Also at every launch, since the device's push
-// token can change.
+// token can change. The widgets get every followed team.
 function syncAlerts() {
-  if (inApp()) setAlertTeams(alertTeams(followed));
+  if (!inApp()) return;
+  setAlertTeams(alertTeams(followed));
+  setFollowedTeams(widgetTeams(followed));
 }
 
 syncAlerts();

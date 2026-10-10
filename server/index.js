@@ -11,6 +11,7 @@
 //   DELETE /v1/scheduled/:token/:league/:eventId
 //   PUT    /v1/devices/:token      {platform, env, teams: [{league, id}]}  (no teams = forget)
 //   DELETE /v1/devices/:token
+//   GET    /v1/widget?teams=nhl:4,nfl:21     (the iPhone widgets: each team's live, last and next game)
 //   GET    /health
 
 import http from 'node:http';
@@ -19,7 +20,8 @@ import { fileURLToPath } from 'node:url';
 import { openStore } from './store.js';
 import { createApns } from './apns.js';
 import { createFcm, readAccount } from './fcm.js';
-import { createWatcher } from './watcher.js';
+import { createWatcher, fetchJson } from './watcher.js';
+import { createWidgetSource, parseWidgetTeams } from './widget.js';
 import { parseActivity, parseDevice, parseScheduled, normalizeToken, activityKey } from './live.js';
 
 const env = process.env;
@@ -59,6 +61,8 @@ const watcher = createWatcher({ store, apns, fcm, log });
 setInterval(watcher.tick, 1_000);
 watcher.tick();
 
+const widgets = createWidgetSource({ fetchJson, log });
+
 const MAX = { activities: 5_000, scheduled: 20_000, devices: 50_000 };
 
 function readJson(req) {
@@ -83,7 +87,7 @@ const server = http.createServer(async (req, res) => {
   };
   const { data } = store;
   try {
-    const { pathname } = new URL(req.url, 'http://localhost');
+    const { pathname, searchParams } = new URL(req.url, 'http://localhost');
     if (req.method === 'GET' && pathname === '/health') {
       return reply(200, {
         ok: true,
@@ -93,6 +97,11 @@ const server = http.createServer(async (req, res) => {
         scheduled: Object.keys(data.scheduled).length,
         devices: Object.keys(data.devices).length,
       });
+    }
+    if (req.method === 'GET' && pathname === '/v1/widget') {
+      const teams = parseWidgetTeams(searchParams.get('teams'));
+      if (!teams.length) return reply(400, { error: 'no teams' });
+      return reply(200, await widgets.teams(teams));
     }
     const [, version, kind, rawToken, ...rest] = pathname.split('/');
     if (version !== 'v1' || !(kind in MAX) || rest.length > (kind === 'devices' ? 0 : 2)) return reply(404, { error: 'not found' });

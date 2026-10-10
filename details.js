@@ -273,10 +273,17 @@ export function parseSchedule(responses, league, teamId) {
     .map((e) => scheduleGame(e, league, String(teamId)))
     .filter(Boolean)
     .sort((a, b) => a.start - b.start);
+  // The short name ("Chiefs", "Duke") for tight spaces like the widgets: the
+  // header carries only the full one, the games name the team themselves.
+  const shortName = team.shortDisplayName ?? list
+    .flatMap((d) => d?.events ?? [])
+    .flatMap((e) => e?.competitions?.[0]?.competitors ?? [])
+    .find((c) => String(c?.team?.id ?? c?.id) === String(teamId))?.team?.shortDisplayName;
   return {
     team: {
       id: String(team.id ?? teamId),
       name: team.displayName ?? team.name ?? '',
+      shortName: shortName ?? team.displayName ?? team.name ?? '',
       abbr: team.abbreviation ?? '',
       logo: team.logo ?? team.logos?.[0]?.href ?? '',
       color: teamColor(team.color),
@@ -318,6 +325,8 @@ function scheduleGame(event, league, teamId) {
     // The schedule feed carries no live score, only finals; a live game
     // without one shows as plain Live rather than "-".
     score: result || (game.state === 'in' && self.score !== '' && opponent.score !== '') ? `${self.score}-${opponent.score}` : '',
+    // The team's own score on its own (the opponent's is opponent.score).
+    teamScore: self.score,
     label: event.week?.text ?? '',
   };
 }

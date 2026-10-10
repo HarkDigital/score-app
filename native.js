@@ -86,6 +86,11 @@ export const enableAlerts = () => call('enableAlerts');
 // to the push server with its device token.
 export const setAlertTeams = (teams) => call('setAlertTeams', { teams });
 
+// Every followed team, [{league, id, name, abbr, logo, color}], for the
+// iPhone app's Home Screen and Lock Screen widgets (build 17 on; earlier
+// builds, and Android, answer that they don't know the action).
+export const setFollowedTeams = (teams) => call('setFollowedTeams', { teams });
+
 // The first Android builds' haptics: a short buzz (ms) per style.
 const BUZZ = { selection: 6, light: 10, medium: 18 };
 

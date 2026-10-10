@@ -41,9 +41,10 @@ class ViewController: CAPBridgeViewController {
 
     @objc private func openURL(_ notification: Notification) {
         guard let url = (notification.object as? [String: Any])?["url"] as? URL,
-              url.scheme == "phadescores", url.host == "game" else { return }
-        // phadescores://game/nfl/401547417 → #/game/nfl/401547417
-        open(route: "#/game" + url.path)
+              url.scheme == "phadescores", let host = url.host, host == "game" || host == "team" else { return }
+        // phadescores://game/nfl/401547417 → #/game/nfl/401547417 (a card or
+        // widget game); phadescores://team/nhl/4 → #/team/nhl/4 (the Team widget).
+        open(route: "#/\(host)" + url.path)
     }
 
     /// Shows a route ("#/game/nfl/401547417", "#/team/nfl/12/news") in the

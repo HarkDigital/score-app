@@ -103,9 +103,12 @@ test('a game that has not started has no box score yet, but has its line', () =>
 test('team schedule: header, results from the team side, upcoming games', () => {
   const duke = parseSchedule([fixture('ncaam-schedule')], leagueById('ncaam'), '150');
   assert.deepEqual(duke.team, {
-    id: '150', name: 'Duke Blue Devils', abbr: 'DUKE', logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/150.png',
+    id: '150', name: 'Duke Blue Devils', shortName: 'Duke', abbr: 'DUKE', logo: 'https://a.espncdn.com/i/teamlogos/ncaa/500/150.png',
     color: '#00539b', record: '35-3', standing: '1st in ACC',
   });
+  // The header has only the full name; the short one comes from the team's
+  // own entry in its games.
+  assert.equal(parseSchedule([fixture('nfl-schedule')], leagueById('nfl'), '12').team.shortName, 'Chiefs');
   assert.deepEqual(duke.games.map((g) => [g.opponent.abbr, g.home, g.result, g.score]), [
     ['FSU', true, 'W', '80-79'], ['CLEM', true, 'W', '73-61'], ['UVA', true, 'W', '74-70'],
   ]);

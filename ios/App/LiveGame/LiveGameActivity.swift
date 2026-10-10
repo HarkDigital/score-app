@@ -12,6 +12,12 @@ import WidgetKit
 struct LiveGameBundle: WidgetBundle {
     var body: some Widget {
         LiveGameActivity()
+        // The Home Screen and Lock Screen widgets (Widgets.swift): the Team
+        // widget's picker is an App Intent, iOS 17 on.
+        if #available(iOS 17.0, *) {
+            TeamWidget()
+            MyTeamsWidget()
+        }
     }
 }
 
