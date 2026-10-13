@@ -1,8 +1,10 @@
-// Pieces shared by the scoreboard and the game and team pages: icons,
-// fetching, team logos, empty states and formatting.
+// Pieces shared by the scoreboard and the game, team and player pages:
+// icons, fetching, team logos and player headshots, empty states and
+// formatting.
 
 import { fallbackUrl } from './espn.js';
 import { newsAge, newsImage } from './news.js';
+import { headshotUrl, initials } from './players.js';
 
 const icon = (size, body, extra = '') =>
   `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true"${extra}>${body}</svg>`;
@@ -147,6 +149,17 @@ export function logoHtml(team, size = 28) {
     return `<img class="logo" src="${esc(team.logo)}" alt="" width="${size}" height="${size}" loading="lazy" decoding="async" data-abbr="${esc(abbr)}" data-color="${esc(team.color ?? '')}">`;
   }
   return fallbackLogo(abbr, team.color);
+}
+
+// A player's headshot, cropped round on a wash of the team's color; with no
+// headshot or a failed one, their initials in the team's color (the logo
+// fallback, which the error listener in app.js swaps in).
+export function headshotHtml(player, size, color) {
+  const src = headshotUrl(player.headshot, size);
+  const abbr = initials(player.name);
+  if (!src || failedLogos.has(src)) return fallbackLogo(abbr, color);
+  const wash = color ? ` style="background:${color}33"` : '';
+  return `<img class="logo headshot" src="${esc(src)}" alt="" width="${size}" height="${size}" loading="lazy" decoding="async" data-abbr="${esc(abbr)}" data-color="${esc(color ?? '')}"${wash}>`;
 }
 
 export function fallbackLogo(abbr, color) {

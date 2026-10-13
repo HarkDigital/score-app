@@ -55,6 +55,52 @@ const capitalize = (text) => (text ? text[0].toUpperCase() + text.slice(1) : '')
 // The slug in a game link's leagueAbbrev ("eng.1") as one of our leagues.
 const leagueBySlug = (slug) => (slug ? LEAGUES.find((l) => l.path.split('/')[1] === slug) ?? null : null);
 
+// ---- Search ----
+
+// The header's player search: ESPN's search, players only. (mode=prefix
+// answers nothing; search/v2 mixes in articles and clips, retired players,
+// and names teams only by name.) ESPN folds accents itself: "mbappe" finds
+// Mbappé.
+export function playerSearchUrl(query, limit = 20) {
+  const url = new URL('https://site.api.espn.com/apis/common/v3/search');
+  url.searchParams.set('query', query);
+  url.searchParams.set('limit', String(limit));
+  url.searchParams.set('type', 'player');
+  return url.toString();
+}
+
+// [{ id, league (ours), name, team: { id, name, abbr, logo, color } | null,
+// position, jersey, headshot }], in ESPN's order (most relevant first). Each
+// result names its league by slug ("nfl", "college-football", "eng.1"); a
+// player in a league we don't carry (LALIGA, rugby) is left out, and so is a
+// soccer player whose club plays the Champions League but whose league
+// isn't ours, as the search only gives the domestic one.
+export function parseSearchPlayers(data) {
+  const seen = new Set();
+  return (data?.items ?? [])
+    .filter((item) => item?.type === 'player' && item.id && item.isRetired !== true)
+    .map((item) => {
+      const league = leagueBySlug(item.league ?? String(item.defaultLeagueSlug ?? '').toLowerCase());
+      const t = item.teamRelationships?.[0]?.core;
+      return league && {
+        id: String(item.id),
+        league: league.id,
+        name: item.displayName ?? '',
+        team: t?.id ? {
+          id: String(t.id),
+          name: t.displayName ?? '',
+          abbr: t.abbreviation ?? '',
+          logo: t.logos?.[0]?.href ?? '',
+          color: teamColor(t.color),
+        } : null,
+        position: item.position?.abbreviation ?? '',
+        jersey: item.jersey ?? '',
+        headshot: headshotOf(item),
+      };
+    })
+    .filter((p) => p && !seen.has(`${p.league}:${p.id}`) && seen.add(`${p.league}:${p.id}`));
+}
+
 // ---- Roster ----
 
 // Football and hockey rosters come in groups (offense, Centers...), baseball

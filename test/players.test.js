@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { leagueById } from '../espn.js';
 import {
   rosterUrl, athleteUrls, headshotOf, headshotUrl, initials, birthDate,
-  parseRoster, parseAthlete, parseOverview, parseCareer,
+  parseRoster, parseAthlete, parseOverview, parseCareer, playerSearchUrl, parseSearchPlayers,
 } from '../players.js';
 
 // Trimmed from ESPN's site API on Oct 13 2026 (npm run capture:players): the
@@ -213,4 +213,40 @@ test('headshots: either shape, resized through the combiner; initials otherwise'
   assert.equal(initials(''), '?');
   assert.equal(birthDate('29/4/1995'), 'Apr 29, 1995');
   assert.equal(birthDate(''), '');
+});
+
+// Trimmed from ESPN's search on Oct 13 2026 (npm run capture:players -- search).
+test('player search: players only, on site.api so the host fallback applies', () => {
+  assert.equal(playerSearchUrl('patrick mah'), 'https://site.api.espn.com/apis/common/v3/search?query=patrick+mah&limit=20&type=player');
+});
+
+test('player search: our leagues only, in ESPN\'s order, with team and position', () => {
+  const smith = parseSearchPlayers(fixture('search-players-smith'));
+  assert.deepEqual(smith.slice(0, 4).map((p) => [p.name, p.league, p.team.abbr, p.position]), [
+    ['Jeremiah Smith', 'ncaaf', 'OSU', 'WR'],
+    ['Jaxon Smith-Njigba', 'nfl', 'SEA', 'WR'],
+    ['DeVonta Smith', 'nfl', 'PHI', 'WR'],
+    ['Cade Smith', 'mlb', 'CLE', 'RP'],
+  ]);
+  assert.deepEqual(smith[1], {
+    id: '4430878',
+    league: 'nfl',
+    name: 'Jaxon Smith-Njigba',
+    team: { id: '26', name: 'Seattle Seahawks', abbr: 'SEA', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/sea.png', color: '#002a5c' },
+    position: 'WR',
+    jersey: '11',
+    headshot: 'https://a.espncdn.com/i/headshots/nfl/players/full/4430878.png',
+  });
+  // Soccer players come under their domestic league: Taca de Portugal,
+  // League One and the like are left out.
+  assert.deepEqual(parseSearchPlayers(fixture('search-players-bruno-fernandes')).map((p) => [p.name, p.league, p.team.abbr]), [['Bruno Fernandes', 'epl', 'MAN']]);
+  // A rugby player has no league at all.
+  assert.deepEqual(parseSearchPlayers(fixture('search-players-ohtani')).map((p) => p.name), ['Shohei Ohtani']);
+  // A name half typed matches the start of the last name; a player can have
+  // no team.
+  const mah = parseSearchPlayers(fixture('search-players-patrick-mah'));
+  assert.deepEqual(mah.map((p) => [p.name, p.league]), [['Patrick Mahomes', 'nfl'], ['Patrick Maher', 'ncaam'], ['Patrick Mahoney III', 'ncaaf']]);
+  assert.equal(mah[1].team, null);
+  assert.deepEqual(parseSearchPlayers({}), []);
+  assert.deepEqual(parseSearchPlayers({ items: [{ type: 'team', id: '1', league: 'nfl' }, { type: 'player', id: '2', league: 'nfl', isRetired: true }] }), []);
 });
