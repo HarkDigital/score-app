@@ -79,11 +79,11 @@ npm run ios:bump
 
 The app needs iOS 16 or later. The Lock Screen card and alerts need the push server running (see `server/README.md`); without it the card shows the score from when it was added and alerts don't arrive.
 
-**Before the App Store (not needed for TestFlight):**
+**Before the App Store (not needed for TestFlight):** everything to paste into App Store Connect is in [`ios/APP_STORE.md`](ios/APP_STORE.md): the privacy policy and support URLs (https://scores.phade.app/privacy and /support, served by the push server from `server/site/` and linked from the scoreboard's footer; after changing them, `npm run push:deploy`), the App Privacy answers (they match the app's privacy manifests), the age rating, the screenshot sizes and the notes for App Review. In short:
 - **External testers:** TestFlight testers outside your team need a quick Beta App Review.
-- **Store listing:** the App Store version needs screenshots, including 13-inch iPad ones since the app supports iPad, plus a privacy policy URL and the App Privacy answers.
-- **Age rating:** the betting lines will likely mean answering "Gambling: Yes" in the age rating; Phade was rejected under guideline 2.3.6 until it did.
-- **Review risks:** Apple can reject apps that are mostly a website (guideline 4.2) or that use others' data and logos without permission (5.2: ESPN's feed and team logos).
+- **Store listing:** screenshots, including 13-inch iPad ones since the app supports iPad.
+- **Age rating:** the betting lines will likely mean answering "Gambling: Yes"; Phade was rejected under guideline 2.3.6 until it did, so use Phade's answer.
+- **Review risks:** Apple can reject apps that are mostly a website (guideline 4.2; the review notes lead with the Lock Screen cards, alerts and widgets) or that show others' content without permission (5.2: ESPN's data, photos and news, and team logos). Phade was approved with team logos and ESPN data behind the scenes.
 
 ## Android app (testers)
 

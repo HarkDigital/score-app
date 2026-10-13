@@ -13,6 +13,7 @@
 //   DELETE /v1/devices/:token
 //   GET    /v1/widget?teams=nhl:4,nfl:21     (the iPhone widgets: each team's live, last and next game)
 //   GET    /health
+//   GET    /privacy, /support                (the App Store listing's pages, site.js)
 
 import http from 'node:http';
 import fs from 'node:fs';
@@ -23,6 +24,7 @@ import { createFcm, readAccount } from './fcm.js';
 import { createWatcher, fetchJson } from './watcher.js';
 import { createWidgetSource, parseWidgetTeams } from './widget.js';
 import { parseActivity, parseDevice, parseScheduled, normalizeToken, activityKey } from './live.js';
+import { sitePage } from './site.js';
 
 const env = process.env;
 const log = (msg) => console.log(`${new Date().toISOString()} ${msg}`);
@@ -88,6 +90,11 @@ const server = http.createServer(async (req, res) => {
   const { data } = store;
   try {
     const { pathname, searchParams } = new URL(req.url, 'http://localhost');
+    const page = sitePage(req.method, pathname);
+    if (page) {
+      res.writeHead(200, { 'content-type': page.type, 'content-length': page.body.length, 'cache-control': 'public, max-age=600' });
+      return res.end(req.method === 'HEAD' ? undefined : page.body);
+    }
     if (req.method === 'GET' && pathname === '/health') {
       return reply(200, {
         ok: true,
