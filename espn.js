@@ -395,6 +395,73 @@ export function groupGames(games) {
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 
+// ---- Week view (every league browsed by day, and My Teams) ----
+// A week runs Monday to Sunday in local time. ESPN's scoreboard takes one day
+// per request (a range answers 400), so a week is seven boards.
+
+export function weekStart(date) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  return d;
+}
+
+export function weekDays(date) {
+  const monday = weekStart(date);
+  return Array.from({ length: 7 }, (_, i) => addDays(monday, i));
+}
+
+// Weeks from this week to the one holding `date`: -1 is last week.
+export function weekOffset(date, now = new Date()) {
+  return Math.round((weekStart(date) - weekStart(now)) / (7 * 24 * HOUR));
+}
+
+export function weekPhrase(date, now = new Date()) {
+  const offset = weekOffset(date, now);
+  if (offset === 0) return 'This week';
+  if (offset === -1) return 'Last week';
+  if (offset === 1) return 'Next week';
+  return `Week of ${weekStart(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`;
+}
+
+// "Oct 13 – 19", or "Sep 29 – Oct 5" across a month.
+export function weekRange(date) {
+  const [first, last] = [weekStart(date), addDays(weekStart(date), 6)];
+  const month = (d) => d.toLocaleDateString(undefined, { month: 'short' });
+  const end = first.getMonth() === last.getMonth() ? `${last.getDate()}` : `${month(last)} ${last.getDate()}`;
+  return `${month(first)} ${first.getDate()} \u2013 ${end}`;
+}
+
+// The week's games as sections: Live first, then one per day (by local start
+// time), each in start order. Games outside the week are dropped (a board can
+// carry a late game that is already the next day locally).
+export function groupWeek(games, date, now = new Date()) {
+  const days = weekDays(date);
+  const end = addDays(days[0], 7);
+  const inWeek = games.filter((g) => g.start >= days[0] && g.start < end).sort((a, b) => a.start - b.start);
+  const live = inWeek.filter((g) => g.state === 'in');
+  const sections = live.length ? [{ key: 'in', label: 'Live', games: live }] : [];
+  for (const day of days) {
+    const dayGames = inWeek.filter((g) => g.state !== 'in' && sameDay(g.start, day));
+    if (!dayGames.length) continue;
+    sections.push({ key: 'day', id: ymd(day), label: dayLabel(daysFrom(now, day), now), games: dayGames });
+  }
+  return sections;
+}
+
+// A week view re-reads only the days that can still change: a past day whose
+// games are all over is kept, and a day more than a day away is re-read at
+// most every 10 minutes.
+export function boardStale(board, day, fetchedAt, now = Date.now()) {
+  if (!board) return true;
+  const start = new Date(day);
+  start.setHours(0, 0, 0, 0);
+  const dayEnd = addDays(start, 1).getTime();
+  if (dayEnd <= now - 6 * HOUR && board.games.every((g) => g.state === 'post')) return false;
+  if (start.getTime() > now + 24 * HOUR) return now - fetchedAt > 10 * MINUTE;
+  return true;
+}
+
 // How long to wait before re-fetching, or null to stop auto-refreshing.
 export function refreshDelay(games, now = Date.now()) {
   if (games.some((g) => g.state === 'in')) return 5_000;
@@ -433,6 +500,12 @@ export function addDays(date, n) {
 
 export function ymd(d) {
   return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+}
+
+// Calendar days from a to b (DST-safe: rounded).
+function daysFrom(a, b) {
+  const midnight = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  return Math.round((midnight(b) - midnight(a)) / (24 * HOUR));
 }
 
 function sameDay(a, b) {

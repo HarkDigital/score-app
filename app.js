@@ -1,6 +1,7 @@
 import {
   LEAGUES, leagueById, leagueFilter, scoreboardUrl, dayUrls, mergeGames, parseScoreboard, groupGames, refreshDelay,
   statusLabel, dayLabel, addDays, weekLabel, weekInfo, adjacentWeek,
+  weekDays, weekPhrase, weekRange, groupWeek, boardStale,
 } from './espn.js';
 import {
   standingsUrl, filterStandingsGroup, teamListUrls, parseStandings, rankingsUrl, parseRankings, teamsFromStandings,
@@ -27,6 +28,7 @@ import { inApp, setAlertTeams, setFollowedTeams, haptic } from './native.js';
 const MINE = { id: 'mine', label: 'My Teams', mine: true };
 const LEAGUE_KEY = 'scores.league';
 const FILTER_KEY = 'scores.filters';
+const SPAN_KEY = 'scores.span';
 const storage = (() => { try { return window.localStorage; } catch { return null; } })();
 
 let followed = loadFollowed(storage);
@@ -39,6 +41,7 @@ const view = {
   filter: savedFilter(startLeague),  // college football's conference or division, else null
   mode: 'scores',  // 'scores' | 'standings' | 'rankings' | 'news'
   dayOffset: 0,    // days from today, so "Today" survives midnight
+  span: readStorage(SPAN_KEY) === 'week' ? 'week' : 'day', // daily leagues and My Teams: one day or its whole week
   week: null,      // weekly leagues: null means the current week
   poll: 0,         // rankings: which poll is showing
   standings: 'division', // NFL standings: 'division' | 'conference' | 'playoffs'
@@ -90,6 +93,9 @@ async function fetchView() {
   const { league, mode } = view;
   const date = addDays(new Date(), view.dayOffset);
   if (league.mine) return mode === 'news' ? fetchMyNews() : fetchMyTeams(date);
+  if (mode === 'scores' && byWeek()) {
+    return { games: mergeGames(await Promise.all(weekDays(date).map((day) => fetchBoard(scoreboardUrl(league, { date: day, groups: view.filter?.groups }), day, league)))) };
+  }
   if (mode === 'standings') return parseStandings(await getJson(standingsUrl(league, filterStandingsGroup(view.filter))), league);
   if (mode === 'rankings') return parseRankings(await getJson(rankingsUrl(league)));
   if (mode === 'news') return parseNews(await getJson(newsUrl(league)));
@@ -100,7 +106,8 @@ async function fetchView() {
 async function fetchMyTeams(date) {
   const leagues = followedLeagues(followed).map(leagueById);
   const results = await Promise.allSettled(leagues.map(async (league) => {
-    const boards = await Promise.all(dayUrls(league, date).map(async (url) => parseScoreboard(await getJson(url), league)));
+    const days = byWeek() ? weekDays(date) : [date];
+    const boards = await Promise.all(days.flatMap((day) => dayUrls(league, day).map((url) => fetchBoard(url, day, league))));
     return gamesForTeams(mergeGames(boards), followed, league.id).map((game) => ({ ...game, league }));
   }));
   const failed = leagues.filter((_, i) => results[i].status === 'rejected');
@@ -109,6 +116,23 @@ async function fetchMyTeams(date) {
     games: results.flatMap((r) => (r.status === 'fulfilled' ? r.value : [])),
     failed: failed.map((l) => l.label),
   };
+}
+
+// One day's board. A week view keeps the boards that can't change any more
+// (boardStale), so a live game's 5s refresh re-reads a day or two, not seven.
+const boardCache = new Map(); // url -> { board, at }
+async function fetchBoard(url, day, league) {
+  const cached = boardCache.get(url);
+  if (byWeek() && cached && !boardStale(cached.board, day, cached.at)) return cached.board;
+  const board = parseScoreboard(await getJson(url), league);
+  boardCache.set(url, { board, at: Date.now() });
+  if (boardCache.size > 200) boardCache.delete(boardCache.keys().next().value);
+  return board;
+}
+
+// Daily leagues and My Teams can show a whole week; football is always by week.
+function byWeek(league = view.league) {
+  return view.span === 'week' && !(league.weekly && !league.mine);
 }
 
 // My Teams' news: each followed team's own news (news.js), merged. Fewer
@@ -221,7 +245,7 @@ function renderNav() {
   const board = weekly ? view.data : null;
   const key = mode !== 'scores' ? 'none'
     : weekly ? `week|${league.id}|${JSON.stringify(view.week)}|${JSON.stringify(board?.week ?? null)}`
-    : `day|${view.dayOffset}|${new Date().toDateString()}`;
+    : `${view.span}|${view.dayOffset}|${new Date().toDateString()}`;
   if (rendered.nav === key) return;
   rendered.nav = key;
   if (mode !== 'scores') {
@@ -230,10 +254,44 @@ function renderNav() {
   } else if (weekly) {
     els.nav.innerHTML = weekBar(board);
     stripStart = null;
+  } else if (view.span === 'week') {
+    els.nav.innerHTML = calendarWeekBar();
+    stripStart = null;
   } else {
     els.nav.innerHTML = dayStrip();
     slideStrip();
   }
+}
+
+// Day or Week, for the leagues browsed by day and My Teams.
+function spanToggle() {
+  return `
+    <div class="pills" role="group" aria-label="Show">
+      ${[['day', 'Day'], ['week', 'Week']].map(([id, label]) => `<button data-span="${id}" aria-pressed="${view.span === id}">${label}</button>`).join('')}
+    </div>`;
+}
+
+// The week holding the selected day, Monday to Sunday. Arrows move a week.
+function calendarWeekBar() {
+  const now = new Date();
+  const date = addDays(now, view.dayOffset);
+  const phrase = weekPhrase(date, now);
+  return `
+    <div class="nav-head">
+      <span class="eyebrow">${esc(phrase)}</span>
+      <span class="nav-actions">
+        ${phrase === 'This week' ? '' : '<button class="pill-btn" data-action="today">This week</button>'}
+        ${spanToggle()}
+      </span>
+    </div>
+    <div class="strip">
+      <button class="strip-arrow" data-shift="-7" aria-label="Previous week">${ICONS.left}</button>
+      <div class="week-center">
+        <span class="week-label">${esc(weekRange(date))}</span>
+        <span class="week-detail">Mon to Sun</span>
+      </div>
+      <button class="strip-arrow" data-shift="7" aria-label="Next week">${ICONS.right}</button>
+    </div>`;
 }
 
 // Phade's DayStrip: the selected day sits in the middle and the strip slides
@@ -246,7 +304,10 @@ function dayStrip() {
   return `
     <div class="nav-head">
       <span class="eyebrow">${esc(dayLabel(view.dayOffset, now))}</span>
-      ${current ? `<span class="sub">${esc(fullDate(now))}</span>` : '<button class="pill-btn" data-action="today">Today</button>'}
+      <span class="nav-actions">
+        ${current ? `<span class="sub">${esc(fullDate(now))}</span>` : '<button class="pill-btn" data-action="today">Today</button>'}
+        ${spanToggle()}
+      </span>
     </div>
     <div class="strip">
       <button class="strip-arrow" data-shift="-7" aria-label="Back a week">${ICONS.left}</button>
@@ -355,13 +416,15 @@ function pickTeamsHtml() {
 function gamesHtml(games) {
   const { league } = view;
   if (league.mine && !followed.length) return pickTeamsHtml();
-  const groups = groupGames(games);
+  const week = byWeek();
+  const now = new Date();
+  const groups = week ? groupWeek(games, addDays(now, view.dayOffset), now) : groupGames(games);
   if (!groups.length) {
     if (league.mine) {
       return emptyState({
         icon: ICONS.calendar,
         title: 'No games for your teams',
-        text: `None of the teams you follow play ${dayPhrase(view.dayOffset)}.`,
+        text: `None of the teams you follow play ${week ? weekWords(addDays(now, view.dayOffset), now) : dayPhrase(view.dayOffset)}.`,
         action: '<button class="link-btn" data-action="edit-teams">Edit teams</button>',
       });
     }
@@ -369,18 +432,21 @@ function gamesHtml(games) {
       icon: ICONS.calendar,
       // "No SEC games", "No FCS games", "No Top 25 games".
       title: `No ${view.filter ? view.filter.label.replace(/^All /, '') : league.label} games`,
-      text: league.weekly ? 'Nothing scheduled this week. Try another week.' : `Nothing scheduled ${dayPhrase(view.dayOffset)}. Try another day.`,
+      text: league.weekly ? 'Nothing scheduled this week. Try another week.'
+        : week ? `Nothing scheduled ${weekWords(addDays(now, view.dayOffset), now)}. Try another week.`
+        : `Nothing scheduled ${dayPhrase(view.dayOffset)}. Try another day.`,
     });
   }
-  const now = new Date();
   return groups.map((group) => `
     <section class="group">
-      <h2 class="group-title ${group.key}">${group.key === 'in' ? '<span class="live-dot" aria-hidden="true"></span>' : ''}${group.label}<span class="count">${group.games.length}</span></h2>
-      <div class="grid">${group.games.map((game) => gameCard(game, now)).join('')}</div>
+      <h2 class="group-title ${group.key}">${group.key === 'in' ? '<span class="live-dot" aria-hidden="true"></span>' : ''}${esc(group.label)}<span class="count">${group.games.length}</span></h2>
+      <div class="grid">${group.games.map((game) => gameCard(game, group.key === 'day' ? game.start : now)).join('')}</div>
     </section>
   `).join('');
 }
 
+// `now` decides how a start time reads; under a day's heading the game's own
+// start is passed, so it reads as just the time.
 function gameCard(game, now) {
   const league = game.league ?? view.league;
   const live = game.state === 'in';
@@ -539,6 +605,12 @@ function skeleton(mode) {
   }
   const row = `<div class="skeleton-row">${bar('18px', 14)}${bar('22px', 22, ';border-radius:50%')}${bar('40%', 14)}${bar('22%', 14)}</div>`;
   return `<div class="card skeleton-card" style="margin-top:22px">${row.repeat(8)}</div>`;
+}
+
+// "this week", "last week", "the week of Oct 6".
+function weekWords(date, now) {
+  const phrase = weekPhrase(date, now);
+  return phrase.startsWith('Week of') ? `the w${phrase.slice(1)}` : phrase.toLowerCase();
 }
 
 function dayPhrase(offset) {
@@ -885,6 +957,10 @@ document.addEventListener('click', (event) => {
   else if (d.mode && d.mode !== view.mode) changeView({ mode: d.mode });
   else if (d.offset !== undefined && Number(d.offset) !== view.dayOffset) changeView({ dayOffset: Number(d.offset) });
   else if (d.shift) changeView({ dayOffset: view.dayOffset + Number(d.shift) });
+  else if (d.span && d.span !== view.span) {
+    writeStorage(SPAN_KEY, d.span);
+    changeView({ span: d.span });
+  }
   else if (d.week) {
     const week = adjacentWeek(view.data, Number(d.week));
     if (week) changeView({ week });
@@ -938,7 +1014,7 @@ document.addEventListener('change', (event) => {
 // In the iPhone app every button press taps the haptic engine: a selection
 // tick for tabs, view switches, days and polls, a light tap for the rest.
 // Captured first, so it buzzes even for buttons whose handlers stop the click.
-const SELECTION = '[role="tab"], .day, [data-poll], [data-standings], [data-team-tab], [data-alert-delay]';
+const SELECTION = '[role="tab"], .day, [data-span], [data-poll], [data-standings], [data-team-tab], [data-alert-delay]';
 document.addEventListener('click', (event) => {
   const button = event.target.closest('button');
   if (button && !button.disabled) haptic(button.matches(SELECTION) ? 'selection' : 'light');
