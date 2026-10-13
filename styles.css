@@ -1462,6 +1462,15 @@ main {
 
 .team-option .league-chip { margin-left: auto; }
 
+/* A player result's team and position, under the name. */
+.option-meta {
+  display: block;
+  margin-top: 1px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--gray-500);
+}
+
 .list-note {
   padding: 24px 16px;
   text-align: center;

@@ -11,12 +11,13 @@ import {
   alertsFor, setAlerts, alertTeams, widgetTeams, loadAlertDelay, saveAlertDelay, clampDelay,
 } from './myteams.js';
 import {
-  ICONS, getJson, TROUBLE, oddsHtml, failedLogos, failedImages, logoHtml, fallbackLogo, emptyState, errorState, fullDate, formatClock, esc,
-  patchHtml, newsHtml,
+  ICONS, getJson, TROUBLE, oddsHtml, failedLogos, failedImages, logoHtml, fallbackLogo, headshotHtml, emptyState, errorState, fullDate,
+  formatClock, esc, patchHtml, newsHtml,
 } from './ui.js';
 import { newsUrl, parseNews, mergeNews } from './news.js';
+import { playerSearchUrl, parseSearchPlayers } from './players.js';
 import {
-  initPages, parseRoute, showPage, hidePage, pageOpen, refreshPage, pageVisible, gameHref, teamHref,
+  initPages, parseRoute, showPage, hidePage, pageOpen, refreshPage, pageVisible, gameHref, teamHref, playerHref,
 } from './pages.js';
 import { initAutoUpdate } from './update.js';
 import { initPullToRefresh } from './pull.js';
@@ -705,11 +706,20 @@ function toggleTeam(button) {
   renderPickerTabs();
 }
 
-// ---- Team search ----
+// ---- Team and player search ----
 
-// The magnifier in the header: every league's teams at once, and a tap opens
-// the team's page. Before anything is typed it lists your teams.
-const search = { open: false, query: '', pending: new Set(), failed: new Set(), opener: null };
+// The magnifier in the header: every league's teams at once, and players
+// from ESPN's search; a tap opens the team's or the player's page. Before
+// anything is typed it lists your teams.
+const search = { open: false, query: '', pending: new Set(), failed: new Set(), opener: null, timer: null, failedPlayers: new Set() };
+
+// Players come from ESPN's search (players.js) a moment after typing stops,
+// from 3 letters on. Each query's answer is kept for the session, so typing
+// back over a name doesn't ask again.
+const PLAYER_MIN = 3;
+const PLAYER_WAIT = 300;
+const playerResults = new Map(); // folded query → players
+const playerKey = (query) => fold(query.trim()).replace(/\s+/g, ' ');
 
 function openSearch() {
   if (search.open) return;
@@ -720,10 +730,10 @@ function openSearch() {
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
       <div class="sheet-grabber" aria-hidden="true"></div>
       <div class="sheet-head">
-        <h2 id="sheet-title">Find a team</h2>
+        <h2 id="sheet-title">Search</h2>
         <button class="pill-btn" data-action="close-search">Done</button>
       </div>
-      <input class="search" id="team-search" type="search" placeholder="Team, city or abbreviation" aria-label="Find a team"
+      <input class="search" id="team-search" type="search" placeholder="Team, city or player" aria-label="Search teams and players"
         autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="go">
       <ul class="team-list" id="search-list"></ul>
     </div>`;
@@ -731,13 +741,14 @@ function openSearch() {
   const input = els.sheet.querySelector('#team-search');
   input.addEventListener('input', () => {
     search.query = input.value;
+    searchPlayersSoon();
     renderSearch();
   });
   // Go on the keyboard opens the top result.
   input.addEventListener('keydown', (event) => {
     if (event.key !== 'Enter') return;
     event.preventDefault();
-    els.sheet.querySelector('[data-search-team]')?.click();
+    els.sheet.querySelector('[data-search-team], [data-search-player]')?.click();
   });
   // Scrolling the results puts the keyboard away, as in iOS's own lists.
   els.sheet.querySelector('#search-list').addEventListener('touchmove', () => input.blur(), { passive: true });
@@ -750,9 +761,29 @@ function openSearch() {
 function closeSearch(restoreFocus = true) {
   if (!search.open) return;
   search.open = false;
+  clearTimeout(search.timer);
   els.sheet.innerHTML = '';
   document.body.style.overflow = '';
   if (restoreFocus) search.opener?.focus?.();
+}
+
+function searchPlayersSoon() {
+  clearTimeout(search.timer);
+  const key = playerKey(search.query);
+  if (key.length < PLAYER_MIN || playerResults.has(key)) return;
+  search.failedPlayers.delete(key);
+  const query = search.query.trim();
+  search.timer = setTimeout(() => loadSearchPlayers(query, key), PLAYER_WAIT);
+}
+
+async function loadSearchPlayers(query, key) {
+  try {
+    playerResults.set(key, parseSearchPlayers(await getJson(playerSearchUrl(query))));
+  } catch {
+    search.failedPlayers.add(key);
+  }
+  // Only if it's still what's typed: an older answer can arrive late.
+  if (search.open && playerKey(search.query) === key) renderSearch();
 }
 
 async function loadSearchTeams(league) {
@@ -776,19 +807,32 @@ function renderSearch() {
     const mine = followed.map((t) => ({ league: leagueById(t.league), team: t })).filter((r) => r.league);
     list.innerHTML = mine.length
       ? `<li class="list-label">Your teams</li>${mine.map(searchRow).join('')}`
-      : '<li class="list-note">Search every league by team name, city or abbreviation.</li>';
+      : '<li class="list-note">Search every league by team name, city or abbreviation, or by a player\'s name.</li>';
     return;
   }
   const loaded = LEAGUES.filter((l) => teamLists.has(l.id)).map((league) => ({ league, teams: teamLists.get(league.id) }));
   const results = searchTeams(loaded, query);
   const loading = LEAGUES.filter((l) => search.pending.has(l.id)).map((l) => l.label);
   const failed = LEAGUES.filter((l) => search.failed.has(l.id)).map((l) => l.label);
+  const key = playerKey(query);
+  const searchesPlayers = key.length >= PLAYER_MIN;
+  const players = (searchesPlayers && playerResults.get(key)) || [];
+  const playersFailed = searchesPlayers && search.failedPlayers.has(key);
+  const playersPending = searchesPlayers && !playerResults.has(key) && !playersFailed;
   const notes = [
-    !results.length && !loading.length ? `No teams match “${query}”.` : '',
+    !results.length && !loading.length && !players.length && !playersPending
+      ? `No teams${searchesPlayers && !playersFailed ? ' or players' : ''} match “${query}”.`
+      : '',
     loading.length ? `Still loading ${loading.join(', ')}…` : '',
     failed.length ? `Couldn't load ${failed.join(', ')}.` : '',
+    playersPending ? 'Searching players…' : '',
+    playersFailed ? "Couldn't search players." : '',
   ].filter(Boolean);
-  list.innerHTML = results.map(searchRow).join('') + notes.map((n) => `<li class="list-note">${esc(n)}</li>`).join('');
+  // Labelled once both kinds can show.
+  const both = results.length && (players.length || playersPending);
+  list.innerHTML = (both ? '<li class="list-label">Teams</li>' : '') + results.map(searchRow).join('')
+    + (players.length ? `<li class="list-label">Players</li>${players.map(playerRow).join('')}` : '')
+    + notes.map((n) => `<li class="list-note">${esc(n)}</li>`).join('');
 }
 
 function searchRow({ league, team }) {
@@ -801,10 +845,21 @@ function searchRow({ league, team }) {
     </button></li>`;
 }
 
-function openSearchResult(value) {
-  const [leagueId, teamId] = value.split('|');
+function playerRow(player) {
+  const league = leagueById(player.league);
+  const meta = [player.team?.abbr, player.position].filter(Boolean).join(' · ');
+  return `
+    <li><button class="team-option" data-search-player="${esc(player.league)}|${esc(player.id)}">
+      ${headshotHtml(player, 28, player.team?.color)}
+      <span class="name">${esc(player.name)}${meta ? `<small class="option-meta">${esc(meta)}</small>` : ''}</span>
+      <span class="league-chip">${esc(league.label)}</span>
+    </button></li>`;
+}
+
+function openSearchResult(value, hrefFor = teamHref) {
+  const [leagueId, id] = value.split('|');
   closeSearch(false);
-  const href = teamHref(leagueId, teamId);
+  const href = hrefFor(leagueId, id);
   if (href !== location.hash) navigate(href);
 }
 
@@ -851,6 +906,7 @@ document.addEventListener('click', (event) => {
   else if (d.action === 'open-search') openSearch();
   else if (d.action === 'close-search') closeSearch();
   else if (d.searchTeam) openSearchResult(d.searchTeam);
+  else if (d.searchPlayer) openSearchResult(d.searchPlayer, playerHref);
   else if (d.action === 'retry') load();
   else if (d.action === 'retry-teams') loadTeams(picker.league);
 });

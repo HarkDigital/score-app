@@ -8,11 +8,11 @@ import {
   summaryUrl, scheduleUrls, parseSummary, parseSchedule, lockScreenCard, canShowOnLockScreen, LOCK_LEAD_MINUTES,
 } from './details.js';
 import {
-  ICONS, getJson, TROUBLE, oddsHtml, logoHtml, fallbackLogo, failedLogos, emptyState, errorState, formatClock, esc, patchHtml, textOn, newsHtml,
+  ICONS, getJson, TROUBLE, oddsHtml, logoHtml, headshotHtml, emptyState, errorState, formatClock, esc, patchHtml, textOn, newsHtml,
 } from './ui.js';
 import { newsUrl, parseNews } from './news.js';
 import { teamStatsUrl, statsSeasons, parseTeamStats } from './stats.js';
-import { rosterUrl, athleteUrls, parseRoster, parseAthlete, parseOverview, parseCareer, headshotUrl, initials } from './players.js';
+import { rosterUrl, athleteUrls, parseRoster, parseAthlete, parseOverview, parseCareer } from './players.js';
 import { ALERT_DELAY_CHOICES, ALERT_DELAY_MAX } from './myteams.js';
 import {
   inApp, appPlatform, nativeInfo, showOnLockScreen, scheduleOnLockScreen, removeFromLockScreen, enableAlerts,
@@ -848,17 +848,6 @@ function rosterHtml(team, league) {
       </a>`;
   };
   return roster.groups.map((g) => section(g.title, `<div class="card list-card">${g.players.map(row).join('')}</div>`)).join('');
-}
-
-// A player's headshot, cropped round on a wash of the team's color; with no
-// headshot or a failed one, their initials in the team's color (the logo
-// fallback, which the error listener in app.js swaps in).
-function headshotHtml(player, size, color) {
-  const src = headshotUrl(player.headshot, size);
-  const abbr = initials(player.name);
-  if (!src || failedLogos.has(src)) return fallbackLogo(abbr, color);
-  const wash = color ? ` style="background:${color}33"` : '';
-  return `<img class="logo headshot" src="${esc(src)}" alt="" width="${size}" height="${size}" loading="lazy" decoding="async" data-abbr="${esc(abbr)}" data-color="${esc(color ?? '')}"${wash}>`;
 }
 
 // Out and injured reserve in red, questionable and day-to-day in amber.
