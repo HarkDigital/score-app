@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B67F08859BB6F15C5092530C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C12FB35B37CA9DF51BDDA15F /* PrivacyInfo.xcprivacy */; };
+		5E139DF4ED45AC828B5B19FD /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 46177414617788921BBD6600 /* PrivacyInfo.xcprivacy */; };
 		2A9719EEA73356AF3C89C718 /* TeamLogos.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2FCF94A607CF6B81E955E50 /* TeamLogos.swift */; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
 		30EC46DA05A4BD27CDCB28CF /* TeamLogos+Fetch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117358EB051D58F3B55747B0 /* TeamLogos+Fetch.swift */; };
@@ -61,6 +63,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C12FB35B37CA9DF51BDDA15F /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		46177414617788921BBD6600 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		07F26180E10335C10B7D0657 /* LiveGameActivity.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveGameActivity.swift; sourceTree = "<group>"; };
 		117358EB051D58F3B55747B0 /* TeamLogos+Fetch.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "TeamLogos+Fetch.swift"; sourceTree = "<group>"; };
 		12D230136437648D56E96486 /* GameAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GameAttributes.swift; sourceTree = "<group>"; };
@@ -119,6 +123,7 @@
 				F94B5318EFA08B6721E44B2C /* WidgetViews.swift */,
 				191EECBD56D863D1B1731C45 /* Info.plist */,
 				FA05088A10B23E604A289EBC /* LiveGame.entitlements */,
+				46177414617788921BBD6600 /* PrivacyInfo.xcprivacy */,
 			);
 			name = LiveGame;
 			path = LiveGame;
@@ -163,6 +168,7 @@
 				CE4ADE72349C28783BE8DAE5 /* PushManager.swift */,
 				4BED70E97C26C5161D7E9627 /* NativeBridge.swift */,
 				B9651ECB16DB4ADF4718D0F5 /* App.entitlements */,
+				C12FB35B37CA9DF51BDDA15F /* PrivacyInfo.xcprivacy */,
 				117358EB051D58F3B55747B0 /* TeamLogos+Fetch.swift */,
 			);
 			path = App;
@@ -280,6 +286,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5E139DF4ED45AC828B5B19FD /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -293,6 +300,7 @@
 				50379B232058CBB4000EE86E /* capacitor.config.json in Resources */,
 				504EC30D1FED79650016851F /* Main.storyboard in Resources */,
 				2FAD9763203C412B000D30F8 /* config.xml in Resources */,
+				B67F08859BB6F15C5092530C /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
