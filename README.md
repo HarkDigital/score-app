@@ -46,7 +46,7 @@ The app opens full-screen like a native app and remembers the last league you vi
 
 ## iPhone app (TestFlight)
 
-"Phade Scores" (bundle ID `digital.hark.scores`) is a thin [Capacitor](https://capacitorjs.com) app that opens the live site above, the same way Phade's app works. Changes to the web app reach the iPhone app as soon as they're merged to `main`; you only need a new build when the native shell itself changes (its icon, splash, name, settings or the Swift in `ios/App/App/`). Build 2 added the back and forward edge swipes; build 7 the haptics. The Xcode project is in `ios/` and uses Swift Package Manager, so there's no CocoaPods step.
+"Phade Scores" (bundle ID `digital.hark.scores`) is a thin [Capacitor](https://capacitorjs.com) app that opens the live site above, the same way Phade's app works. Changes to the web app reach the iPhone app as soon as they're merged to `main`; you only need a new build when the native shell itself changes (its icon, splash, name, settings or the Swift in `ios/App/App/`). Build 2 added the back and forward edge swipes; build 7 the haptics; build 20 the privacy manifests the App Store needs. The Xcode project is in `ios/` and uses Swift Package Manager, so there's no CocoaPods step.
 
 **First build** (on your Mac, with Xcode installed), from the `score-app` folder:
 
