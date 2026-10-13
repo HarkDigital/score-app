@@ -10,3 +10,6 @@ server/secrets/
 # Built Android app for testers (npm run android:apk)
 dist/
 *.jks
+
+# Raw ESPN responses (npm run capture:players), trimmed into fixtures by hand
+test/fixtures/captures/
