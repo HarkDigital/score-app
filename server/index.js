@@ -12,6 +12,8 @@
 //   PUT    /v1/devices/:token      {platform, env, teams: [{league, id}]}  (no teams = forget)
 //   DELETE /v1/devices/:token
 //   GET    /v1/widget?teams=nhl:4,nfl:21     (the iPhone widgets: each team's live, last and next game)
+//   GET    /v1/me, PUT /v1/me {teams, alertDelay}, DELETE /v1/me
+//                                            (a signed-in person's teams and alerts; Clerk token, me.js)
 //   GET    /health
 //   GET    /privacy, /support                (the App Store listing's pages, site.js)
 
@@ -25,6 +27,8 @@ import { createWatcher, fetchJson } from './watcher.js';
 import { createWidgetSource, parseWidgetTeams } from './widget.js';
 import { parseActivity, parseDevice, parseScheduled, normalizeToken, activityKey } from './live.js';
 import { sitePage } from './site.js';
+import { createClerkAuth } from './auth.js';
+import { accountRoute, corsHeaders } from './me.js';
 
 const env = process.env;
 const log = (msg) => console.log(`${new Date().toISOString()} ${msg}`);
@@ -65,6 +69,23 @@ watcher.tick();
 
 const widgets = createWidgetSource({ fetchJson, log });
 
+// Accounts (sign-in with Clerk): off until CLERK_ISSUER is set in .env.
+let verifyUser = null;
+if (env.CLERK_ISSUER) {
+  verifyUser = createClerkAuth({
+    issuer: env.CLERK_ISSUER,
+    jwtKey: env.CLERK_JWT_KEY || null,
+    parties: (env.CLERK_AUTHORIZED_PARTIES ?? '').split(',').map((s) => s.trim()).filter(Boolean),
+    fetchJson,
+  });
+  log(`accounts on, tokens from ${env.CLERK_ISSUER}`);
+} else {
+  log('no CLERK_ISSUER: accounts are off');
+}
+// The sites allowed to call /v1/me from a browser.
+const ORIGINS = (env.CORS_ORIGINS ?? 'https://harkdigital.github.io,https://scores.phade.app')
+  .split(',').map((s) => s.trim()).filter(Boolean);
+
 const MAX = { activities: 5_000, scheduled: 20_000, devices: 50_000 };
 
 function readJson(req) {
@@ -83,8 +104,8 @@ function readJson(req) {
 }
 
 const server = http.createServer(async (req, res) => {
-  const reply = (status, body) => {
-    res.writeHead(status, { 'content-type': 'application/json', 'cache-control': 'no-store' });
+  const reply = (status, body, headers = {}) => {
+    res.writeHead(status, { 'content-type': 'application/json', 'cache-control': 'no-store', ...headers });
     res.end(JSON.stringify(body));
   };
   const { data } = store;
@@ -103,12 +124,26 @@ const server = http.createServer(async (req, res) => {
         activities: Object.keys(data.activities).length,
         scheduled: Object.keys(data.scheduled).length,
         devices: Object.keys(data.devices).length,
+        accounts: verifyUser ? Object.keys(data.users).length : 'off',
       });
     }
     if (req.method === 'GET' && pathname === '/v1/widget') {
       const teams = parseWidgetTeams(searchParams.get('teams'));
       if (!teams.length) return reply(400, { error: 'no teams' });
       return reply(200, await widgets.teams(teams));
+    }
+    if (pathname === '/v1/me') {
+      const cors = corsHeaders(req.headers.origin, ORIGINS);
+      if (req.method === 'OPTIONS') {
+        res.writeHead(204, cors);
+        return res.end();
+      }
+      if (!verifyUser) return reply(503, { error: 'accounts off' }, cors);
+      const user = await verifyUser(req.headers.authorization);
+      const body = req.method === 'PUT' && user ? await readJson(req) : null;
+      const result = accountRoute({ method: req.method, user, body }, data.users);
+      if (result.changed) store.save();
+      return reply(result.status, result.body, cors);
     }
     const [, version, kind, rawToken, ...rest] = pathname.split('/');
     if (version !== 'v1' || !(kind in MAX) || rest.length > (kind === 'devices' ? 0 : 2)) return reply(404, { error: 'not found' });

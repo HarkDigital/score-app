@@ -2,13 +2,14 @@
 // being kept current, the devices that want team alerts, the last state seen
 // for each watched game (so alerts fire on a change, even across restarts),
 // the alerts already sent, and the ones held back for a follower's delay
-// (pending, so a restart doesn't lose them). Small enough to rewrite whole; writes are
-// atomic (temp file + rename) and batched.
+// (pending, so a restart doesn't lose them), and signed-in people's teams
+// and alert settings (users, by Clerk user id). Small enough to rewrite
+// whole; writes are atomic (temp file + rename) and batched.
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-const EMPTY = () => ({ activities: {}, scheduled: {}, devices: {}, games: {}, sent: {}, pending: [] });
+const EMPTY = () => ({ activities: {}, scheduled: {}, devices: {}, games: {}, sent: {}, pending: [], users: {} });
 
 export async function openStore(dir) {
   await fs.mkdir(dir, { recursive: true });
