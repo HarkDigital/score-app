@@ -36,7 +36,7 @@ npm test    # node --test, unit tests for the data layer (Node 18+)
 | `capacitor.config.json`, `native/www/`, `ios/` | The iPhone app shell (see "iOS app" below) |
 | `server/` | The push server, scores.phade.app (see "Push server" below and `server/README.md`) |
 | `scripts/bump-build.js` | `npm run ios:bump`: raises the build number in every Xcode target at once |
-| `scripts/capture-players.js` | `npm run capture:players [league ...]` (on a Mac, cloud sessions can't reach ESPN): saves real roster, athlete and box score responses into `test/fixtures/captures/` (gitignored, raw) with `report.json`, each URL's status and CORS header |
+| `scripts/capture-players.js` | `npm run capture:players [league ...]` (on a Mac, cloud sessions can't reach ESPN): saves real roster, athlete and box score responses into `test/fixtures/captures/` (gitignored, raw) with `report.json`, each URL's status and CORS header; `npm run capture:players -- search` does the same for ESPN's search feeds |
 
 All parsing lives in the data modules (`espn.js`, `standings.js`, `details.js`, `myteams.js`, `news.js`, `stats.js`, `players.js`), which are pure and tested. Keep UI files free of feed-shape knowledge.
 

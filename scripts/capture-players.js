@@ -5,6 +5,7 @@
 //
 //   node scripts/capture-players.js            every league
 //   node scripts/capture-players.js nfl mlb    just these
+//   node scripts/capture-players.js search     ESPN's search, for finding players
 //
 // The responses go to test/fixtures/captures/ (raw, to be trimmed into
 // fixtures) with report.json: every URL tried, its status, its
@@ -207,9 +208,37 @@ async function captureLeague(league) {
   }
 }
 
+// ESPN's search, which the app has never read: two feeds that might answer
+// a player's name, each tried on both hosts for the first query (a browser
+// needs one of them to send a CORS header). The queries cover every league,
+// a name half typed, accents and a common name.
+const SEARCHES = [
+  ['common-v3', (q) => `/apis/common/v3/search?query=${q}&limit=20&mode=prefix`],
+  ['common-v3-player', (q) => `/apis/common/v3/search?query=${q}&limit=20&type=player`],
+  ['search-v2', (q) => `/apis/search/v2?query=${q}&limit=20`],
+];
+const QUERIES = ['mahomes', 'patrick mah', 'ohtani', 'mcdavid', 'wembanyama', 'caitlin clark', 'hecklinski', 'dame sarr',
+  'bruno fernandes', 'mbappe', 'mbappé', 'messi', 'smith'];
+
+async function captureSearch() {
+  console.log('\nSearch');
+  for (const [i, query] of QUERIES.entries()) {
+    const q = encodeURIComponent(query);
+    const plain = query.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const slug = plain.replace(/[^a-z]+/gi, '-').toLowerCase() + (plain === query ? '' : '-accented');
+    for (const [key, path] of SEARCHES) {
+      const hosts = i === 0 ? [WEB, SITE] : [WEB];
+      await probe(`${key} "${query}"`, hosts.map((h) => h + path(q)), `search-${key}-${slug}.json`);
+    }
+  }
+  // One league's players only, if the feed takes a filter.
+  await grab('common-v3 "smith" nfl only', `${WEB}/apis/common/v3/search?query=smith&limit=20&type=player&sport=football&league=nfl`, 'search-common-v3-player-smith-nfl.json');
+}
+
 const wanted = process.argv.slice(2);
-const leagues = wanted.length ? LEAGUES.filter((l) => wanted.includes(l.id)) : LEAGUES;
-if (!leagues.length) {
+const searching = wanted.includes('search');
+const leagues = searching ? [] : wanted.length ? LEAGUES.filter((l) => wanted.includes(l.id)) : LEAGUES;
+if (!leagues.length && !searching) {
   console.error(`Unknown league. Pick from: ${LEAGUES.map((l) => l.id).join(' ')}`);
   process.exit(1);
 }
@@ -226,6 +255,7 @@ for (const league of leagues) {
     report.push({ label: `${league.id} failed`, error: String(err?.message ?? err) });
   }
 }
+if (searching) await captureSearch();
 await writeFile(OUT + 'report.json', JSON.stringify(report, null, 1));
 const noCors = report.filter((r) => r.status === 200 && !r.cors).map((r) => r.label);
 console.log(`\nSaved ${(saved / 1048576).toFixed(1)} MB in test/fixtures/captures/.`);
