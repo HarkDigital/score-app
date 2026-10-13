@@ -122,7 +122,7 @@ const JUNK = /Rating$|^ESPN|WARBR|^avg48|^isQualified|^rpi$|^sos$|^powerRank$|^g
 const COLLEGE_FOOTBALL_JUNK = /^redzone/i;
 
 // "Tied-23rd" reads "T-23rd".
-const rankText = (stat) => (stat?.rankDisplayValue ? String(stat.rankDisplayValue).replace(/^Tied-/, 'T-') : '');
+export const rankText = (stat) => (stat?.rankDisplayValue ? String(stat.rankDisplayValue).replace(/^Tied-/, 'T-') : '');
 
 // { games, key: [{label, value, rank}], categories: [{name, stats: [{label,
 // value, rank}]}] } or null when the feed has no stats.

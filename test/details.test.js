@@ -25,7 +25,8 @@ test('football box score: line score, scoring plays, team stats, player groups',
   const kc = game.players[0];
   assert.equal(kc.teamId, '12');
   assert.deepEqual(kc.groups.map((g) => g.title), ['Passing', 'Rushing']);
-  assert.deepEqual(kc.groups[0].rows[0], { name: 'Patrick Mahomes', position: '', starter: false, stats: ['21/32', '257', '8.0', '3', '2', '6-31', '10.0', '95.4'] });
+  // This older capture was trimmed down to names: no ids.
+  assert.deepEqual(kc.groups[0].rows[0], { id: null, name: 'Patrick Mahomes', position: '', starter: false, stats: ['21/32', '257', '8.0', '3', '2', '6-31', '10.0', '95.4'] });
   assert.equal(game.venue, 'Caesars Superdome · New Orleans, LA');
   assert.equal(game.attendance, '65,719');
 });
@@ -36,10 +37,36 @@ test('basketball box score: starters, totals and who did not play', () => {
   assert.equal(raptors.title, '');
   // Offensive and defensive rebounds are folded into REB.
   assert.deepEqual(raptors.labels, ['MIN', 'PTS', 'FG', '3PT', 'FT', 'REB', 'AST', 'TO', 'STL', 'BLK', 'PF', '+/-']);
-  assert.deepEqual(raptors.rows[0], { name: 'K. Olynyk', position: 'F', starter: true, stats: ['26', '11', '5-8', '1-1', '0-0', '4', '3', '3', '1', '0', '5', '-11'] });
+  assert.deepEqual(raptors.rows[0], { id: null, name: 'K. Olynyk', position: 'F', starter: true, stats: ['26', '11', '5-8', '1-1', '0-0', '4', '3', '3', '1', '0', '5', '-11'] });
   assert.equal(raptors.totals[1], '96');
   assert.deepEqual(raptors.didNotPlay, ['G. Temple']);
   assert.deepEqual(game.scoring, []);
+});
+
+// Captured Oct 13 2026 (npm run capture:players), with the athletes' ids.
+test('box score rows keep the athlete id, for the player page', () => {
+  const game = summary('nba-summary-ids', 'nba');
+  assert.deepEqual(game.players[0].groups[0].rows.map((r) => [r.id, r.name]), [['4278572', 'J. Cain'], ['4432573', 'P. Banchero']]);
+  assert.deepEqual(game.lineups, []);
+});
+
+test('soccer lineups: formation, starters and substitutes, each with their goals, cards and subs', () => {
+  const game = summary('epl-summary-lineups', 'epl');
+  const [united, spurs] = game.lineups;
+  assert.equal(united.teamId, '360');
+  assert.equal(united.formation, '4-2-3-1');
+  assert.equal(united.starters.length, 11);
+  assert.equal(united.subs.length, 9);
+  assert.deepEqual(united.starters[0], { id: '301425', name: 'Senne Lammens', jersey: '1', position: 'G', starter: true, events: [] });
+  const by = (name) => [...united.starters, ...united.subs].find((p) => p.name === name).events;
+  assert.deepEqual(by('Bryan Mbeumo'), [{ kind: 'goal', minute: "73'" }]);
+  assert.deepEqual(by('Matheus Cunha'), [{ kind: 'assist', minute: "73'" }, { kind: 'off', minute: "90'+5'" }]);
+  assert.deepEqual(by('Luke Shaw'), [{ kind: 'yellow', minute: "78'" }, { kind: 'off', minute: "90'+5'" }]);
+  assert.deepEqual(by('Diogo Dalot'), [{ kind: 'on', minute: "59'" }, { kind: 'yellow', minute: "90'+6'" }]);
+  assert.deepEqual(by('Mason Mount'), []);
+  assert.equal(spurs.teamId, '367');
+  // The older capture has no rosters; other sports get none.
+  assert.deepEqual(summary('epl-summary', 'epl').lineups, []);
 });
 
 test('baseball line score ends R H E, and box score is batting and pitching', () => {

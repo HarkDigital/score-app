@@ -1,14 +1,18 @@
-// The game page (box score) and the team page (schedule). They open over the
-// scoreboard from links like #/game/nfl/401547417 and #/team/nfl/12, so the
-// back button, swipe-back and shared links all work.
+// The game page (box score), the team page (schedule, roster, stats, news)
+// and the player page. They open over the scoreboard from links like
+// #/game/nfl/401547417, #/team/nfl/12 and #/player/nfl/3139477, so the back
+// button, swipe-back and shared links all work.
 
 import { leagueById, statusLabel, lineSteamUrl, dayUrls, parseScoreboard, fieldView } from './espn.js';
 import {
   summaryUrl, scheduleUrls, parseSummary, parseSchedule, lockScreenCard, canShowOnLockScreen, LOCK_LEAD_MINUTES,
 } from './details.js';
-import { ICONS, getJson, TROUBLE, oddsHtml, logoHtml, emptyState, errorState, formatClock, esc, patchHtml, textOn, newsHtml } from './ui.js';
+import {
+  ICONS, getJson, TROUBLE, oddsHtml, logoHtml, fallbackLogo, failedLogos, emptyState, errorState, formatClock, esc, patchHtml, textOn, newsHtml,
+} from './ui.js';
 import { newsUrl, parseNews } from './news.js';
 import { teamStatsUrl, statsSeasons, parseTeamStats } from './stats.js';
+import { rosterUrl, athleteUrls, parseRoster, parseAthlete, parseOverview, parseCareer, headshotUrl, initials } from './players.js';
 import { ALERT_DELAY_CHOICES, ALERT_DELAY_MAX } from './myteams.js';
 import {
   inApp, appPlatform, nativeInfo, showOnLockScreen, scheduleOnLockScreen, removeFromLockScreen, enableAlerts,
@@ -17,11 +21,12 @@ import {
 
 export const gameHref = (leagueId, id) => `#/game/${leagueId}/${encodeURIComponent(id)}`;
 export const teamHref = (leagueId, id) => `#/team/${leagueId}/${encodeURIComponent(id)}`;
+export const playerHref = (leagueId, id) => `#/player/${leagueId}/${encodeURIComponent(id)}`;
 
 // A team page can open on a tab ("#/team/nfl/12/news", where a news alert
 // lands); the tab isn't part of the page's key.
 export function parseRoute(hash) {
-  const match = /^#\/(game|team)\/([a-z0-9]+)\/([\w-]+)(?:\/(schedule|stats|news))?$/.exec(hash ?? '');
+  const match = /^#\/(game|team|player)\/([a-z0-9]+)\/([\w-]+)(?:\/(schedule|roster|stats|news))?$/.exec(hash ?? '');
   const league = match && leagueById(match[2]);
   if (!league || (match[4] && match[1] !== 'team')) return null;
   return { kind: match[1], league, id: match[3], key: `#/${match[1]}/${match[2]}/${match[3]}`, tab: match[4] ?? null };
@@ -38,7 +43,9 @@ const page = {
   updatedAt: null,
   loading: false,
   side: 0,       // game page: whose box score is showing
-  tab: 'schedule', // team page: 'schedule' | 'stats' | 'news'
+  tab: 'schedule', // team page: 'schedule' | 'roster' | 'stats' | 'news'
+  roster: null,  // team page: its players (parseRoster), once the Roster tab is opened
+  rosterError: null,
   news: null,    // team page: its news (parseNews), once the News tab is opened
   newsError: null,
   stats: null,   // team page: its season stats (parseTeamStats), once the Stats tab is opened
@@ -82,10 +89,10 @@ const RECENT = 8;
 const stale = () => !page.updatedAt || Date.now() - page.updatedAt > 10_000;
 
 function remember() {
-  const { route, data, updatedAt, side, tab, news, stats } = page;
+  const { route, data, updatedAt, side, tab, roster, news, stats } = page;
   if (!route || !data) return;
   recent.delete(route.key);
-  recent.set(route.key, { data, updatedAt, side, tab, news, stats });
+  recent.set(route.key, { data, updatedAt, side, tab, roster, news, stats });
   if (recent.size > RECENT) recent.delete(recent.keys().next().value);
 }
 
@@ -113,7 +120,10 @@ export function showPage(route) {
   }
   leave();
   const seen = recent.get(route.key);
-  Object.assign(page, { route, data: null, error: null, updatedAt: null, side: 0, tab: 'schedule', news: null, newsError: null, stats: null, statsError: null }, seen);
+  Object.assign(page, {
+    route, data: null, error: null, updatedAt: null, side: 0, tab: 'schedule',
+    roster: null, rosterError: null, news: null, newsError: null, stats: null, statsError: null,
+  }, seen);
   if (route.tab) page.tab = route.tab;
   Object.assign(native, { lockError: '', alertNote: '', alertsOpen: false, notificationsOff: false, delayCustom: false });
   refreshNative();
@@ -126,9 +136,10 @@ export function showPage(route) {
   return Boolean(page.data);
 }
 
-// The team page's tabs: News and Stats load the first time they open.
+// The team page's tabs: Roster, Stats and News load the first time they open.
 function openTab(tab) {
   page.tab = tab;
+  if (tab === 'roster' && !page.roster) page.rosterError = null;
   if (tab === 'news' && !page.news) page.newsError = null;
   if (tab === 'stats' && !page.stats) page.statsError = null;
   render();
@@ -136,6 +147,7 @@ function openTab(tab) {
 }
 
 function loadTab() {
+  if (page.tab === 'roster' && !page.roster) loadRoster();
   if (page.tab === 'news' && !page.news) loadNews();
   if (page.tab === 'stats' && !page.stats) loadStats();
 }
@@ -172,6 +184,8 @@ async function load() {
     let data;
     if (route.kind === 'game') {
       data = parseSummary(await getJson(summaryUrl(route.league, route.id)), route.league);
+    } else if (route.kind === 'player') {
+      data = await playerData(route);
     } else {
       const results = await Promise.allSettled(scheduleUrls(route.league, route.id).map(getJson));
       const ok = results.filter((r) => r.status === 'fulfilled').map((r) => r.value);
@@ -181,6 +195,7 @@ async function load() {
     if (!data) throw new Error('No data');
     if (id !== page.requestId) return;
     Object.assign(page, { data, error: null, updatedAt: new Date() });
+    if (route.kind === 'team' && page.tab === 'roster') loadRoster();
     if (route.kind === 'team' && page.tab === 'news') loadNews();
     if (route.kind === 'team' && page.tab === 'stats') loadStats();
   } catch (err) {
@@ -191,6 +206,37 @@ async function load() {
   app.setLoading(false);
   render();
   schedule();
+}
+
+// The player page: the profile is the page; the recent games and the career
+// are sections that are left out when their feed fails (soccer has no
+// career feed at all).
+async function playerData(route) {
+  const urls = athleteUrls(route.league, route.id);
+  const [bio, overview, career] = await Promise.allSettled([urls.bio, urls.overview, urls.career].map((url) => (url ? getJson(url) : null)));
+  if (bio.status === 'rejected') throw bio.reason;
+  const athlete = parseAthlete(bio.value, route.league);
+  if (!athlete) return null;
+  const { games, competitions } = overview.status === 'fulfilled' ? parseOverview(overview.value, route.league) : { games: [], competitions: null };
+  return { athlete, games, competitions, career: career.status === 'fulfilled' && career.value ? parseCareer(career.value) : [] };
+}
+
+// The team page's Roster tab (players.js), read the first time the tab opens
+// and again on a refresh.
+async function loadRoster() {
+  const { route } = page;
+  if (route?.kind !== 'team') return;
+  const id = page.requestId;
+  try {
+    const roster = parseRoster(await getJson(rosterUrl(route.league, route.id)), route.league);
+    if (!roster) throw new Error('No roster');
+    if (id !== page.requestId || page.route !== route) return;
+    Object.assign(page, { roster, rosterError: null });
+  } catch (err) {
+    if (id !== page.requestId || page.route !== route) return;
+    page.rosterError = err;
+  }
+  render();
 }
 
 // The team page's News tab: ESPN's news about this team only (news.js), read
@@ -297,7 +343,9 @@ function render() {
   app.setTitle(data ? title(route, data) : '');
   let html;
   if (!data) html = error ? errorState() : loadingHtml(route.kind);
-  else html = route.kind === 'game' ? gameHtml(data, route.league, route.id) : teamHtml(data, route.league);
+  else if (route.kind === 'game') html = gameHtml(data, route.league, route.id);
+  else if (route.kind === 'player') html = playerHtml(data, route.league);
+  else html = teamHtml(data, route.league);
   const updated = data && page.updatedAt
     ? `<p class="status${error ? ' error' : ''}">${error ? `Couldn't reach ESPN. Showing data from ${esc(formatClock(page.updatedAt))}.` : `Updated ${esc(formatClock(page.updatedAt))}`}</p>`
     : '';
@@ -307,6 +355,7 @@ function render() {
 
 function title(route, data) {
   if (route.kind === 'team') return data.team.name;
+  if (route.kind === 'player') return data.athlete.name;
   return data.teams.map((t) => t.abbr).join(route.league.homeFirst ? ' vs ' : ' @ ');
 }
 
@@ -326,7 +375,8 @@ function gameHtml(game, league, id) {
     odds,
     lineScoreHtml(game),
     scoringHtml(game, league),
-    playersHtml(game),
+    playersHtml(game, league),
+    lineupsHtml(game, league),
     teamStatsHtml(game),
   ].filter(Boolean);
   if (game.state === 'pre' && sections.length <= 2) {
@@ -587,20 +637,28 @@ function scoringHtml(game, league) {
     </div>`);
 }
 
-function playersHtml(game) {
+// The box score's (and soccer's lineups') team switch.
+function sideSwitch(teams, side) {
+  if (teams.length < 2) return '';
+  return `
+    <div class="segmented box-switch" role="tablist" aria-label="Team">
+      ${teams.map((t, i) => `<button role="tab" data-side="${i}" aria-selected="${i === side}">${logoHtml(t, 20)}${esc(t.shortName || t.abbr)}</button>`).join('')}
+    </div>`;
+}
+
+function playersHtml(game, league) {
   if (!game.players.length) return '';
   const teams = game.players.map((p) => game.teams.find((t) => t.id === p.teamId)).filter(Boolean);
   const side = Math.min(page.side, game.players.length - 1);
-  const switcher = teams.length > 1 ? `
-    <div class="segmented box-switch" role="tablist" aria-label="Team">
-      ${teams.map((t, i) => `<button role="tab" data-side="${i}" aria-selected="${i === side}">${logoHtml(t, 20)}${esc(t.shortName || t.abbr)}</button>`).join('')}
-    </div>` : '';
   // Football has up to ten groups; the first three (passing, rushing,
   // receiving) are what most people look for, so the rest start folded.
-  return section('Box score', switcher + game.players[side].groups.map((g, i) => groupHtml(g, i < 3)).join(''));
+  return section('Box score', sideSwitch(teams, side) + game.players[side].groups.map((g, i) => groupHtml(g, league, i < 3)).join(''));
 }
 
-function groupHtml(group, open = true) {
+// A player's name, linking to their page when the feed gave an id.
+const playerLink = (league, id, html, cls = 'player') => (id ? `<a class="${cls}" href="${playerHref(league.id, id)}">${html}</a>` : `<span class="${cls}">${html}</span>`);
+
+function groupHtml(group, league, open = true) {
   const starters = group.rows.some((r) => r.starter) && group.rows.some((r) => !r.starter);
   let benchShown = false;
   const rows = group.rows.map((row) => {
@@ -610,8 +668,8 @@ function groupHtml(group, open = true) {
       const rest = { Pitching: 'Bullpen', Batting: 'Substitutes' }[group.title] ?? 'Bench';
       divider = `<tr class="divider-row"><th scope="rowgroup" colspan="${group.labels.length + 1}">${rest}</th></tr>`;
     }
-    return `${divider}<tr>
-      <th scope="row" class="col-name"><span class="player">${esc(row.name)}</span>${row.position ? `<span class="pos-tag">${esc(row.position)}</span>` : ''}</th>
+    return `${divider}<tr${row.id ? ' class="linked"' : ''}>
+      <th scope="row" class="col-name">${playerLink(league, row.id, `${esc(row.name)}${row.position ? `<span class="pos-tag">${esc(row.position)}</span>` : ''}`)}</th>
       ${row.stats.map((v) => `<td>${esc(v)}</td>`).join('')}
     </tr>`;
   }).join('');
@@ -626,6 +684,40 @@ function groupHtml(group, open = true) {
     ${group.didNotPlay.length ? `<p class="dnp">Did not play: ${esc(group.didNotPlay.join(', '))}</p>` : ''}`;
   if (!group.title) return table;
   return `<details class="box-group"${open ? ' open' : ''}><summary class="box-title">${esc(group.title)}</summary>${table}</details>`;
+}
+
+// Soccer: each side's lineup, as named (before kickoff too), with what each
+// player did: goals, assists, cards and the minute they came on or off.
+const EVENTS = {
+  goal: ['ev-goal', 'Goal', ''],
+  penalty: ['ev-goal', 'Penalty goal', ' (pen)'],
+  'own-goal': ['ev-goal', 'Own goal', ' (OG)'],
+  assist: ['ev-assist', 'Assist', ''],
+  yellow: ['ev-yellow', 'Yellow card', ''],
+  red: ['ev-red', 'Red card', ''],
+  on: ['ev-on', 'Came on', ''],
+  off: ['ev-off', 'Went off', ''],
+};
+
+function lineupsHtml(game, league) {
+  if (!game.lineups.length) return '';
+  const teams = game.lineups.map((l) => game.teams.find((t) => t.id === l.teamId)).filter(Boolean);
+  const side = Math.min(page.side, game.lineups.length - 1);
+  const { formation, starters, subs } = game.lineups[side];
+  const event = (e) => {
+    const [cls, label, suffix] = EVENTS[e.kind] ?? ['', e.kind, ''];
+    return `<span class="ev ${cls}" title="${label}" aria-label="${esc(`${label} ${e.minute}${suffix}`)}">${esc(e.minute + suffix)}</span>`;
+  };
+  const row = (p) => `
+    <div class="lineup-row">
+      <span class="lineup-num">${esc(p.jersey)}</span>
+      ${playerLink(league, p.id, `<span class="name">${esc(p.name)}</span>${p.position && p.position !== 'SUB' ? `<span class="pos-tag">${esc(p.position)}</span>` : ''}`, 'lineup-name')}
+      <span class="lineup-events">${p.events.map(event).join('')}</span>
+    </div>`;
+  const list = (heading, players) => (players.length ? `
+    <h3 class="lineup-title">${heading}</h3>
+    <div class="card list-card">${players.map(row).join('')}</div>` : '');
+  return section('Lineups', sideSwitch(teams, side) + list(formation ? `Starting XI · ${esc(formation)}` : 'Starting XI', starters) + list('Substitutes', subs));
 }
 
 function teamStatsHtml(game) {
@@ -671,9 +763,10 @@ function teamHtml(data, league) {
   const tabs = `
     <div class="toolbar toolbar-center team-tabs">
       <div class="pills" role="group" aria-label="Team view">
-        ${[['schedule', 'Schedule'], ['stats', 'Stats'], ['news', 'News']].map(([id, label]) => `<button data-team-tab="${id}" aria-pressed="${page.tab === id}">${label}</button>`).join('')}
+        ${[['schedule', 'Schedule'], ['roster', 'Roster'], ['stats', 'Stats'], ['news', 'News']].map(([id, label]) => `<button data-team-tab="${id}" aria-pressed="${page.tab === id}">${label}</button>`).join('')}
       </div>
     </div>`;
+  if (page.tab === 'roster') return head + tabs + rosterHtml(team, league);
   if (page.tab === 'news') return head + tabs + teamNewsHtml(team, league);
   if (page.tab === 'stats') return head + tabs + seasonStatsHtml(team, league);
   if (!games.length) {
@@ -723,6 +816,55 @@ function seasonStatsHtml(team, league) {
     <p class="stats-season">${esc(stats.season)}${games}</p>
     ${tiles ? `<div class="card stat-grid">${tiles}</div>` : ''}
     ${stats.categories.length ? section('All stats', stats.categories.map(category).join('')) : ''}`;
+}
+
+// The Roster tab: the team's players in ESPN's groups (offense, defense...)
+// or by position, each linking to their page.
+function rosterHtml(team, league) {
+  const { roster } = page;
+  if (!roster) {
+    if (page.rosterError) {
+      return emptyState({
+        error: true,
+        icon: ICONS.alert,
+        title: "Couldn't load the roster",
+        text: 'Check your connection and try again.',
+        action: '<button class="btn-primary" data-team-tab="roster">Try again</button>',
+      });
+    }
+    const bar = (w, h, extra = '') => `<span class="skeleton" style="width:${w};height:${h}px${extra}"></span>`;
+    return `<div class="card skeleton-card">${`<div class="skeleton-row">${bar('40px', 40, ';border-radius:50%')}${bar('55%', 14)}</div>`.repeat(6)}</div>`;
+  }
+  if (!roster.groups.length) {
+    return emptyState({ icon: ICONS.clipboard, title: 'No roster yet', text: `ESPN has no ${league.label} roster for the ${team.name} right now.` });
+  }
+  const row = (p) => {
+    const meta = [p.jersey ? `#${p.jersey}` : '', p.position, p.year, p.size].filter(Boolean).join(' · ');
+    return `
+      <a class="roster-row" href="${playerHref(league.id, p.id)}">
+        ${headshotHtml(p, 40, team.color)}
+        <span class="roster-main"><span class="name">${esc(p.name)}</span>${meta ? `<span class="roster-meta">${esc(meta)}</span>` : ''}</span>
+        ${p.injury ? injuryBadge(p.injury) : ''}
+      </a>`;
+  };
+  return roster.groups.map((g) => section(g.title, `<div class="card list-card">${g.players.map(row).join('')}</div>`)).join('');
+}
+
+// A player's headshot, cropped round on a wash of the team's color; with no
+// headshot or a failed one, their initials in the team's color (the logo
+// fallback, which the error listener in app.js swaps in).
+function headshotHtml(player, size, color) {
+  const src = headshotUrl(player.headshot, size);
+  const abbr = initials(player.name);
+  if (!src || failedLogos.has(src)) return fallbackLogo(abbr, color);
+  const wash = color ? ` style="background:${color}33"` : '';
+  return `<img class="logo headshot" src="${esc(src)}" alt="" width="${size}" height="${size}" loading="lazy" decoding="async" data-abbr="${esc(abbr)}" data-color="${esc(color ?? '')}"${wash}>`;
+}
+
+// Out and injured reserve in red, questionable and day-to-day in amber.
+function injuryBadge(status) {
+  const out = /out|reserve|suspen/i.test(status);
+  return `<span class="badge ${out ? 'badge-live' : 'badge-warn'}">${esc(status === 'Injured Reserve' ? 'IR' : status)}</span>`;
 }
 
 function teamNewsHtml(team, league) {
@@ -849,6 +991,87 @@ function scheduleRow(game, league) {
       ${league.weekly && game.label ? `<span class="sched-label">${esc(game.label)}</span>` : ''}
       <span class="sched-right">${right}</span>
     </a>`;
+}
+
+// ---- Player page ----
+
+function playerHtml(data, league) {
+  const { athlete: a, games, competitions, career } = data;
+  const team = a.team;
+  const meta = [a.jersey ? `#${a.jersey}` : '', a.positionName].filter(Boolean).join(' · ');
+  const head = `
+    <div class="card player-head">
+      ${headshotHtml(a, 96, team?.color)}
+      <h2>${esc(a.name)}</h2>
+      ${meta ? `<p class="sub">${esc(meta)}</p>` : ''}
+      ${team ? `<a class="pill-btn player-team" href="${teamHref(league.id, team.id)}">${logoHtml(team, 20)}<span>${esc(team.name)}</span></a>` : ''}
+      ${a.injury ? `<p class="player-injury">${injuryBadge(a.injury.status)}${a.injury.text ? `<span>${esc(a.injury.text)}</span>` : ''}</p>` : ''}
+    </div>`;
+  const bio = a.bio.length ? section('Bio', `
+    <div class="card bio-grid">
+      ${a.bio.map((b) => `<div class="bio-item"><span class="bio-label">${esc(b.label)}</span><span class="bio-value">${esc(b.value)}</span></div>`).join('')}
+    </div>`) : '';
+  const season = a.season ? section(a.season.label || 'This season', `
+    <div class="card stat-grid player-stats">
+      ${a.season.stats.map((k) => `
+        <div class="stat-tile">
+          <span class="stat-value">${esc(k.value)}</span>
+          <span class="stat-label">${esc(k.label)}</span>
+          ${k.rank ? `<span class="stat-rank">${esc(k.rank)}</span>` : ''}
+        </div>`).join('')}
+    </div>`) : '';
+  const recent = games.length ? section('Recent games', games.map((g) => recentTable(g, league)).join('')) : '';
+  const byCompetition = competitions?.rows.length ? section('Season by competition', statTable({
+    head: 'Competition',
+    labels: competitions.labels,
+    rows: competitions.rows.map((r) => ({ name: esc(r.name), stats: r.stats })),
+  })) : '';
+  const careerHtml = career.length ? section('Career', career.map((c, i) => {
+    const table = statTable({
+      head: 'Season',
+      labels: c.labels,
+      rows: c.rows.map((r) => ({ name: `${esc(r.season)}${r.team ? `<span class="pos-tag">${esc(r.team)}</span>` : ''}`, stats: r.stats })),
+      total: c.total && { name: 'Career', stats: c.total },
+    });
+    return career.length > 1 ? `<details class="box-group"${i === 0 ? ' open' : ''}><summary class="box-title">${esc(c.title)}</summary>${table}</details>` : table;
+  }).join('')) : '';
+  return head + season + bio + recent + byCompetition + careerHtml;
+}
+
+// A table of stats with the name column held still: rows of { name (HTML),
+// stats, link }, and an optional total row.
+function statTable({ head, labels, rows, total = null }) {
+  const cells = (stats) => stats.map((v) => `<td>${esc(v)}</td>`).join('');
+  return `
+    <div class="card"><div class="table-wrap">
+      <table class="box-table">
+        <thead><tr><th class="col-name" scope="col">${esc(head)}</th>${labels.map((l) => `<th scope="col">${esc(l)}</th>`).join('')}</tr></thead>
+        <tbody>${rows.map((r) => `<tr${r.link ? ' class="linked"' : ''}><th scope="row" class="col-name">${r.link ? `<a class="player" href="${r.link}">${r.name}</a>` : r.name}</th>${cells(r.stats)}</tr>`).join('')}</tbody>
+        ${total ? `<tfoot><tr><th scope="row" class="col-name">${esc(total.name)}</th>${cells(total.stats)}</tr></tfoot>` : ''}
+      </table>
+    </div></div>`;
+}
+
+// One group of the last five games (passing, rushing...): each game's
+// result and opponent, linking to it when it was in one of our leagues, then
+// the player's line.
+function recentTable(group, league) {
+  const table = statTable({
+    head: 'Game',
+    labels: group.labels,
+    rows: group.rows.map((g) => {
+      const date = g.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      // A playoff round, or (soccer) a competition other than this one.
+      const note = g.note || (g.league !== league.id ? g.competition : '');
+      return {
+        name: `<span class="game-line">${g.result ? `<span class="result ${esc(g.result.toLowerCase())}">${esc(g.result)}</span>` : ''}<span>${g.home ? 'vs' : '@'} ${esc(g.opponent.abbr || g.opponent.name)}</span></span>
+          <span class="game-note">${esc([g.score, date, note].filter(Boolean).join(' · '))}</span>`,
+        stats: g.stats,
+        link: g.league ? gameHref(g.league, g.id) : null,
+      };
+    }),
+  });
+  return group.title ? `<details class="box-group" open><summary class="box-title">${esc(group.title)}</summary>${table}</details>` : table;
 }
 
 // ---- Events ----

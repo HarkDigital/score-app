@@ -1506,7 +1506,11 @@ a.poll-row,
 a.team-cell,
 a.sched-row,
 a.matchup-team,
-a.chip {
+a.chip,
+a.player,
+a.lineup-name,
+a.roster-row,
+a.player-team {
   color: inherit;
   text-decoration: none;
   -webkit-touch-callout: none;
@@ -2368,7 +2372,8 @@ button.ext-link:not(:disabled):active { transform: scale(0.99); }
 
 .result.w { background: rgb(70 187 147 / 0.15); color: var(--accent); }
 .result.l { background: rgb(239 68 68 / 0.15); color: var(--live); }
-.result.t { background: var(--gray-800); color: var(--gray-400); }
+.result.t,
+.result.d { background: var(--gray-800); color: var(--gray-400); }
 
 .result-score {
   font-size: 14px;
@@ -2397,4 +2402,235 @@ button.ext-link:not(:disabled):active { transform: scale(0.99); }
 @media (max-width: 420px) {
   .sched-label { display: none; }
   .sched-row { grid-template-columns: 40px 22px 24px minmax(0, 1fr) auto; }
+}
+
+/* ---- Players: links in the box score, soccer lineups, rosters ---- */
+
+/* A row whose name links to the player: tall enough to tap. */
+.box-table tr.linked > * { height: 44px; }
+
+.box-table a.player {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: inherit;
+}
+
+/* Headshots: ESPN's cutouts, cropped round from the top on a wash of the
+   team's color (inline). */
+.logo.headshot {
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center top;
+  filter: none;
+  background: var(--gray-800);
+}
+
+.lineup-title {
+  margin: 12px 2px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-300);
+}
+
+.lineup-row {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 4px 14px;
+}
+
+.lineup-num {
+  font-size: 12px;
+  font-weight: 600;
+  text-align: right;
+  color: var(--gray-500);
+}
+
+.lineup-name {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 36px;
+  color: inherit;
+}
+
+.lineup-name .name { font-size: 14px; }
+
+.lineup-events {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px 8px;
+}
+
+/* Goals, assists, cards and substitutions, each with its minute. */
+.ev {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--gray-400);
+}
+
+.ev::before { font-size: 11px; line-height: 1; }
+.ev-goal::before { content: "\26BD"; }
+.ev-assist::before { content: "A"; font-weight: 800; color: var(--gray-300); }
+.ev-on::before { content: "\2191"; font-weight: 800; color: var(--accent); }
+.ev-off::before { content: "\2193"; font-weight: 800; color: var(--live); }
+
+.ev-yellow::before,
+.ev-red::before {
+  content: "";
+  width: 8px;
+  height: 11px;
+  border-radius: 2px;
+  background: var(--warn);
+}
+
+.ev-red::before { background: var(--live); }
+
+.roster-row {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+  padding: 8px 14px;
+}
+
+.roster-row .logo { width: 40px; height: 40px; }
+.roster-row .logo-fallback { font-size: 13px; }
+
+.roster-main {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+
+.roster-main .name { font-size: 14px; }
+
+.roster-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+/* ---- Player page ---- */
+
+.player-head {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 20px 16px;
+  text-align: center;
+}
+
+.player-head > .logo { width: 96px; height: 96px; margin-bottom: 6px; }
+.player-head > .logo-fallback { font-size: 28px; }
+
+.player-head h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--white);
+}
+
+.player-head .sub { margin: 0; }
+
+.player-team {
+  min-height: 44px;
+  margin-top: 8px;
+  color: var(--gray-300);
+}
+
+.player-team .logo { width: 20px; height: 20px; }
+.player-team .logo-fallback { font-size: 6px; }
+
+.player-injury {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  max-width: 34ch;
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--gray-400);
+}
+
+/* ESPN gives four key stats: in a row, or two by two on a narrow phone. */
+.player-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.player-stats .stat-tile:nth-child(n) { border: 0; }
+.player-stats .stat-tile + .stat-tile { border-left: 1px solid var(--hairline); }
+.player-stats .stat-value { font-size: 20px; }
+
+@media (max-width: 359px) {
+  .player-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .player-stats .stat-tile:nth-child(odd) { border-left: 0; }
+  .player-stats .stat-tile:nth-child(n + 3) { border-top: 1px solid var(--hairline); }
+}
+
+.bio-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 16px;
+  padding: 14px 16px;
+}
+
+.bio-item {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.bio-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+}
+
+.bio-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--white);
+}
+
+/* Recent games: the result, opponent and score over the date (and the
+   round, or another competition). */
+.box-table .game-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.box-table .game-line .result {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  font-size: 10px;
+}
+
+.box-table .game-note {
+  display: block;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--gray-500);
+}
+
+@media (hover: hover) {
+  .box-table a.player:hover,
+  .lineup-name:hover .name,
+  .roster-row:hover .name { color: var(--accent); }
 }

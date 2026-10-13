@@ -83,6 +83,7 @@ export function parseSummary(data, league) {
     scoring: scoringPlays(data, league, teams),
     teamStats: teamStats(data.boxscore?.teams, teams),
     players: playerStats(data.boxscore?.players, teams, league),
+    lineups: sportOf(league) === 'soccer' ? lineups(data.rosters, teams) : [],
     venue: [venue?.fullName, place].filter(Boolean).join(' · '),
     attendance: Number(data.gameInfo?.attendance) > 0 ? Number(data.gameInfo.attendance).toLocaleString('en-US') : '',
     broadcast: [...new Set((comp.broadcasts ?? []).map((b) => b.media?.shortName ?? b.names?.[0]).filter(Boolean))].join(', '),
@@ -245,6 +246,8 @@ function playerStats(boxPlayers, teams, league) {
         title: GROUP_TITLES[name] ?? (name ? name[0].toUpperCase() + name.slice(1) : ''),
         labels: columns.map((c) => c.label),
         rows: played.map((a) => ({
+          // For the player page (players.js).
+          id: a.athlete?.id != null ? String(a.athlete.id) : null,
           name: a.athlete?.shortName ?? a.athlete?.displayName ?? '',
           position: a.athlete?.position?.abbreviation ?? '',
           starter: a.starter === true,
@@ -256,6 +259,42 @@ function playerStats(boxPlayers, teams, league) {
     }).filter((g) => g.rows.length);
     return { teamId: team.id, groups };
   }).filter((t) => t.groups.length);
+}
+
+// Soccer's box score: each side's lineup (the summary's rosters, there
+// before kickoff once the teams are named). A player's goals, assists,
+// cards and substitutions come from the player's plays, with the minute.
+function lineups(rosters, teams) {
+  if (!Array.isArray(rosters)) return [];
+  return teams.map((team) => {
+    const entry = rosters.find((r) => String(r.team?.id) === team.id);
+    const players = (entry?.roster ?? []).filter((p) => p.athlete).map((p) => {
+      const events = [];
+      for (const play of p.plays ?? []) {
+        const minute = play.clock?.displayValue ?? '';
+        if (play.didScore) events.push({ kind: play.ownGoal ? 'own-goal' : play.penaltyKick ? 'penalty' : 'goal', minute });
+        if (play.didAssist) events.push({ kind: 'assist', minute });
+        if (play.yellowCard) events.push({ kind: 'yellow', minute });
+        if (play.redCard) events.push({ kind: 'red', minute });
+        // A substitute's first is coming on; anyone's other is going off.
+        if (play.substitution) events.push({ kind: p.subbedIn && !events.some((e) => e.kind === 'on') ? 'on' : 'off', minute });
+      }
+      return {
+        id: p.athlete.id != null ? String(p.athlete.id) : null,
+        name: p.athlete.displayName ?? p.athlete.fullName ?? '',
+        jersey: p.jersey ?? '',
+        position: p.position?.abbreviation ?? '',
+        starter: p.starter === true,
+        events,
+      };
+    });
+    return {
+      teamId: team.id,
+      formation: entry?.formation ?? '',
+      starters: players.filter((p) => p.starter),
+      subs: players.filter((p) => !p.starter),
+    };
+  }).filter((t) => t.starters.length || t.subs.length);
 }
 
 // ---- Team schedule ----
