@@ -79,7 +79,7 @@ npm run ios:bump
 
 The app needs iOS 16 or later. The Lock Screen card and alerts need the push server running (see `server/README.md`); without it the card shows the score from when it was added and alerts don't arrive.
 
-**Before the App Store (not needed for TestFlight):** everything to paste into App Store Connect is in [`ios/APP_STORE.md`](ios/APP_STORE.md): the privacy policy and support URLs (`privacy.html` and `support.html` on the site, linked from the scoreboard's footer), the App Privacy answers (they match the app's privacy manifests), the age rating, the screenshot sizes and the notes for App Review. In short:
+**Before the App Store (not needed for TestFlight):** everything to paste into App Store Connect is in [`ios/APP_STORE.md`](ios/APP_STORE.md): the privacy policy and support URLs (https://scores.phade.app/privacy and /support, served by the push server from `server/site/` and linked from the scoreboard's footer; after changing them, `npm run push:deploy`), the App Privacy answers (they match the app's privacy manifests), the age rating, the screenshot sizes and the notes for App Review. In short:
 - **External testers:** TestFlight testers outside your team need a quick Beta App Review.
 - **Store listing:** screenshots, including 13-inch iPad ones since the app supports iPad.
 - **Age rating:** the betting lines will likely mean answering "Gambling: Yes"; Phade was rejected under guideline 2.3.6 until it did, so use Phade's answer.
@@ -152,7 +152,6 @@ Start times for upcoming games come from the league schedule and are shown in yo
 | `pull.js`                        | Pull to refresh                                                      |
 | `native.js`                      | The iPhone app's Lock Screen card and alerts, called from the pages  |
 | `index.html`, `styles.css`       | Page shell and styles                                                |
-| `privacy.html`, `support.html`, `legal.css` | The privacy policy and support pages (App Store URLs)     |
 | `manifest.webmanifest`, `icons/` | Home-screen install metadata and icons                               |
 | `test/`                          | Unit tests and feed responses trimmed from real ESPN data            |
 | `capacitor.config.json`          | App settings (iPhone and Android): app ID, name, the site it loads   |

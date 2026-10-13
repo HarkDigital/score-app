@@ -14,9 +14,9 @@ The app and the LiveGame extension each carry a privacy manifest (`App/PrivacyIn
 
 | Field | Value |
 | --- | --- |
-| Privacy Policy URL | https://harkdigital.github.io/score-app/privacy.html |
-| Support URL | https://harkdigital.github.io/score-app/support.html |
-| Marketing URL | (optional) https://harkdigital.github.io/score-app/ |
+| Privacy Policy URL | https://scores.phade.app/privacy |
+| Support URL | https://scores.phade.app/support |
+| Marketing URL | (optional, leave empty) |
 
 ## App Privacy ("Data Types")
 

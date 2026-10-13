@@ -4,6 +4,7 @@ Keeps the iPhone app's Lock Screen cards (Live Activities) current and sends tea
 
 - **Runs** on the Phade server (74.208.219.49) as the `scores-push` container in `/opt/scores-push`, its own Docker Compose project on Phade's `phade_default` network. Phade's nginx terminates TLS for `scores.phade.app` and proxies to `scores-push:8080`. Nothing is published on the host.
 - **Code**: `index.js` (HTTP API), `watcher.js` (polling and pushing), `live.js` (the decisions, unit-tested in `test/`), `apns.js` (HTTP/2 + ES256 token auth, no dependencies), `store.js` (one JSON file in `/opt/scores-push/data`). Scoreboards are parsed with the app's own `espn.js`.
+- **Pages**: it also serves the App Store listing's privacy policy and support pages, `/privacy` and `/support` (`site.js`, from `site/`, read at startup). They change with `npm run push:deploy`.
 - **No key, no pushes**: without `secrets/apns.p8` and `.env` it runs as a dry run and logs what it would send. Handy locally: `TZ=America/New_York PORT=8787 node server/index.js`.
 
 ## What it does
