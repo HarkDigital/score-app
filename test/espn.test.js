@@ -5,6 +5,7 @@ import {
   LEAGUES, scoreboardUrl, parseScoreboard, groupGames, refreshDelay,
   statusLabel, formatStart, dayLabel, weekLabel, weekInfo, adjacentWeek, teamColor, fallbackUrl, parseOdds,
   lineSteamUrl, leagueFilter, dayUrls, mergeGames, cardSituation, parseGame, fieldView, seriesOf,
+  weekStart, weekDays, weekOffset, weekPhrase, weekRange, groupWeek, boardStale, ymd,
 } from '../espn.js';
 
 const league = (id) => LEAGUES.find((l) => l.id === id);
@@ -380,4 +381,57 @@ test('LineSteam links cover its five leagues, by ESPN event id', () => {
   assert.deepEqual(LEAGUES.filter((l) => l.linesteam).map((l) => l.id), ['nfl', 'nba', 'mlb', 'nhl', 'ncaaf']);
   assert.equal(lineSteamUrl(league('epl'), '704512'), null);
   assert.equal(lineSteamUrl(league('nfl'), ''), null);
+});
+
+test('a week view runs Monday to Sunday around the selected day', () => {
+  const wed = new Date(2026, 9, 14, 15);
+  assert.equal(ymd(weekStart(wed)), '20261012');
+  assert.equal(ymd(weekStart(new Date(2026, 9, 18, 23))), '20261012'); // Sunday stays in its week
+  assert.equal(ymd(weekStart(new Date(2026, 9, 19, 0, 30))), '20261019');
+  assert.deepEqual(weekDays(wed).map(ymd), ['20261012', '20261013', '20261014', '20261015', '20261016', '20261017', '20261018']);
+  assert.equal(weekOffset(new Date(2026, 9, 7), wed), -1);
+  assert.equal(weekOffset(new Date(2026, 10, 3), wed), 3); // across the DST change
+  assert.equal(weekPhrase(wed, wed), 'This week');
+  assert.equal(weekPhrase(new Date(2026, 9, 21), wed), 'Next week');
+  assert.equal(weekPhrase(new Date(2026, 9, 5), wed), 'Last week');
+  assert.match(weekPhrase(new Date(2026, 8, 30), wed), /^Week of /);
+  assert.equal(weekRange(wed).replace(/\D+/g, ' ').trim(), '12 18');
+  assert.equal(weekRange(new Date(2026, 9, 1)).split(' \u2013 ').length, 2);
+  assert.match(weekRange(new Date(2026, 9, 1)), / \u2013 \D+ 4$/); // Sep 28 to Oct 4 names both months
+});
+
+test('a week groups live games first, then each day in start order', () => {
+  const now = new Date(2026, 9, 14, 20);
+  const g = (id, start, state = 'pre') => ({ id, start, state });
+  const games = [
+    g('late', new Date(2026, 9, 14, 22)),
+    g('early', new Date(2026, 9, 14, 13), 'post'),
+    g('live', new Date(2026, 9, 14, 19), 'in'),
+    g('mon', new Date(2026, 9, 12, 19), 'post'),
+    g('sat', new Date(2026, 9, 17, 15)),
+    g('next', new Date(2026, 9, 19, 0, 30)), // already next week locally
+  ];
+  const sections = groupWeek(games, now, now);
+  assert.deepEqual(sections.map((s) => s.label), ['Live', dayLabel(-2, now), 'Today', dayLabel(3, now)]);
+  assert.deepEqual(sections.map((s) => s.games.map((x) => x.id)), [['live'], ['mon'], ['early', 'late'], ['sat']]);
+  assert.equal(sections[1].id, '20261012');
+  assert.deepEqual(groupWeek([], now, now), []);
+});
+
+test('a week view only re-reads the days that can still change', () => {
+  const now = new Date(2026, 9, 14, 20).getTime();
+  const board = (...states) => ({ games: states.map((state) => ({ state })) });
+  const fetched = now - 60_000;
+  assert.equal(boardStale(null, new Date(2026, 9, 12), fetched, now), true);
+  assert.equal(boardStale(board('post', 'post'), new Date(2026, 9, 12), fetched, now), false);
+  assert.equal(boardStale(board(), new Date(2026, 9, 12), fetched, now), false);
+  // A past day with a game not over (suspended, or late data) keeps being read.
+  assert.equal(boardStale(board('post', 'pre'), new Date(2026, 9, 12), fetched, now), true);
+  // Yesterday's late game can still be on past midnight.
+  assert.equal(boardStale(board('post', 'in'), new Date(2026, 9, 13), fetched, now), true);
+  assert.equal(boardStale(board('post'), new Date(2026, 9, 13), fetched, now), false);
+  assert.equal(boardStale(board('pre'), new Date(2026, 9, 14), fetched, now), true);
+  assert.equal(boardStale(board('pre'), new Date(2026, 9, 15), fetched, now), true);
+  assert.equal(boardStale(board('pre'), new Date(2026, 9, 17), fetched, now), false);
+  assert.equal(boardStale(board('pre'), new Date(2026, 9, 17), now - 11 * 60_000, now), true);
 });
