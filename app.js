@@ -65,7 +65,7 @@ const els = {
   sheet: document.getElementById('sheet-root'),
   back: document.getElementById('back'),
   pageTitle: document.getElementById('page-title'),
-  account: document.getElementById('account'),
+  menu: document.getElementById('menu'),
 };
 
 // ---- Loading ----
@@ -614,6 +614,7 @@ function openPicker() {
   if (picker.open) return;
   closeSearch(false);
   closeAccount(false);
+  closeMenu(false);
   Object.assign(picker, { open: true, changed: false, query: '', opener: document.activeElement });
   picker.league = view.league.mine ? leagueById(followed[0]?.league) ?? picker.league ?? LEAGUES[0] : view.league;
   els.sheet.innerHTML = `
@@ -730,6 +731,7 @@ function openSearch() {
   if (search.open) return;
   closePicker();
   closeAccount(false);
+  closeMenu(false);
   Object.assign(search, { open: true, query: '', opener: document.activeElement });
   els.sheet.innerHTML = `
     <div class="sheet-backdrop" data-action="close-search"></div>
@@ -911,6 +913,8 @@ document.addEventListener('click', (event) => {
   else if (d.action === 'close-picker') closePicker();
   else if (d.action === 'open-search') openSearch();
   else if (d.action === 'close-search') closeSearch();
+  else if (d.action === 'open-menu') openMenu();
+  else if (d.action === 'close-menu') closeMenu();
   else if (d.action === 'open-account') openAccount();
   else if (d.action === 'close-account') closeAccount();
   else if (d.action === 'sign-out') signOut();
@@ -924,9 +928,9 @@ document.addEventListener('click', (event) => {
 
 const refreshNow = () => (pageOpen() ? refreshPage() : load());
 els.refresh.addEventListener('click', refreshNow);
-initPullToRefresh({ refresh: refreshNow, enabled: () => !picker.open && !search.open && !account.open });
+initPullToRefresh({ refresh: refreshNow, enabled: () => !sheetOpen() });
 initSwipeNav({
-  enabled: () => inApp() && !picker.open && !search.open && !account.open,
+  enabled: () => inApp() && !sheetOpen(),
   content: () => document.getElementById(pageOpen() ? 'page' : 'main'),
   canBack: () => pageOpen(),
   canForward: () => furthest > depth,
@@ -939,6 +943,7 @@ document.addEventListener('keydown', (event) => {
   closePicker();
   closeSearch();
   closeAccount();
+  closeMenu();
 });
 
 document.addEventListener('change', (event) => {
@@ -979,19 +984,82 @@ document.addEventListener('error', (event) => {
   img.outerHTML = fallbackLogo(img.dataset.abbr, img.dataset.color);
 }, true);
 
+// ---- Menu ----
+
+// The header's menu button: the account (where sign-in works, account.js;
+// it's optional and only syncs teams and alerts), the privacy policy and
+// support pages (Apple wants the policy reachable in the app; they're the
+// push server's, so they open in the browser).
+
+const menu = { open: false, opener: null };
+const sheetOpen = () => picker.open || search.open || account.open || menu.open;
+
+const CHEVRON = '<svg class="menu-chevron" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function openMenu() {
+  if (menu.open) return;
+  closePicker();
+  closeSearch(false);
+  closeAccount(false);
+  Object.assign(menu, { open: true, opener: document.activeElement });
+  els.sheet.innerHTML = `
+    <div class="sheet-backdrop" data-action="close-menu"></div>
+    <div class="sheet sheet-short" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+      <div class="sheet-grabber" aria-hidden="true"></div>
+      <div class="sheet-head">
+        <h2 id="sheet-title">Menu</h2>
+        <button class="pill-btn" data-action="close-menu">Done</button>
+      </div>
+      <ul class="menu-list" id="menu-list"></ul>
+    </div>`;
+  document.body.style.overflow = 'hidden';
+  renderMenu();
+  els.sheet.querySelector('[data-action="close-menu"].pill-btn').focus();
+}
+
+function closeMenu(restoreFocus = true) {
+  if (!menu.open) return;
+  menu.open = false;
+  els.sheet.innerHTML = '';
+  document.body.style.overflow = '';
+  if (restoreFocus) menu.opener?.focus?.();
+}
+
+function renderMenu() {
+  if (!menu.open) return;
+  const s = accountState();
+  const signedIn = s.status === 'signedIn';
+  const accountRow = accountsOn() ? `
+    <li><button class="menu-row" data-action="open-account">
+      <span class="menu-text">
+        <span class="menu-title">${signedIn ? 'Account' : 'Sign in'}</span>
+        <span class="option-meta">${signedIn ? esc(s.email) : 'Optional. Keeps your teams and alerts on all your devices.'}</span>
+      </span>${CHEVRON}
+    </button></li>` : '';
+  els.sheet.querySelector('#menu-list').innerHTML = `${accountRow}
+    <li><a class="menu-row" href="https://scores.phade.app/privacy" target="_blank" rel="noopener">
+      <span class="menu-text"><span class="menu-title">Privacy policy</span></span>${CHEVRON}
+    </a></li>
+    <li><a class="menu-row" href="https://scores.phade.app/support" target="_blank" rel="noopener">
+      <span class="menu-text"><span class="menu-title">Support</span><span class="option-meta">Help, and where the scores come from</span></span>${CHEVRON}
+    </a></li>`;
+}
+
 // ---- Account ----
 
-// The person icon in the header (only when a Clerk key is set, account.js):
-// sign in to keep the followed teams and their alerts on every device.
-// Clerk draws the sign-in form itself; signin.js does the syncing.
+// Opened from the menu (only where a Clerk key works, account.js): sign in
+// to keep the followed teams and their alerts on every device. Clerk draws
+// the sign-in form itself; signin.js does the syncing.
 
 const account = { open: false, opener: null, shown: null };
 
 function openAccount() {
   if (account.open) return;
+  const opener = menu.open ? menu.opener : document.activeElement;
   closePicker();
   closeSearch(false);
-  Object.assign(account, { open: true, opener: document.activeElement, shown: null });
+  closeMenu(false);
+  Object.assign(account, { open: true, opener, shown: null });
   els.sheet.innerHTML = `
     <div class="sheet-backdrop" data-action="close-account"></div>
     <div class="sheet sheet-short" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
@@ -1024,8 +1092,9 @@ function syncLine(s) {
 
 function renderAccount() {
   const s = accountState();
-  els.account.classList.toggle('signed-in', s.status === 'signedIn');
-  els.account.setAttribute('aria-label', s.status === 'signedIn' ? 'Account (signed in)' : 'Account');
+  els.menu.classList.toggle('signed-in', s.status === 'signedIn');
+  els.menu.setAttribute('aria-label', s.status === 'signedIn' ? 'Menu (signed in)' : 'Menu');
+  renderMenu();
   if (!account.open) return;
   const body = els.sheet.querySelector('#account-body');
   // Clerk's form lives in #clerk-sign-in: leave it alone while signed out.
@@ -1220,7 +1289,6 @@ initAccount({
   },
   changed: renderAccount,
 });
-els.account.hidden = !accountsOn();
 render();
 els.tabs.querySelector('[aria-selected="true"]')?.scrollIntoView({ inline: 'center', block: 'nearest' });
 load();

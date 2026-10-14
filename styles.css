@@ -1479,38 +1479,6 @@ main {
   color: var(--gray-400);
 }
 
-/* ---- Footer ---- */
-
-.credit {
-  margin: 32px 0 0;
-  text-align: center;
-  font-size: 11px;
-  color: var(--gray-600);
-}
-
-/* The privacy policy and support pages (Apple wants the policy reachable
-   from inside the app). Tall enough to tap. */
-.credit-links {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin: 0;
-}
-
-.credit-links a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  padding: 0 10px;
-  font-size: 12px;
-  color: var(--gray-500);
-  text-decoration: none;
-}
-
-@media (hover: hover) {
-  .credit-links a:hover { color: var(--accent); }
-}
-
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 1ms !important;
@@ -2750,5 +2718,52 @@ button.ext-link:not(:disabled):active { transform: scale(0.99); }
   font-size: 14px;
 }
 
-/* Signed in: the header's person icon in mint. */
-.icon-btn.signed-in { color: var(--accent); }
+/* ---- Menu sheet ---- */
+
+.menu-list {
+  margin: 0;
+  padding: 4px 8px 16px;
+  list-style: none;
+}
+
+.menu-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: var(--fg);
+  text-align: left;
+  text-decoration: none;
+}
+
+@media (hover: hover) {
+  .menu-row:hover { background: rgb(255 255 255 / 0.04); }
+}
+
+.menu-text { flex: 1; min-width: 0; }
+
+.menu-title {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.menu-chevron { flex: none; color: var(--gray-600); }
+
+/* Signed in: a mint dot on the header's menu button. */
+.menu-btn { position: relative; }
+.menu-btn.signed-in::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  right: 9px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--bg);
+}

@@ -56,6 +56,6 @@ Paste into App Review Information → Notes:
 > 3. Widgets: after following a team, add the Team or My Teams widget to the Home Screen or the Lock Screen.
 > 4. Haptics, swiping back and forward anywhere on the screen, and pull to refresh.
 >
-> Scores and stats come from ESPN, credited at the bottom of the scoreboard; news stories open on ESPN's site in Safari. Betting lines are shown for information only: the app itself has no wagering and no links to sportsbooks. The LineSteam mark on NFL, college football, MLB, NBA and NHL game pages opens our own line-movement site.
+> Scores and stats come from ESPN, credited on the Support page in the app's menu; news stories open on ESPN's site in Safari. Betting lines are shown for information only: the app itself has no wagering and no links to sportsbooks. The LineSteam mark on NFL, college football, MLB, NBA and NHL game pages opens our own line-movement site.
 
 If no game is live during review, a game later that day still shows the Lock Screen switch (it schedules the card), and any team's alerts can be set up at any time.

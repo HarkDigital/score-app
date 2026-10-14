@@ -36,11 +36,11 @@
         <button id="search" class="icon-btn" aria-label="Search teams and players" data-action="open-search">
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M10.5 4a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM20 20l-4.8-4.8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-        <button id="account" class="icon-btn" aria-label="Account" data-action="open-account" hidden>
-          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-        </button>
         <button id="refresh" class="icon-btn" aria-label="Refresh">
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v4h-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button id="menu" class="icon-btn menu-btn" aria-label="Menu" data-action="open-menu">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
         </button>
       </div>
     </div>
@@ -52,8 +52,6 @@
     <div id="date-nav"></div>
     <div id="content"></div>
     <p id="status" class="status" aria-live="polite"></p>
-    <p class="credit">Scores, standings and rankings from ESPN.</p>
-    <p class="credit-links"><a href="https://scores.phade.app/privacy" target="_blank" rel="noopener">Privacy</a><a href="https://scores.phade.app/support" target="_blank" rel="noopener">Support</a></p>
   </main>
   <section id="page" class="page"></section>
   <div id="sheet-root"></div>
