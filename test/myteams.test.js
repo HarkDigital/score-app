@@ -6,6 +6,7 @@ import {
   loadFollowed, saveFollowed, isFollowed, toggleFollowed, followedLeagues, countFollowed, gamesForTeams,
   hasAlerts, setAlerts, alertTeams, alertsFor, widgetTeams, loadAlertDelay, saveAlertDelay, clampDelay, ALERT_DELAY_MAX,
   moveTeam, sortByTeams, orderLeagues, cleanLeagueOrder, loadLeagueOrder, saveLeagueOrder,
+  SPORTS, sportOf, gameCardsFor, setGameCards, cleanGameCards, loadGameCards, saveGameCards,
 } from '../myteams.js';
 
 function memoryStorage(initial = {}) {
@@ -166,4 +167,42 @@ test('the league order: the person\'s, new leagues after their neighbor, kept on
   assert.deepEqual(loadLeagueOrder(memoryStorage({ 'scores.leagueOrder': '{bad' })), []);
   assert.deepEqual(loadLeagueOrder(null), []);
   saveLeagueOrder(null, ['nba']);
+});
+
+test('every league is one of the game page\'s sports', () => {
+  for (const league of LEAGUES) assert.ok(SPORTS.includes(sportOf(league)), league.id);
+  assert.equal(sportOf(LEAGUES.find((l) => l.id === 'ncaaf')), 'football');
+});
+
+test('the game page\'s cards per sport: the app\'s order, the person\'s, and hidden ones', () => {
+  const ids = (sport, layouts) => gameCardsFor(sport, layouts).map((c) => c.id);
+  // Each sport lists only the cards its feeds can fill.
+  assert.deepEqual(ids('football', {}), ['lock', 'odds', 'lineScore', 'scoring', 'boxScore', 'teamStats']);
+  assert.deepEqual(ids('baseball', {}), ['series', 'lock', 'odds', 'lineScore', 'boxScore']);
+  assert.deepEqual(ids('soccer', {}), ['lock', 'odds', 'lineScore', 'scoring', 'lineups', 'teamStats']);
+  assert.equal(gameCardsFor('soccer', {}).find((c) => c.id === 'scoring').label, 'Goals and red cards');
+
+  let layouts = setGameCards({}, 'football', [
+    { id: 'boxScore' }, { id: 'scoring' }, { id: 'odds', hidden: true }, { id: 'lock' }, { id: 'lineScore' }, { id: 'teamStats' },
+  ]);
+  assert.deepEqual(layouts, { football: { order: ['boxScore', 'scoring', 'odds', 'lock', 'lineScore', 'teamStats'], hidden: ['odds'] } });
+  assert.deepEqual(gameCardsFor('football', layouts).filter((c) => c.hidden).map((c) => c.id), ['odds']);
+  // Other sports keep the app's layout.
+  assert.deepEqual(ids('hockey', layouts), ids('hockey', {}));
+  // A card the saved order doesn't name goes after the card before it.
+  layouts = { football: { order: ['boxScore', 'odds', 'lock'], hidden: [] } };
+  assert.deepEqual(ids('football', layouts), ['boxScore', 'teamStats', 'odds', 'lineScore', 'scoring', 'lock']);
+  // Unknown sports and cards, and cards a sport doesn't have, are dropped.
+  assert.deepEqual(cleanGameCards({ baseball: { order: ['scoring', 'odds', 'odds'], hidden: ['nope'] }, curling: { order: ['odds'] } }),
+    { baseball: { order: ['odds'], hidden: [] } });
+  assert.deepEqual(cleanGameCards([]), {});
+  assert.deepEqual(cleanGameCards({ hockey: { order: [] } }), {});
+
+  const storage = memoryStorage();
+  assert.deepEqual(loadGameCards(storage), {});
+  saveGameCards(storage, { hockey: { order: ['teamStats', 'odds'], hidden: ['odds'] } });
+  assert.deepEqual(loadGameCards(storage), { hockey: { order: ['teamStats', 'odds'], hidden: ['odds'] } });
+  assert.deepEqual(loadGameCards(memoryStorage({ 'scores.gameCards': '{bad' })), {});
+  assert.deepEqual(loadGameCards(null), {});
+  saveGameCards(null, {});
 });
