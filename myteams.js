@@ -88,6 +88,25 @@ export function clampDelay(value) {
   return Number.isFinite(seconds) && seconds > 0 ? Math.min(seconds, ALERT_DELAY_MAX) : 0;
 }
 
+// The menu's Delay Score Alerts list: Off, then seconds up to 5 minutes. A
+// delay set to something else (the team page's Custom) is listed too, in its place.
+export const ALERT_DELAY_MENU = [0, 5, 10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 300];
+
+export function delayOptions(current) {
+  const delay = clampDelay(current);
+  return ALERT_DELAY_MENU.includes(delay) ? ALERT_DELAY_MENU : [...ALERT_DELAY_MENU, delay].sort((a, b) => a - b);
+}
+
+// "Off", "45 seconds", "1 minute", "1 minute 30 seconds", "5 minutes".
+export function delayLabel(value) {
+  const delay = clampDelay(value);
+  if (!delay) return 'Off';
+  const min = Math.floor(delay / 60);
+  const sec = delay % 60;
+  const part = (n, unit) => `${n} ${unit}${n === 1 ? '' : 's'}`;
+  return [min ? part(min, 'minute') : '', sec ? part(sec, 'second') : ''].filter(Boolean).join(' ');
+}
+
 export function loadAlertDelay(storage) {
   try {
     return clampDelay(storage?.getItem(DELAY_KEY));

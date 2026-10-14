@@ -9,7 +9,7 @@ import {
 } from './standings.js';
 import {
   loadFollowed, saveFollowed, isFollowed, toggleFollowed, followedLeagues, countFollowed, gamesForTeams,
-  alertsFor, setAlerts, alertTeams, widgetTeams, loadAlertDelay, saveAlertDelay, clampDelay,
+  alertsFor, setAlerts, alertTeams, widgetTeams, loadAlertDelay, saveAlertDelay, clampDelay, delayOptions, delayLabel,
   moveTeam, sortByTeams, orderLeagues, loadLeagueOrder, saveLeagueOrder,
   sportOf, gameCardsFor, setGameCards, loadGameCards, saveGameCards, loadScoreView, saveScoreView, cleanScoreView,
 } from './myteams.js';
@@ -25,7 +25,7 @@ import {
 import { initAutoUpdate } from './update.js';
 import { initPullToRefresh } from './pull.js';
 import { initSwipeNav } from './swipe.js';
-import { inApp, setAlertTeams, setFollowedTeams, haptic } from './native.js';
+import { inApp, nativeInfo, setAlertTeams, setFollowedTeams, haptic } from './native.js';
 import {
   accountsOn, initAccount, loadClerk, accountState, showSignIn, hideSignIn, accountChanged, signOut, deleteAccount, sync,
 } from './signin.js';
@@ -1166,6 +1166,8 @@ document.addEventListener('click', (event) => {
     renderPickerList();
     loadTeams(picker.league);
   } else if (d.team) toggleTeam(target);
+  else if (d.action === 'toggle-delay') toggleDelayList();
+  else if (d.delayOption !== undefined) setDelay(Number(d.delayOption));
   else if (d.action === 'toggle-filter') {
     if (filterOpen()) closeFilter();
     else openFilter();
@@ -1219,6 +1221,10 @@ document.addEventListener('keydown', (event) => {
     closeFilter(true);
     return;
   }
+  if (menu.open && menu.delayOpen) {
+    toggleDelayList(false);
+    return;
+  }
   closePicker();
   closeSearch();
   closeAccount();
@@ -1266,7 +1272,7 @@ document.addEventListener('error', (event) => {
 // support pages (Apple wants the policy reachable in the app; they're the
 // push server's, so they open in the browser).
 
-const menu = { open: false, opener: null };
+const menu = { open: false, opener: null, delayOpen: false, info: null };
 const sheetOpen = () => picker.open || search.open || account.open || menu.open || order.open;
 
 const CHEVRON = '<svg class="menu-chevron" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -1277,7 +1283,14 @@ function openMenu() {
   closeSearch(false);
   closeAccount(false);
   closeOrder(false);
-  Object.assign(menu, { open: true, opener: document.activeElement });
+  Object.assign(menu, { open: true, opener: document.activeElement, delayOpen: false });
+  // The delay row needs an app build that passes the delay on (info.alertDelay).
+  if (inApp() && !menu.info) {
+    nativeInfo().then((info) => {
+      menu.info = info;
+      renderMenu();
+    });
+  }
   els.sheet.innerHTML = `
     <div class="sheet-backdrop" data-action="close-menu"></div>
     <div class="sheet sheet-short" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
@@ -1313,6 +1326,7 @@ function renderMenu() {
       </span>${CHEVRON}
     </button></li>` : '';
   els.sheet.querySelector('#menu-list').innerHTML = `${accountRow}
+    ${menu.info?.alertDelay ? delayRowHtml() : ''}
     <li><div class="menu-row">
       <span class="menu-text"><span class="menu-title">Score Cards</span><span class="option-meta">Detailed adds the live situation. Compact is teams, score and time.</span></span>
       <span class="pills" role="group" aria-label="Score cards">
@@ -1329,6 +1343,63 @@ function renderMenu() {
       <span class="menu-text"><span class="menu-title">Support</span><span class="option-meta">Help, and where the scores come from</span></span>${CHEVRON}
     </a></li>`;
 }
+
+// The menu's Delay Score Alerts row: the spoiler delay (the same one as the
+// team page's bell), picked from the app's own list under the row, not the
+// phone's wheel. Only in an app build that passes it on to the push server.
+function delayRowHtml() {
+  const option = (s) => `
+    <button class="dropdown-option" role="option" data-delay-option="${s}" aria-selected="${s === alertDelay}" tabindex="-1">
+      <span>${delayLabel(s)}</span>${s === alertDelay ? ICONS.check : ''}
+    </button>`;
+  return `
+    <li class="menu-delay${menu.delayOpen ? ' open' : ''}">
+      <button class="menu-row" data-action="toggle-delay" aria-haspopup="listbox" aria-expanded="${menu.delayOpen}" aria-controls="delay-list">
+        <span class="menu-text">
+          <span class="menu-title">Delay Score Alerts</span>
+          <span class="option-meta">Starts, scores and finals for your teams wait this long, so a stream behind live isn't spoiled</span>
+        </span>
+        <span class="menu-value">${delayLabel(alertDelay)}</span>
+        <span class="filter-chevron" aria-hidden="true">${ICONS.down}</span>
+      </button>
+      <div id="delay-list" class="dropdown menu-dropdown" role="listbox" aria-label="Alert delay"${menu.delayOpen ? '' : ' hidden'}>
+        ${delayOptions(alertDelay).map(option).join('')}
+      </div>
+    </li>`;
+}
+
+function toggleDelayList(open = !menu.delayOpen) {
+  menu.delayOpen = open;
+  renderMenu();
+  const list = els.sheet.querySelector('#delay-list');
+  if (open && list) {
+    const current = list.querySelector('[aria-selected="true"]');
+    current?.focus({ preventScroll: true });
+    list.closest('li').scrollIntoView({ block: 'nearest' });
+  } else {
+    els.sheet.querySelector('[data-action="toggle-delay"]')?.focus();
+  }
+}
+
+function setDelay(seconds) {
+  alertDelay = clampDelay(seconds);
+  saveAlertDelay(storage, alertDelay);
+  followsEdited();
+  toggleDelayList(false);
+  // The team page's bell shows the same setting.
+  redrawPage();
+}
+
+// Arrow keys walk the delay list, Home and End jump (Escape closes it, below).
+document.addEventListener('keydown', (event) => {
+  if (!menu.open || !menu.delayOpen) return;
+  const options = [...els.sheet.querySelectorAll('#delay-list .dropdown-option')];
+  const at = options.indexOf(document.activeElement);
+  const to = { ArrowDown: at + 1, ArrowUp: at - 1, Home: 0, End: options.length - 1 }[event.key];
+  if (to === undefined) return;
+  event.preventDefault();
+  options[Math.max(0, Math.min(options.length - 1, to))]?.focus();
+});
 
 // ---- Order ----
 

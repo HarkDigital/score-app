@@ -3050,6 +3050,29 @@ a.team-cell:hover .team-name { color: var(--accent); }
 /* The Score Cards row's Detailed / Compact switch. */
 .menu-row .pills { flex: none; flex-wrap: nowrap; }
 
+/* The Delay Score Alerts row: its value and chevron on the right, and the
+   app's dropdown list opening in place under it (inside the sheet, so it
+   pushes the rows below down instead of floating over them). */
+.menu-delay .menu-row { position: relative; padding-right: 40px; }
+.menu-delay .filter-chevron { right: 12px; }
+.menu-delay.open .filter-chevron { transform: rotate(180deg); }
+
+.menu-value {
+  flex: none;
+  max-width: 45%;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.dropdown.menu-dropdown {
+  position: static;
+  max-height: none;
+  margin: 4px 2px 8px;
+  box-shadow: none;
+}
+
 /* Signed in: a mint dot on the header's menu button. */
 .menu-btn { position: relative; }
 .menu-btn.signed-in::after {
