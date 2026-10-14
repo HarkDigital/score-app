@@ -1615,6 +1615,40 @@ a.team-cell:hover .team-name { color: var(--accent); }
   text-align: center;
 }
 
+/* The gear, top left of the matchup card: arranges the sport's cards. */
+.arrange-btn {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--gray-400);
+  cursor: pointer;
+}
+
+.arrange-circle {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--gray-800);
+  border-radius: 50%;
+  background: var(--bg);
+  transition: border-color 150ms ease, color 150ms ease, transform 150ms ease;
+}
+
+.arrange-btn:active .arrange-circle { transform: scale(0.94); }
+
+@media (hover: hover) {
+  .arrange-btn:hover .arrange-circle { border-color: rgb(70 187 147 / 0.45); color: var(--fg); }
+}
+
 .matchup.live { border-color: rgb(239 107 107 / 0.3); }
 
 .matchup-status {
@@ -2847,6 +2881,22 @@ button.ext-link:not(:disabled):active { transform: scale(0.99); }
   color: var(--gray-500);
   cursor: grab;
   touch-action: none;
+}
+
+/* The game page's cards: a switch to show or hide each. */
+.order-row.off .name { color: var(--gray-500); }
+
+.card-switch {
+  display: grid;
+  place-items: center;
+  flex: none;
+  min-width: 44px;
+  height: 44px;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
 }
 
 .order-row.dragging .order-grip { color: var(--accent); cursor: grabbing; }

@@ -1,6 +1,7 @@
 // Sign-in with Clerk, and keeping this device's followed teams, alerts,
-// spoiler delay and league order in step with the account on the push server (/v1/me). The
-// feed-free logic (merging, checking, the device's mark) is account.js.
+// spoiler delay, league order and game page layouts in step with the account
+// on the push server (/v1/me). The feed-free logic (merging, checking, the
+// device's mark) is account.js.
 //
 // Clerk's browser bundle loads only when it's needed: at launch if this
 // device was signed in before, else when the account sheet opens. Signed
@@ -14,7 +15,7 @@
 //   failed PUT stays dirty, so the next sync sends the device's copy.
 
 import {
-  CLERK_PUBLISHABLE_KEY, ACCOUNT_API, clerkScriptUrl, signInAllowed, parseAccount, mergeAccounts, sameAccount, keepLeagueOrder,
+  CLERK_PUBLISHABLE_KEY, ACCOUNT_API, clerkScriptUrl, signInAllowed, parseAccount, mergeAccounts, sameAccount, keepDeviceSettings,
   loadAccountMark, saveAccountMark,
 } from './account.js';
 
@@ -55,7 +56,7 @@ let hooks = null;
 let pushTimer = null;
 let edits = 0; // changes made on this device while signed in
 
-// storage: localStorage (or null). local(): {teams, alertDelay, leagueOrder} on this
+// storage: localStorage (or null). local(): {teams, alertDelay, leagueOrder, gameCards} on this
 // device. apply(account): replace them. changed(): sign-in state or sync
 // status changed (redraw the sheet and the header button).
 export function initAccount(options) {
@@ -205,7 +206,7 @@ async function syncOnce() {
     } else {
       remote = parseAccount(await api('GET'));
       if (!remote) throw new Error('bad account');
-      account = mine ? keepLeagueOrder(remote, hooks.local()) : mergeAccounts(remote, hooks.local());
+      account = mine ? keepDeviceSettings(remote, hooks.local()) : mergeAccounts(remote, hooks.local());
     }
     if (!remote || !sameAccount(account, remote)) await api('PUT', account);
     // Changed here while that was in flight: keep it, and send it next.

@@ -11,6 +11,7 @@ import {
   loadFollowed, saveFollowed, isFollowed, toggleFollowed, followedLeagues, countFollowed, gamesForTeams,
   alertsFor, setAlerts, alertTeams, widgetTeams, loadAlertDelay, saveAlertDelay, clampDelay,
   moveTeam, sortByTeams, orderLeagues, loadLeagueOrder, saveLeagueOrder,
+  sportOf, gameCardsFor, setGameCards, loadGameCards, saveGameCards,
 } from './myteams.js';
 import {
   ICONS, getJson, TROUBLE, oddsHtml, failedLogos, failedImages, logoHtml, fallbackLogo, headshotHtml, emptyState, errorState, fullDate,
@@ -19,7 +20,7 @@ import {
 import { newsUrl, parseNews, mergeNews } from './news.js';
 import { playerSearchUrl, parseSearchPlayers } from './players.js';
 import {
-  initPages, parseRoute, showPage, hidePage, pageOpen, refreshPage, pageVisible, gameHref, teamHref, playerHref,
+  initPages, parseRoute, showPage, hidePage, pageOpen, refreshPage, redrawPage, pageVisible, gameHref, teamHref, playerHref,
 } from './pages.js';
 import { initAutoUpdate } from './update.js';
 import { initPullToRefresh } from './pull.js';
@@ -41,6 +42,9 @@ let alertDelay = loadAlertDelay(storage);
 // The league tabs' order (empty: the app's own). leagues() is LEAGUES in it.
 let leagueOrder = loadLeagueOrder(storage);
 const leagues = () => orderLeagues(leagueOrder);
+// The game page's cards per sport: {football: {order, hidden}} (empty: the
+// app's layout).
+let gameCards = loadGameCards(storage);
 const startLeague = initialLeague();
 
 const view = {
@@ -1003,6 +1007,8 @@ document.addEventListener('click', (event) => {
   else if (d.action === 'open-order') openOrder('leagues');
   else if (d.action === 'close-order') closeOrder();
   else if (d.action === 'reset-order') resetLeagueOrder();
+  else if (d.action === 'reset-cards') resetCards();
+  else if (d.cardToggle !== undefined) toggleCard(Number(d.cardToggle));
   else if (d.orderTab && d.orderTab !== order.tab) {
     order.tab = d.orderTab;
     renderOrder();
@@ -1152,29 +1158,32 @@ function renderMenu() {
 // The menu's Order row (and My Teams' Reorder): the league tabs, or the
 // followed teams, dragged into the person's order by the grip on each row
 // (arrow keys on it work too). The teams' order is the followed list's own,
-// so the chips, the games in My Teams and the widgets follow it. Both sync
-// with the account like the teams do.
+// so the chips, the games in My Teams and the widgets follow it. The game
+// page's gear opens the same sheet on that sport's cards (tab 'cards'), each
+// with a switch to hide it. All of them sync with the account like the
+// teams do.
 
-const order = { open: false, tab: 'leagues', opener: null, drag: null };
+const order = { open: false, tab: 'leagues', league: null, opener: null, drag: null };
 const GRIP = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 8h14M5 12h14M5 16h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 
-function openOrder(tab) {
+function openOrder(tab, league = null) {
   if (order.open) return;
   const opener = menu.open ? menu.opener : document.activeElement;
   closePicker();
   closeSearch(false);
   closeAccount(false);
   closeMenu(false);
-  Object.assign(order, { open: true, tab, opener, drag: null });
+  Object.assign(order, { open: true, tab, league, opener, drag: null });
+  const cards = tab === 'cards';
   els.sheet.innerHTML = `
     <div class="sheet-backdrop" data-action="close-order"></div>
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
       <div class="sheet-grabber" aria-hidden="true"></div>
       <div class="sheet-head">
-        <h2 id="sheet-title">Order</h2>
+        <h2 id="sheet-title">${cards ? 'Game page' : 'Order'}</h2>
         <button class="pill-btn" data-action="close-order">Done</button>
       </div>
-      <div class="segmented order-tabs" role="tablist" aria-label="What to order"></div>
+      ${cards ? '' : '<div class="segmented order-tabs" role="tablist" aria-label="What to order"></div>'}
       <ul class="order-list" id="order-list"></ul>
     </div>`;
   document.body.style.overflow = 'hidden';
@@ -1194,12 +1203,63 @@ function closeOrder(restoreFocus = true) {
   if (restoreFocus) order.opener?.focus?.();
 }
 
+// The cards the sheet lists: the Lock Screen's only in the apps.
+const cardShown = (card) => !card.app || inApp();
+const sportCards = () => gameCardsFor(sportOf(order.league), gameCards);
+
 function orderItems() {
+  if (order.tab === 'cards') return sportCards().filter(cardShown);
   return order.tab === 'teams' ? followed : leagues();
+}
+
+// Saves this sport's cards with the listed ones changed (moved or switched),
+// the Lock Screen's keeping its place where it isn't listed.
+function saveCards(listed) {
+  const rest = [...listed];
+  const sport = sportOf(order.league);
+  gameCards = setGameCards(gameCards, sport, sportCards().map((card) => (cardShown(card) ? rest.shift() : card)));
+  saveGameCards(storage, gameCards);
+  accountChanged();
+  redrawPage();
+}
+
+function toggleCard(index) {
+  const items = orderItems();
+  if (!items[index]) return;
+  items[index] = { ...items[index], hidden: !items[index].hidden };
+  saveCards(items);
+  renderOrder();
+  els.sheet.querySelector(`[data-card-toggle="${index}"]`)?.focus();
+}
+
+function resetCards() {
+  // Saved in full, like the league order, so it reaches other devices.
+  gameCards = setGameCards(gameCards, sportOf(order.league), gameCardsFor(sportOf(order.league), {}));
+  saveGameCards(storage, gameCards);
+  accountChanged();
+  redrawPage();
+  renderOrder();
+}
+
+function renderCards() {
+  const list = els.sheet.querySelector('#order-list');
+  const items = orderItems();
+  const sport = sportOf(order.league);
+  const standard = JSON.stringify(gameCardsFor(sport, {}).filter(cardShown)) === JSON.stringify(items);
+  list.innerHTML = `<li class="list-note order-hint">Drag the cards into the order you want and switch off the ones you don't. Every ${esc(sport)} game shows them this way.</li>` + items.map((card, i) => `
+      <li class="order-row${card.hidden ? ' off' : ''}" data-order-index="${i}">
+        <span class="name">${esc(card.label)}</span>
+        <button class="card-switch" role="switch" aria-checked="${!card.hidden}" data-card-toggle="${i}" aria-label="Show ${esc(card.label)}"><span class="switch" aria-hidden="true"></span></button>
+        <button class="order-grip" data-order-grip="${i}" aria-label="Move ${esc(card.label)}, ${i + 1} of ${items.length}. Use the arrow keys.">${GRIP}</button>
+      </li>`).join('') + (standard ? '' : '<li class="list-note"><button class="link-btn" data-action="reset-cards">Back to the standard layout</button></li>');
 }
 
 function renderOrder() {
   if (!order.open) return;
+  if (order.tab === 'cards') {
+    renderCards();
+    return;
+  }
   els.sheet.querySelector('.order-tabs').innerHTML = [['leagues', 'Leagues'], ['teams', 'My Teams']]
     .map(([id, label]) => `<button role="tab" data-order-tab="${id}" aria-selected="${order.tab === id}">${label}</button>`).join('');
   const list = els.sheet.querySelector('#order-list');
@@ -1227,7 +1287,8 @@ function renderOrder() {
 
 function moveOrder(from, to) {
   if (from === to) return;
-  if (order.tab === 'teams') {
+  if (order.tab === 'cards') saveCards(moveTeam(orderItems(), from, to));
+  else if (order.tab === 'teams') {
     followed = moveTeam(followed, from, to);
     saveFollowed(storage, followed);
     followsEdited();
@@ -1524,6 +1585,8 @@ initPages({
     saveAlertDelay(storage, alertDelay);
     followsEdited();
   },
+  gameCards: (league) => gameCardsFor(sportOf(league), gameCards),
+  arrangeCards: (league) => openOrder('cards', league),
   setTitle: (text) => { els.pageTitle.textContent = text; },
   setLineSteam,
   setLoading: (on) => els.refresh.classList.toggle('spinning', on),
@@ -1555,16 +1618,19 @@ function followsEdited() {
 syncAlerts();
 initAccount({
   storage,
-  local: () => ({ teams: followed, alertDelay, leagueOrder }),
+  local: () => ({ teams: followed, alertDelay, leagueOrder, gameCards }),
   // The account's teams replaced this device's (another device changed
   // them, or the first sign-in merged them).
   apply(saved) {
     followed = saved.teams;
     alertDelay = saved.alertDelay;
     if (saved.leagueOrder.length) leagueOrder = saved.leagueOrder;
+    if (Object.keys(saved.gameCards).length) gameCards = saved.gameCards;
     saveFollowed(storage, followed);
     saveAlertDelay(storage, alertDelay);
     saveLeagueOrder(storage, leagueOrder);
+    saveGameCards(storage, gameCards);
+    redrawPage();
     if (order.open) renderOrder();
     syncAlerts();
     if (pageOpen()) followsChanged = true;
