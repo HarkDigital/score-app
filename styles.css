@@ -2153,8 +2153,9 @@ a.team-cell:hover .team-name { color: var(--accent); }
 .lock-toggle:disabled { opacity: 0.6; }
 .lock-toggle:not(:disabled):active .lock-pill { transform: scale(0.94); }
 
-.switch-small { width: 32px; height: 20px; }
-.switch-small::after { top: 2px; left: 2px; width: 16px; height: 16px; }
+/* Beats .switch, which comes later in the file. */
+.switch.switch-small { width: 32px; height: 20px; }
+.switch.switch-small::after { top: 2px; left: 2px; width: 16px; height: 16px; }
 
 @media (hover: hover) {
   .lock-toggle:not(:disabled):hover .lock-pill { border-color: rgb(70 187 147 / 0.45); }
@@ -2308,7 +2309,7 @@ a.team-cell:hover .team-name { color: var(--accent); }
 
 .delay-custom input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 [role="switch"][aria-checked="true"] .switch::after { transform: translateX(18px); }
-[role="switch"][aria-checked="true"] .switch-small::after { transform: translateX(12px); }
+[role="switch"][aria-checked="true"] .switch.switch-small::after { transform: translateX(12px); }
 
 .team-head .alert-note {
   max-width: 320px;
