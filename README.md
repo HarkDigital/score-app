@@ -168,15 +168,16 @@ Start times for upcoming games come from the league schedule and are shown in yo
 
 ## Turning on sign-in (Clerk)
 
-Sign-in is off until these are set. Nothing changes for anyone until step 3 ships.
+The Clerk production instance is set up for **scores.phade.app** (Frontend API `clerk.scores.phade.app`, DNS records in Cloudflare), and its publishable key is in `CLERK_PUBLISHABLE_KEY` at the top of `account.js`. A production key only works on its own domain, so the account button shows only on https://scores.phade.app/ (not on harkdigital.github.io, and not in the apps while they load github.io). What's left:
 
-1. **Clerk app**: at [dashboard.clerk.com](https://dashboard.clerk.com) create an application named Phade Scores. Under **User & authentication**, turn on **Email address** with **Email verification code** as the sign-in method, and leave Google, Apple and other social sign-ins off (Google refuses sign-in inside the apps' web view, and offering Google on iPhone would also require Sign in with Apple). Under **Settings > Restrictions** (or **User & authentication > Delete account**), make sure users can delete their own accounts (App Store rule 5.1.1).
+1. **Clerk**: finish domain verification once Cloudflare is live. Under **User & authentication**, keep **Email address** with **Email verification code** and leave Google, Apple and other social sign-ins off (Google refuses sign-in inside the apps' web view, and offering Google on iPhone would also require Sign in with Apple). Make sure users can delete their own accounts (App Store rule 5.1.1).
 2. **Server**: add to `/opt/scores-push/.env` on the Phade box, then `npm run push:deploy` (this also ships `account.js` and `myteams.js`):
    ```
-   CLERK_ISSUER=https://<your Frontend API host>
-   CLERK_AUTHORIZED_PARTIES=https://harkdigital.github.io,https://scores.phade.app
+   CLERK_ISSUER=https://clerk.scores.phade.app
+   CLERK_AUTHORIZED_PARTIES=https://scores.phade.app
    ```
-   The Frontend API host is under **Configure > Domains** (development: `something.clerk.accounts.dev`; production: `clerk.phade.app`). Optionally also `CLERK_JWT_KEY` with the **JWT public key** (PEM, under **API keys > Show JWT public key**, newlines written as `\n`) so tokens are checked without asking Clerk for its keys. `curl https://scores.phade.app/health` then shows `"accounts": 0` instead of `"off"`.
-3. **Web app**: put the **Publishable key** (`pk_test_...` or `pk_live_...`, under **API keys**; not a secret) in `CLERK_PUBLISHABLE_KEY` at the top of `account.js` and merge to `main`.
+   Optionally also `CLERK_JWT_KEY` with the **JWT public key** (PEM, under **API keys > Show JWT public key**, newlines written as `\n`) so tokens are checked without asking Clerk for its keys. `curl https://scores.phade.app/health` then shows `"accounts": 0` instead of `"off"`.
+3. **The site on scores.phade.app**: PR #45's nginx config on the box.
+4. **The apps**: to sign in inside them, `capacitor.config.json`'s `server.url` must be `https://scores.phade.app/` (and `allowNavigation` include it), then a new iPhone build and APK. Each app's localStorage belongs to the site it loads, so the switch needs a one-time copy of the followed teams from the github.io storage first, or people lose their teams and their alerts stop.
 
-A Clerk **development** instance works straight away on harkdigital.github.io and inside both apps (it shows a small "Development mode" badge and allows 100 users). A **production** instance needs a domain you own: Clerk asks for DNS records under phade.app (`clerk.phade.app` and the email ones), and its sign-in cookies only work for a site on phade.app, so the web app has to be served from scores.phade.app (PR #45) and the apps' `server.url` pointed there (a new iPhone build and APK) before switching to the `pk_live_` key.
+For testing anywhere else (github.io, localhost), a Clerk **development** instance's `pk_test_` key works on any site, with `CLERK_ISSUER` set to its `*.clerk.accounts.dev` host.

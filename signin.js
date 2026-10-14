@@ -14,12 +14,12 @@
 //   failed PUT stays dirty, so the next sync sends the device's copy.
 
 import {
-  CLERK_PUBLISHABLE_KEY, ACCOUNT_API, clerkScriptUrl, parseAccount, mergeAccounts, sameAccount,
+  CLERK_PUBLISHABLE_KEY, ACCOUNT_API, clerkScriptUrl, signInAllowed, parseAccount, mergeAccounts, sameAccount,
   loadAccountMark, saveAccountMark,
 } from './account.js';
 
 const KEY = CLERK_PUBLISHABLE_KEY;
-export const accountsOn = () => Boolean(clerkScriptUrl(KEY));
+export const accountsOn = () => signInAllowed(KEY, location.hostname);
 
 // Phade's colors for Clerk's own sign-in form.
 const APPEARANCE = {

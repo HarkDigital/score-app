@@ -8,8 +8,12 @@ import { ALERT_KINDS, clampDelay } from './myteams.js';
 
 // Clerk's publishable key (Clerk dashboard > API keys): pk_test_... for the
 // development instance, pk_live_... for production. Not a secret. Empty
-// turns sign-in off: no account button, nothing loaded.
-export const CLERK_PUBLISHABLE_KEY = '';
+// turns sign-in off: no account button, nothing loaded. This is the
+// production instance on scores.phade.app (Frontend API
+// clerk.scores.phade.app), so sign-in shows only on that site
+// (signInAllowed): not on harkdigital.github.io, nor in the apps while they
+// load github.io.
+export const CLERK_PUBLISHABLE_KEY = 'pk_live_Y2xlcmsuc2NvcmVzLnBoYWRlLmFwcCQ';
 
 // Where the account lives: the push server's /v1/me.
 export const ACCOUNT_API = 'https://scores.phade.app';
@@ -36,6 +40,19 @@ export function clerkFrontendApi(key) {
   }
   host = host.replace(/\$$/, '');
   return /^[a-z0-9-]+(\.[a-z0-9-]+)+$/i.test(host) ? host : null;
+}
+
+// Whether sign-in works on this site. A development key works anywhere; a
+// production key only on the domain its instance belongs to (Clerk's
+// cookies are first-party there), which is its Frontend API host without
+// the "clerk." in front: clerk.scores.phade.app → scores.phade.app.
+export function signInAllowed(key, hostname) {
+  const host = clerkFrontendApi(key);
+  if (!host) return false;
+  if (String(key).startsWith('pk_test_')) return true;
+  const site = host.replace(/^clerk\./, '');
+  const here = String(hostname ?? '').toLowerCase();
+  return here === site || here.endsWith(`.${site}`);
 }
 
 // Clerk's browser bundle, served by the instance itself (major version 5).

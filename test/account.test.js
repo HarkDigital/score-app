@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  clerkFrontendApi, clerkScriptUrl, cleanTeams, parseAccount, mergeAccounts, sameAccount,
+  clerkFrontendApi, clerkScriptUrl, signInAllowed, cleanTeams, parseAccount, mergeAccounts, sameAccount,
   loadAccountMark, saveAccountMark, MAX_ACCOUNT_TEAMS,
 } from '../account.js';
 
@@ -23,6 +23,21 @@ test('the Frontend API host comes out of the publishable key', () => {
   assert.equal(clerkFrontendApi('sk_test_abc'), null);
   assert.equal(clerkFrontendApi(`pk_test_${btoa('evil.com/path$')}`), null);
   assert.equal(clerkScriptUrl(''), null);
+});
+
+test('a production key signs in only on its own site', () => {
+  // The real production key: Frontend API clerk.scores.phade.app.
+  const live = 'pk_live_Y2xlcmsuc2NvcmVzLnBoYWRlLmFwcCQ';
+  assert.equal(clerkFrontendApi(live), 'clerk.scores.phade.app');
+  assert.ok(signInAllowed(live, 'scores.phade.app'));
+  assert.ok(signInAllowed(live, 'www.scores.phade.app'));
+  assert.ok(!signInAllowed(live, 'harkdigital.github.io'));
+  assert.ok(!signInAllowed(live, 'phade.app'));
+  assert.ok(!signInAllowed(live, 'evilscores.phade.app'));
+  assert.ok(!signInAllowed(live, 'localhost'));
+  // A development key works anywhere; no key, nowhere.
+  assert.ok(signInAllowed(`pk_test_${btoa('happy-otter-12.clerk.accounts.dev$')}`, 'harkdigital.github.io'));
+  assert.ok(!signInAllowed('', 'scores.phade.app'));
 });
 
 test('teams are checked and trimmed before they reach an account', () => {
