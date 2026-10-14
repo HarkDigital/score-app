@@ -24,6 +24,9 @@ import { initAutoUpdate } from './update.js';
 import { initPullToRefresh } from './pull.js';
 import { initSwipeNav } from './swipe.js';
 import { inApp, setAlertTeams, setFollowedTeams, haptic } from './native.js';
+import {
+  accountsOn, initAccount, loadClerk, accountState, showSignIn, hideSignIn, accountChanged, signOut, deleteAccount, sync,
+} from './signin.js';
 
 const MINE = { id: 'mine', label: 'My Teams', mine: true };
 const LEAGUE_KEY = 'scores.league';
@@ -65,6 +68,7 @@ const els = {
   sheet: document.getElementById('sheet-root'),
   back: document.getElementById('back'),
   pageTitle: document.getElementById('page-title'),
+  menu: document.getElementById('menu'),
 };
 
 // ---- Loading ----
@@ -681,6 +685,8 @@ const picker = { open: false, league: null, failed: new Set(), query: '', change
 function openPicker() {
   if (picker.open) return;
   closeSearch(false);
+  closeAccount(false);
+  closeMenu(false);
   Object.assign(picker, { open: true, changed: false, query: '', opener: document.activeElement });
   picker.league = view.league.mine ? leagueById(followed[0]?.league) ?? picker.league ?? LEAGUES[0] : view.league;
   els.sheet.innerHTML = `
@@ -770,7 +776,7 @@ function toggleTeam(button) {
   if (!team) return;
   followed = toggleFollowed(followed, picker.league.id, team);
   saveFollowed(storage, followed);
-  syncAlerts();
+  followsEdited();
   picker.changed = true;
   const on = isFollowed(followed, picker.league.id, team.id);
   button.setAttribute('aria-pressed', String(on));
@@ -796,6 +802,8 @@ const playerKey = (query) => fold(query.trim()).replace(/\s+/g, ' ');
 function openSearch() {
   if (search.open) return;
   closePicker();
+  closeAccount(false);
+  closeMenu(false);
   Object.assign(search, { open: true, query: '', opener: document.activeElement });
   els.sheet.innerHTML = `
     <div class="sheet-backdrop" data-action="close-search"></div>
@@ -981,6 +989,13 @@ document.addEventListener('click', (event) => {
   else if (d.action === 'close-picker') closePicker();
   else if (d.action === 'open-search') openSearch();
   else if (d.action === 'close-search') closeSearch();
+  else if (d.action === 'open-menu') openMenu();
+  else if (d.action === 'close-menu') closeMenu();
+  else if (d.action === 'open-account') openAccount();
+  else if (d.action === 'close-account') closeAccount();
+  else if (d.action === 'sign-out') signOut();
+  else if (d.action === 'delete-account') confirmDelete();
+  else if (d.action === 'retry-account') retryAccount();
   else if (d.searchTeam) openSearchResult(d.searchTeam);
   else if (d.searchPlayer) openSearchResult(d.searchPlayer, playerHref);
   else if (d.action === 'retry') load();
@@ -989,9 +1004,9 @@ document.addEventListener('click', (event) => {
 
 const refreshNow = () => (pageOpen() ? refreshPage() : load());
 els.refresh.addEventListener('click', refreshNow);
-initPullToRefresh({ refresh: refreshNow, enabled: () => !picker.open && !search.open });
+initPullToRefresh({ refresh: refreshNow, enabled: () => !sheetOpen() });
 initSwipeNav({
-  enabled: () => inApp() && !picker.open && !search.open,
+  enabled: () => inApp() && !sheetOpen(),
   content: () => document.getElementById(pageOpen() ? 'page' : 'main'),
   canBack: () => pageOpen(),
   canForward: () => furthest > depth,
@@ -1003,6 +1018,8 @@ document.addEventListener('keydown', (event) => {
   if (event.key !== 'Escape') return;
   closePicker();
   closeSearch();
+  closeAccount();
+  closeMenu();
 });
 
 document.addEventListener('change', (event) => {
@@ -1042,6 +1059,167 @@ document.addEventListener('error', (event) => {
   failedLogos.add(img.getAttribute('src'));
   img.outerHTML = fallbackLogo(img.dataset.abbr, img.dataset.color);
 }, true);
+
+// ---- Menu ----
+
+// The header's menu button: the account (where sign-in works, account.js;
+// it's optional and only syncs teams and alerts), the privacy policy and
+// support pages (Apple wants the policy reachable in the app; they're the
+// push server's, so they open in the browser).
+
+const menu = { open: false, opener: null };
+const sheetOpen = () => picker.open || search.open || account.open || menu.open;
+
+const CHEVRON = '<svg class="menu-chevron" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function openMenu() {
+  if (menu.open) return;
+  closePicker();
+  closeSearch(false);
+  closeAccount(false);
+  Object.assign(menu, { open: true, opener: document.activeElement });
+  els.sheet.innerHTML = `
+    <div class="sheet-backdrop" data-action="close-menu"></div>
+    <div class="sheet sheet-short" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+      <div class="sheet-grabber" aria-hidden="true"></div>
+      <div class="sheet-head">
+        <h2 id="sheet-title">Menu</h2>
+        <button class="pill-btn" data-action="close-menu">Done</button>
+      </div>
+      <ul class="menu-list" id="menu-list"></ul>
+    </div>`;
+  document.body.style.overflow = 'hidden';
+  renderMenu();
+  els.sheet.querySelector('[data-action="close-menu"].pill-btn').focus();
+}
+
+function closeMenu(restoreFocus = true) {
+  if (!menu.open) return;
+  menu.open = false;
+  els.sheet.innerHTML = '';
+  document.body.style.overflow = '';
+  if (restoreFocus) menu.opener?.focus?.();
+}
+
+function renderMenu() {
+  if (!menu.open) return;
+  const s = accountState();
+  const signedIn = s.status === 'signedIn';
+  const accountRow = accountsOn() ? `
+    <li><button class="menu-row" data-action="open-account">
+      <span class="menu-text">
+        <span class="menu-title">${signedIn ? 'Account' : 'Sign in'}</span>
+        <span class="option-meta">${signedIn ? esc(s.email) : 'Optional. Keeps your teams and alerts on all your devices.'}</span>
+      </span>${CHEVRON}
+    </button></li>` : '';
+  els.sheet.querySelector('#menu-list').innerHTML = `${accountRow}
+    <li><a class="menu-row" href="https://scores.phade.app/privacy" target="_blank" rel="noopener">
+      <span class="menu-text"><span class="menu-title">Privacy policy</span></span>${CHEVRON}
+    </a></li>
+    <li><a class="menu-row" href="https://scores.phade.app/support" target="_blank" rel="noopener">
+      <span class="menu-text"><span class="menu-title">Support</span><span class="option-meta">Help, and where the scores come from</span></span>${CHEVRON}
+    </a></li>`;
+}
+
+// ---- Account ----
+
+// Opened from the menu (only where a Clerk key works, account.js): sign in
+// to keep the followed teams and their alerts on every device. Clerk draws
+// the sign-in form itself; signin.js does the syncing.
+
+const account = { open: false, opener: null, shown: null };
+
+function openAccount() {
+  if (account.open) return;
+  const opener = menu.open ? menu.opener : document.activeElement;
+  closePicker();
+  closeSearch(false);
+  closeMenu(false);
+  Object.assign(account, { open: true, opener, shown: null });
+  els.sheet.innerHTML = `
+    <div class="sheet-backdrop" data-action="close-account"></div>
+    <div class="sheet sheet-short" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+      <div class="sheet-grabber" aria-hidden="true"></div>
+      <div class="sheet-head">
+        <h2 id="sheet-title">Account</h2>
+        <button class="pill-btn" data-action="close-account">Done</button>
+      </div>
+      <div class="account-body" id="account-body"></div>
+    </div>`;
+  document.body.style.overflow = 'hidden';
+  loadClerk().catch(() => {});
+  renderAccount();
+}
+
+function closeAccount(restoreFocus = true) {
+  if (!account.open) return;
+  account.open = false;
+  hideSignIn();
+  els.sheet.innerHTML = '';
+  document.body.style.overflow = '';
+  if (restoreFocus) account.opener?.focus?.();
+}
+
+function syncLine(s) {
+  if (s.error) return '<p class="account-note account-error">Couldn\'t reach your account. Your changes are kept here and saved when it\'s back.</p>';
+  if (!s.syncedAt) return '<p class="account-note">Syncing your teams</p>';
+  return '<p class="account-note">Your teams, alerts and alert delay are saved to your account.</p>';
+}
+
+function renderAccount() {
+  const s = accountState();
+  els.menu.classList.toggle('signed-in', s.status === 'signedIn');
+  els.menu.setAttribute('aria-label', s.status === 'signedIn' ? 'Menu (signed in)' : 'Menu');
+  renderMenu();
+  if (!account.open) return;
+  const body = els.sheet.querySelector('#account-body');
+  // Clerk's form lives in #clerk-sign-in: leave it alone while signed out.
+  if (s.status === 'signedOut' && account.shown === 'signedOut') return;
+  account.shown = s.status;
+  if (s.status === 'signedIn') {
+    hideSignIn();
+    body.innerHTML = `
+      <div class="account-user">
+        <span class="account-avatar" aria-hidden="true">${esc((s.email[0] ?? '?').toUpperCase())}</span>
+        <div><p class="account-label">Signed in as</p><p class="account-email">${esc(s.email)}</p></div>
+      </div>
+      ${syncLine(s)}
+      <div class="account-actions">
+        ${s.error ? '<button class="pill-btn" data-action="retry-account">Try again</button>' : ''}
+        <button class="pill-btn" data-action="sign-out">Sign out</button>
+      </div>
+      <p class="account-note">Signing out keeps your teams on this device.</p>
+      <button class="link-btn account-delete" data-action="delete-account">Delete account</button>`;
+    return;
+  }
+  if (s.status === 'signedOut') {
+    body.innerHTML = `
+      <p class="account-intro">Sign in to keep your teams, alerts and alert delay on all your devices. The teams on this device are added to your account.</p>
+      <div id="clerk-sign-in" class="clerk-mount"></div>`;
+    showSignIn(body.querySelector('#clerk-sign-in'));
+    return;
+  }
+  body.innerHTML = s.status === 'failed'
+    ? '<p class="account-intro">Couldn\'t load sign-in. Check your connection.</p><div class="account-actions"><button class="pill-btn" data-action="retry-account">Try again</button></div>'
+    : '<p class="account-intro">Loading</p>';
+}
+
+function retryAccount() {
+  if (accountState().status === 'signedIn') sync();
+  else {
+    loadClerk().catch(() => {});
+    renderAccount();
+  }
+}
+
+async function confirmDelete() {
+  if (!window.confirm('Delete your account? Your teams stay on this device, but are removed from your account and your other devices stop syncing.')) return;
+  try {
+    await deleteAccount();
+  } catch {
+    window.alert('Couldn\'t delete your account. Try again.');
+  }
+}
 
 // ---- Game and team pages ----
 
@@ -1135,20 +1313,20 @@ initPages({
   toggleFollow(leagueId, team) {
     followed = toggleFollowed(followed, leagueId, team);
     saveFollowed(storage, followed);
-    syncAlerts();
+    followsEdited();
     followsChanged = true;
   },
   alertsFor: (leagueId, teamId) => alertsFor(followed, leagueId, teamId),
   setAlerts(leagueId, teamId, kinds) {
     followed = setAlerts(followed, leagueId, teamId, kinds);
     saveFollowed(storage, followed);
-    syncAlerts();
+    followsEdited();
   },
   alertDelay: () => alertDelay,
   setAlertDelay(seconds) {
     alertDelay = clampDelay(seconds);
     saveAlertDelay(storage, alertDelay);
-    syncAlerts();
+    followsEdited();
   },
   setTitle: (text) => { els.pageTitle.textContent = text; },
   setLoading: (on) => els.refresh.classList.toggle('spinning', on),
@@ -1163,11 +1341,34 @@ function syncAlerts() {
   setFollowedTeams(widgetTeams(followed));
 }
 
+// A change made here: the apps, and the account when signed in.
+function followsEdited() {
+  syncAlerts();
+  accountChanged();
+}
+
 syncAlerts();
+initAccount({
+  storage,
+  local: () => ({ teams: followed, alertDelay }),
+  // The account's teams replaced this device's (another device changed
+  // them, or the first sign-in merged them).
+  apply(saved) {
+    followed = saved.teams;
+    alertDelay = saved.alertDelay;
+    saveFollowed(storage, followed);
+    saveAlertDelay(storage, alertDelay);
+    syncAlerts();
+    if (pageOpen()) followsChanged = true;
+    else if (view.league.mine) changeView({});
+    else render();
+  },
+  changed: renderAccount,
+});
 render();
 els.tabs.querySelector('[aria-selected="true"]')?.scrollIntoView({ inline: 'center', block: 'nearest' });
 load();
 applyRoute();
 // Pick up a new deploy when the app comes back to the front (not while the
 // team picker is open).
-initAutoUpdate({ canReload: () => !picker.open });
+initAutoUpdate({ canReload: () => !picker.open && !account.open });

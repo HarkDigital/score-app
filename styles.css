@@ -189,6 +189,7 @@ body:not(.page-mode) .page { display: none; }
   .icon-btn:not(:disabled):hover { background: rgb(255 255 255 / 0.05); color: var(--white); }
 }
 .icon-btn:not(:disabled):active { transform: scale(0.95); }
+.icon-btn[hidden] { display: none; }
 
 .spinning svg { animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -1492,38 +1493,6 @@ main {
   color: var(--gray-400);
 }
 
-/* ---- Footer ---- */
-
-.credit {
-  margin: 32px 0 0;
-  text-align: center;
-  font-size: 11px;
-  color: var(--gray-600);
-}
-
-/* The privacy policy and support pages (Apple wants the policy reachable
-   from inside the app). Tall enough to tap. */
-.credit-links {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin: 0;
-}
-
-.credit-links a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  padding: 0 10px;
-  font-size: 12px;
-  color: var(--gray-500);
-  text-decoration: none;
-}
-
-@media (hover: hover) {
-  .credit-links a:hover { color: var(--accent); }
-}
-
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 1ms !important;
@@ -2679,4 +2648,136 @@ button.ext-link:not(:disabled):active { transform: scale(0.99); }
   .box-table a.player:hover,
   .lineup-name:hover .name,
   .roster-row:hover .name { color: var(--accent); }
+}
+
+/* ---- Account sheet ---- */
+
+/* Sized to its content (sign-in form or account), not the picker's 88%. */
+.sheet.sheet-short { height: auto; }
+@media (min-width: 720px) { .sheet.sheet-short { height: auto; max-height: min(720px, 85svh); } }
+
+.account-body {
+  overflow-y: auto;
+  padding: 4px 16px 20px;
+}
+
+.account-intro {
+  margin: 4px 0 12px;
+  color: var(--gray-300);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.clerk-mount {
+  display: flex;
+  justify-content: center;
+  min-height: 120px;
+}
+
+.account-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0 12px;
+}
+
+.account-avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+  color: var(--white);
+  font-weight: 700;
+}
+
+.account-label {
+  margin: 0;
+  color: var(--gray-400);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.account-email {
+  margin: 2px 0 0;
+  color: var(--white);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.account-note {
+  margin: 8px 0;
+  color: var(--gray-400);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.account-error { color: var(--warn); }
+
+.account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+
+.account-delete {
+  min-height: 44px;
+  margin-top: 8px;
+  color: var(--live);
+  font-size: 14px;
+}
+
+/* ---- Menu sheet ---- */
+
+.menu-list {
+  margin: 0;
+  padding: 4px 8px 16px;
+  list-style: none;
+}
+
+.menu-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: var(--fg);
+  text-align: left;
+  text-decoration: none;
+}
+
+@media (hover: hover) {
+  .menu-row:hover { background: rgb(255 255 255 / 0.04); }
+}
+
+.menu-text { flex: 1; min-width: 0; }
+
+.menu-title {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.menu-chevron { flex: none; color: var(--gray-600); }
+
+/* Signed in: a mint dot on the header's menu button. */
+.menu-btn { position: relative; }
+.menu-btn.signed-in::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  right: 9px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--bg);
 }
