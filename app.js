@@ -1143,7 +1143,7 @@ function renderMenu() {
     </button></li>` : '';
   els.sheet.querySelector('#menu-list').innerHTML = `${accountRow}
     <li><button class="menu-row" data-action="open-order">
-      <span class="menu-text"><span class="menu-title">Order</span><span class="option-meta">The leagues across the top, and your teams</span></span>${CHEVRON}
+      <span class="menu-text"><span class="menu-title">Change League Order</span><span class="option-meta">The leagues across the top, and your teams</span></span>${CHEVRON}
     </button></li>
     <li><a class="menu-row" href="https://scores.phade.app/privacy" target="_blank" rel="noopener">
       <span class="menu-text"><span class="menu-title">Privacy policy</span></span>${CHEVRON}
@@ -1155,7 +1155,7 @@ function renderMenu() {
 
 // ---- Order ----
 
-// The menu's Order row (and My Teams' Reorder): the league tabs, or the
+// The menu's Change League Order row (and My Teams' Reorder): the league tabs, or the
 // followed teams, dragged into the person's order by the grip on each row
 // (arrow keys on it work too). The teams' order is the followed list's own,
 // so the chips, the games in My Teams and the widgets follow it. The game
