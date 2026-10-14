@@ -515,7 +515,21 @@ main {
   background: var(--accent);
 }
 
-/* Week bar for football. */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.nav-actions .sub {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Week bar for football, and the week view of the other leagues. */
 .week-center {
   display: grid;
   place-items: center;
