@@ -10,7 +10,7 @@ npm test    # node --test, unit tests for the data layer (Node 18+)
 ```
 
 - ES modules, so open it through a server, never `index.html` from disk.
-- **Deploy = merge to `main`.** GitHub Pages serves `main` from the repo root (`.nojekyll` keeps Jekyll out) at https://harkdigital.github.io/score-app/. Every push to `main` triggers a "pages build and deployment" run (about a minute). Pages settings can't be changed from a cloud session; Mike flips those himself.
+- **Deploy = merge to `main`.** GitHub Pages serves `main` from the repo root (`.nojekyll` keeps Jekyll out) at https://harkdigital.github.io/score-app/. https://scores.phade.app/ shows the same site: Phade's nginx proxies every path the push server doesn't own to Pages (`server/scores.phade.app.conf`). Every push to `main` triggers a "pages build and deployment" run (about a minute). Pages settings can't be changed from a cloud session; Mike flips those himself.
 - Work on a branch, open a PR to `main`, merge when done. Mike merges or asks Claude to.
 
 ## Files

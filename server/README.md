@@ -2,7 +2,7 @@
 
 Keeps the iPhone app's Lock Screen cards (Live Activities) current and sends team alerts. A locked phone can't poll ESPN, so this does it and pushes through Apple (APNs).
 
-- **Runs** on the Phade server (74.208.219.49) as the `scores-push` container in `/opt/scores-push`, its own Docker Compose project on Phade's `phade_default` network. Phade's nginx terminates TLS for `scores.phade.app` and proxies to `scores-push:8080`. Nothing is published on the host.
+- **Runs** on the Phade server (74.208.219.49) as the `scores-push` container in `/opt/scores-push`, its own Docker Compose project on Phade's `phade_default` network. Phade's nginx terminates TLS for `scores.phade.app` and proxies the API (`/v1/...`, `/health`) and the App Store's pages (`/privacy`, `/support`, `/legal.css`) to `scores-push:8080`; every other path is the web app, proxied from GitHub Pages (`harkdigital.github.io/score-app/`), so the site loads at https://scores.phade.app/ and a merge to `main` still deploys it. Nothing is published on the host.
 - **Code**: `index.js` (HTTP API), `watcher.js` (polling and pushing), `live.js` (the decisions, unit-tested in `test/`), `apns.js` (HTTP/2 + ES256 token auth, no dependencies), `store.js` (one JSON file in `/opt/scores-push/data`). Scoreboards are parsed with the app's own `espn.js`.
 - **Pages**: it also serves the App Store listing's privacy policy and support pages, `/privacy` and `/support` (`site.js`, from `site/`, read at startup). They change with `npm run push:deploy`.
 - **No key, no pushes**: without `secrets/apns.p8` and `.env` it runs as a dry run and logs what it would send. Handy locally: `TZ=America/New_York PORT=8787 node server/index.js`.
@@ -30,7 +30,7 @@ Runs the tests, copies `espn.js` and `server/` to the box and restarts the conta
 2. Apple push key: developer.apple.com → Certificates, Identifiers & Profiles → Keys → **+** → name it, tick **Apple Push Notifications service (APNs)** (Sandbox & Production, Team Scoped) → download the `.p8` (only once) and note the Key ID. On the box: `/opt/scores-push/secrets/apns.p8` (mode 600) and `/opt/scores-push/.env` with `APNS_KEY_ID=…` and `APNS_TEAM_ID=72U2ZL3GVM`.
 3. `npm run push:deploy` (starts the container).
 4. Certificate: `certbot certonly --webroot -w /var/www/certbot -d scores.phade.app`. phade.conf's port-80 server is nginx's default and already serves `/.well-known/acme-challenge/` from that folder for any host.
-5. nginx: copy `server/scores.phade.app.conf` to `/var/www/phade/nginx/conf.d/`, then `docker exec phade-nginx nginx -t && docker exec phade-nginx nginx -s reload`. The upstream is resolved per request, so phade.app keeps working even if `scores-push` is down.
+5. nginx: copy `server/scores.phade.app.conf` to `/var/www/phade/nginx/conf.d/`, then `docker exec phade-nginx nginx -t && docker exec phade-nginx nginx -s reload`. `npm run push:deploy` doesn't copy it: repeat this step whenever the file changes (a new server route needs adding to its push-server `location`). The upstream is resolved per request, so phade.app keeps working even if `scores-push` is down.
 6. Check: `curl https://scores.phade.app/health` says `"push":"live"`.
 7. Android (Firebase, the Phade project): Firebase console → Project settings → Service accounts → **Generate new private key**. On the box: `/opt/scores-push/secrets/fcm.json` (mode 600), then `npm run push:deploy`. `/health` then says `"android":"live"`; without the file Android pushes are logged as a dry run.
 
