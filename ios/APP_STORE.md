@@ -137,7 +137,7 @@ The rating App Store Connect works out from these answers is fine either way; th
 
 Use the set on your Desktop in **Phade Scores screenshots** (checked October 14, 2026: all are the right sizes).
 
-- **iPhone 6.9" Display** (1320 x 2868): upload in this order: `iphone-5-lockscreen.png`, `iphone-1-scores.png`, `iphone-2-game.png`, `iphone-3-team.png`, `iphone-4-player.png`. The 6.5" and smaller sizes are filled in from these automatically.
+- **iPhone with Dynamic Island (medium display)**, the 6.1"/6.3" slot (1206 x 2622): App Store Connect rejects the 6.9" originals here, so upload the copies in the **iPhone 6.3 (upload these)** subfolder, in this order: `iphone-5-lockscreen.png`, `iphone-1-scores.png`, `iphone-2-game.png`, `iphone-3-team.png`, `iphone-4-player.png`.
 - **iPad 13" Display** (2064 x 2752): `ipad-1-scores.png`, `ipad-2-game.png`, `ipad-3-team.png`, `ipad-4-player.png`.
 
 The scores, game and Lock Screen shots are current (menu button, LineSteam logo, Detailed cards, the card gear and lock). The team and player shots are from the evening before and are missing only the menu button at the top right. Apple doesn't require pixel-exact screenshots, so they can go as they are; retake them in the Simulator later if you want them to match (`xcrun simctl io booted screenshot ~/Desktop/shot.png`).
