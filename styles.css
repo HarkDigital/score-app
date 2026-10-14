@@ -352,58 +352,123 @@ main {
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3);
 }
 
-/* College football's conference picker: a native select dressed as a card
-   row, so the phone still opens its own wheel. */
+/* College football's conference picker: a card row that opens the app's own
+   dropdown under it (sections, a check on the current one), not the phone's
+   select wheel. */
 .filter {
+  position: relative;
+  margin: -4px 0 16px;
+}
+
+.filter.open { z-index: 30; }
+
+.filter-btn {
   position: relative;
   display: flex;
   align-items: center;
+  gap: 12px;
+  width: 100%;
   min-height: 48px;
-  margin: -4px 0 16px;
+  padding: 0 44px 0 16px;
   border: 1px solid var(--card-border);
   border-radius: 12px;
   background: var(--card-bg);
+  color: var(--white);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
-.filter:focus-within { border-color: rgb(70 187 147 / 0.6); }
+.filter-btn:focus-visible,
+.filter.open .filter-btn { border-color: rgb(70 187 147 / 0.6); outline: none; }
 
 .filter-label {
-  position: absolute;
-  left: 16px;
+  flex: none;
+  width: 72px;
   color: var(--gray-500);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  pointer-events: none;
 }
 
-.filter select {
+.filter-value {
   flex: 1;
   min-width: 0;
-  min-height: 46px;
-  padding: 0 44px 0 100px;
-  border: 0;
-  border-radius: 12px;
-  background: transparent;
-  color: var(--white);
-  font: inherit;
+  overflow: hidden;
   font-size: 15px;
   font-weight: 600;
-  appearance: none;
-  -webkit-appearance: none;
-  cursor: pointer;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
-
-.filter select:focus { outline: none; }
-.filter option, .filter optgroup { background: var(--gray-900); color: var(--fg); }
 
 .filter-chevron {
   position: absolute;
   right: 16px;
   display: flex;
   color: var(--accent);
-  pointer-events: none;
+  transition: transform 160ms ease-out;
+}
+
+.filter.open .filter-chevron { transform: rotate(180deg); }
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: min(420px, 60svh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px;
+  border: 1px solid var(--gray-800);
+  border-radius: 12px;
+  background: var(--sheet);
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.7);
+  animation: dropdownOpen 160ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.dropdown[hidden] { display: none; }
+
+@keyframes dropdownOpen { from { opacity: 0; transform: translateY(-6px); } }
+
+.dropdown-section + .dropdown-section,
+.dropdown-option + .dropdown-section { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--gray-800); }
+
+.dropdown-heading {
+  padding: 8px 12px 4px;
+  color: var(--gray-500);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.dropdown-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dropdown-option[aria-selected="true"] { color: var(--accent); font-weight: 600; }
+.dropdown-option:focus-visible { outline: none; background: var(--gray-800); }
+.dropdown-option:active { background: var(--gray-800); }
+
+@media (hover: hover) {
+  .dropdown-option:hover { background: rgb(31 41 55 / 0.6); }
 }
 
 .toolbar {
