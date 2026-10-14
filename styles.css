@@ -1946,33 +1946,60 @@ a.team-cell:hover .team-name { color: var(--accent); }
 }
 .page-odds .game-odds:first-child { border-top: 0; }
 
-/* A card-sized button with an icon tile (the game page's Lock Screen card). */
-button.ext-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 56px;
-  margin-top: 12px;
-  padding: 10px 14px;
-  color: inherit;
-  text-decoration: none;
-}
-
-button.ext-link:hover { border-color: rgb(70 187 147 / 0.35); }
-
-button.ext-link {
-  width: 100%;
-  text-align: left;
+/* The apps: the game on the Lock Screen, a lock and a small switch top
+   right of the matchup card, in a 44px tap target. */
+.lock-toggle {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: grid;
+  place-items: center;
+  height: 44px;
+  padding: 0 0 0 4px;
+  border: 0;
+  background: none;
+  color: var(--gray-400);
   cursor: pointer;
 }
 
-button.ext-link:disabled { opacity: 0.6; }
-button.ext-link:not(:disabled):active { transform: scale(0.99); }
+.lock-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 6px 0 9px;
+  border: 1px solid var(--gray-800);
+  border-radius: 999px;
+  background: var(--bg);
+  transition: border-color 150ms ease, color 150ms ease, transform 150ms ease;
+}
 
-/* iPhone app: the game on the Lock Screen. */
-.lock-card.on { border-color: rgb(70 187 147 / 0.45); }
-.lock-card .switch { margin-left: auto; }
-.ext-sub.error { color: var(--live); }
+.lock-pill svg { width: 18px; height: 18px; }
+.lock-toggle.on { color: var(--accent); }
+.lock-toggle.on .lock-pill { border-color: rgb(70 187 147 / 0.45); }
+.lock-toggle:disabled { opacity: 0.6; }
+.lock-toggle:not(:disabled):active .lock-pill { transform: scale(0.94); }
+
+.switch-small { width: 32px; height: 20px; }
+.switch-small::after { top: 2px; left: 2px; width: 16px; height: 16px; }
+
+@media (hover: hover) {
+  .lock-toggle:not(:disabled):hover .lock-pill { border-color: rgb(70 187 147 / 0.45); }
+}
+
+/* Narrow phones: the lock alone (its check says it's on), so the status
+   between the corners keeps its room. */
+@media (max-width: 400px) {
+  .lock-pill { width: 36px; padding: 0; justify-content: center; }
+  .lock-pill .switch-small { display: none; }
+}
+
+.lock-note {
+  max-width: 320px;
+  margin: 10px auto 0;
+  color: var(--live);
+  font-size: 13px;
+}
 
 /* Android: Open settings, under an error that says notifications are off. */
 .settings-help {
@@ -2108,43 +2135,13 @@ button.ext-link:not(:disabled):active { transform: scale(0.99); }
 
 .delay-custom input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 [role="switch"][aria-checked="true"] .switch::after { transform: translateX(18px); }
+[role="switch"][aria-checked="true"] .switch-small::after { transform: translateX(12px); }
 
 .team-head .alert-note {
   max-width: 320px;
   margin: 10px auto 0;
   color: var(--live);
 }
-
-.ext-icon {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: rgb(70 187 147 / 0.1);
-  box-shadow: inset 0 0 0 1px rgb(70 187 147 / 0.25);
-  color: var(--accent);
-}
-
-.ext-text {
-  flex: 1;
-  min-width: 0;
-  display: grid;
-  gap: 1px;
-}
-
-.ext-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--white);
-}
-
-.ext-sub {
-  font-size: 12px;
-  color: var(--gray-500);
-}
-
 
 .box-table {
   width: 100%;

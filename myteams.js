@@ -167,7 +167,6 @@ export const SPORTS = ['football', 'basketball', 'baseball', 'hockey', 'soccer']
 // lineups instead of a box score).
 export const GAME_CARDS = [
   { id: 'series', label: 'Playoff series', sports: ['basketball', 'baseball', 'hockey'] },
-  { id: 'lock', label: 'Show on Lock Screen', app: true },
   { id: 'odds', label: 'Lines' },
   { id: 'lineScore', label: 'Line score' },
   { id: 'scoring', label: 'Scoring', soccer: 'Goals and red cards', sports: ['football', 'hockey', 'soccer'] },
@@ -210,7 +209,7 @@ export function gameCardsFor(sport, layouts) {
   const hidden = new Set(saved?.hidden ?? []);
   return ids.map((id) => {
     const card = cards.find((c) => c.id === id);
-    return { id, label: (sport === 'soccer' && card.soccer) || card.label, hidden: hidden.has(id), app: Boolean(card.app) };
+    return { id, label: (sport === 'soccer' && card.soccer) || card.label, hidden: hidden.has(id) };
   });
 }
 
