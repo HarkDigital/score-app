@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <meta name="robots" content="noindex">
+  <title>Scores</title>
+  <style>html, body { margin: 0; background: #0a0a0a; }</style>
+</head>
+<body>
+  <!-- The apps' first launch on scores.phade.app comes here for what they
+       saved under github.io, and goes straight back with it (move.js). -->
+  <script type="module">
+    import { savedSettings, returnUrl } from './move.js';
+    let storage = null;
+    try { storage = window.localStorage; } catch { /* blocked */ }
+    location.replace(returnUrl('https://scores.phade.app', savedSettings(storage), location.hash));
+  </script>
+</body>
+</html>

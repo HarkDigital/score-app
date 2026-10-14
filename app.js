@@ -1143,7 +1143,7 @@ function renderMenu() {
     </button></li>` : '';
   els.sheet.querySelector('#menu-list').innerHTML = `${accountRow}
     <li><button class="menu-row" data-action="open-order">
-      <span class="menu-text"><span class="menu-title">Order</span><span class="option-meta">The leagues across the top, and your teams</span></span>${CHEVRON}
+      <span class="menu-text"><span class="menu-title">Change League Order</span><span class="option-meta">The leagues across the top, and your teams</span></span>${CHEVRON}
     </button></li>
     <li><a class="menu-row" href="https://scores.phade.app/privacy" target="_blank" rel="noopener">
       <span class="menu-text"><span class="menu-title">Privacy policy</span></span>${CHEVRON}

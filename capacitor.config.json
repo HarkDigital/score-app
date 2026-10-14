@@ -4,8 +4,9 @@
   "webDir": "native/www",
   "backgroundColor": "#0a0a0a",
   "server": {
-    "url": "https://harkdigital.github.io/score-app/",
+    "url": "https://scores.phade.app/",
     "allowNavigation": [
+      "scores.phade.app",
       "harkdigital.github.io"
     ],
     "errorPath": "index.html"
