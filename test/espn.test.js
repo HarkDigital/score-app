@@ -173,6 +173,35 @@ test('live baseball\'s diamond: runners, outs, the count, batter and pitcher', (
   assert.equal(board.games.find((g) => g.state === 'post').diamond, null);
 });
 
+test('the live situation\'s last play, for every sport that sends one', () => {
+  const live = (situation, path = 'nba') => parseGame({ competitions: [{ status: { type: { state: 'in' } }, competitors: [], situation }] }, league(path));
+  assert.equal(live({ lastPlay: { text: ' Tatum makes 26-foot three point jumper ' } }).lastPlay, 'Tatum makes 26-foot three point jumper');
+  assert.equal(live({ lastPlay: {} }).lastPlay, '');
+  assert.equal(live(undefined).lastPlay, '');
+  // The fixtures' live games send none.
+  assert.equal(game(parseScoreboard(fixture('nfl-scoreboard-live'), league('nfl')), '401872971').lastPlay, '');
+});
+
+test('soccer\'s goals and red cards come from the scoreboard\'s details', () => {
+  const match = (details, state = 'in') => parseGame({ competitions: [{ status: { type: { state } }, competitors: [], details }] }, league('epl')).moments;
+  const details = [
+    { type: { text: 'Goal' }, clock: { displayValue: "23'" }, team: { id: 359 }, scoringPlay: true, athletesInvolved: [{ shortName: 'B. Saka', displayName: 'Bukayo Saka' }] },
+    { type: { text: 'Yellow Card' }, clock: { displayValue: "30'" }, team: { id: 382 }, yellowCard: true, athletesInvolved: [{ shortName: 'Rodri' }] },
+    { type: { text: 'Penalty - Scored' }, clock: { displayValue: "45'+2'" }, team: { id: 382 }, scoringPlay: true, penaltyKick: true, athletesInvolved: [{ displayName: 'Erling Haaland' }] },
+    { type: { text: 'Red Card' }, clock: { displayValue: "70'" }, team: { id: 359 }, redCard: true, athletesInvolved: [{ shortName: 'W. Saliba' }] },
+    { type: { text: 'Own Goal' }, clock: { displayValue: "81'" }, team: { id: 359 }, scoringPlay: true, ownGoal: true, athletesInvolved: [{ shortName: 'R. Dias' }] },
+    { scoringPlay: true, shootout: true, team: { id: 359 } },
+  ];
+  assert.deepEqual(match(details), [
+    { teamId: '359', minute: "23'", name: 'B. Saka', kind: 'goal', penalty: false, ownGoal: false },
+    { teamId: '382', minute: "45'+2'", name: 'Erling Haaland', kind: 'goal', penalty: true, ownGoal: false },
+    { teamId: '359', minute: "70'", name: 'W. Saliba', kind: 'red', penalty: false, ownGoal: false },
+    { teamId: '359', minute: "81'", name: 'R. Dias', kind: 'goal', penalty: false, ownGoal: true },
+  ]);
+  assert.deepEqual(match(details, 'pre'), []);
+  assert.deepEqual(match(undefined), []);
+});
+
 test('playoff games carry their series; the summary\'s list is picked by type', () => {
   const board = parseScoreboard(fixture('mlb-scoreboard-playoffs'), league('mlb'));
   const [lad, mil] = board.games.sort((a, b) => a.id.localeCompare(b.id)).reverse();

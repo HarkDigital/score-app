@@ -6,7 +6,7 @@ import {
   loadFollowed, saveFollowed, isFollowed, toggleFollowed, followedLeagues, countFollowed, gamesForTeams,
   hasAlerts, setAlerts, alertTeams, alertsFor, widgetTeams, loadAlertDelay, saveAlertDelay, clampDelay, ALERT_DELAY_MAX,
   moveTeam, sortByTeams, orderLeagues, cleanLeagueOrder, loadLeagueOrder, saveLeagueOrder,
-  SPORTS, sportOf, gameCardsFor, setGameCards, cleanGameCards, loadGameCards, saveGameCards,
+  SPORTS, sportOf, cleanScoreView, loadScoreView, saveScoreView, gameCardsFor, setGameCards, cleanGameCards, loadGameCards, saveGameCards,
 } from '../myteams.js';
 
 function memoryStorage(initial = {}) {
@@ -207,4 +207,15 @@ test('the game page\'s cards per sport: the app\'s order, the person\'s, and hid
   assert.deepEqual(loadGameCards(memoryStorage({ 'scores.gameCards': '{bad' })), {});
   assert.deepEqual(loadGameCards(null), {});
   saveGameCards(null, {});
+});
+
+test('the score view is detailed or compact, unset otherwise', () => {
+  assert.equal(cleanScoreView('compact'), 'compact');
+  assert.equal(cleanScoreView('Compact'), '');
+  assert.equal(loadScoreView(memoryStorage({})), '');
+  assert.equal(loadScoreView(memoryStorage({ 'scores.scoreView': 'grid' })), '');
+  const storage = memoryStorage({});
+  saveScoreView(storage, 'compact');
+  assert.equal(loadScoreView(storage), 'compact');
+  assert.equal(loadScoreView(null), '');
 });

@@ -71,7 +71,7 @@ test('a failed JWKS fetch refuses the token without throwing', async () => {
 test('/v1/me keeps each person\'s teams and alerts', () => {
   const users = {};
   assert.equal(accountRoute({ method: 'GET', user: null }, users).status, 401);
-  assert.deepEqual(accountRoute({ method: 'GET', user: 'user_1' }, users).body, { teams: [], alertDelay: 0, leagueOrder: [], gameCards: {}, updatedAt: null });
+  assert.deepEqual(accountRoute({ method: 'GET', user: 'user_1' }, users).body, { teams: [], alertDelay: 0, leagueOrder: [], gameCards: {}, scoreView: '', updatedAt: null });
   const teams = [{ league: 'nfl', id: '12', name: 'Chiefs', abbr: 'KC', logo: '', color: null, alerts: { start: true } }];
   const put = accountRoute({ method: 'PUT', user: 'user_1', body: { teams, alertDelay: 30 } }, users);
   assert.equal(put.status, 200);
