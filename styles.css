@@ -1067,20 +1067,6 @@ main {
 .compact-team.lost .score { color: var(--gray-500); font-weight: 600; }
 .compact-team.lost .logo { opacity: 0.7; }
 
-/* The Detailed / Compact switch: icons in the Day / Week pills' style.
-   Beside Day / Week the date gives way on a phone (the strip shows it). */
-.nav-actions .pills { flex: none; flex-wrap: nowrap; }
-
-@media (max-width: 480px) {
-  .nav-actions .sub { display: none; }
-}
-
-.view-pills button {
-  display: grid;
-  place-items: center;
-  padding: 0 9px;
-}
-
 /* ---- Standings ---- */
 
 .table-wrap { overflow-x: auto; }
@@ -2994,6 +2980,9 @@ a.team-cell:hover .team-name { color: var(--accent); }
 }
 
 .menu-chevron { flex: none; color: var(--gray-600); }
+
+/* The Score Cards row's Detailed / Compact switch. */
+.menu-row .pills { flex: none; flex-wrap: nowrap; }
 
 /* Signed in: a mint dot on the header's menu button. */
 .menu-btn { position: relative; }
