@@ -432,21 +432,26 @@ export function weekRange(date) {
   return `${month(first)} ${first.getDate()} \u2013 ${end}`;
 }
 
-// The week's games as sections: Live first, then one per day (by local start
-// time), each in start order. Games outside the week are dropped (a board can
-// carry a late game that is already the next day locally).
+// The week's games as sections: Live first, then the games still to come, one
+// section per day (by local start time), then the finished ones, also by day,
+// most recent day first. Each section is in start order. Games outside the
+// week are dropped (a board can carry a late game that is already the next
+// day locally).
 export function groupWeek(games, date, now = new Date()) {
   const days = weekDays(date);
   const end = addDays(days[0], 7);
   const inWeek = games.filter((g) => g.start >= days[0] && g.start < end).sort((a, b) => a.start - b.start);
   const live = inWeek.filter((g) => g.state === 'in');
   const sections = live.length ? [{ key: 'in', label: 'Live', games: live }] : [];
-  for (const day of days) {
-    const dayGames = inWeek.filter((g) => g.state !== 'in' && sameDay(g.start, day));
-    if (!dayGames.length) continue;
-    sections.push({ key: 'day', id: ymd(day), label: dayLabel(daysFrom(now, day), now), games: dayGames });
-  }
-  return sections;
+  const byDay = (state, list) => list.flatMap((day) => {
+    const dayGames = inWeek.filter((g) => g.state === state && sameDay(g.start, day));
+    if (!dayGames.length) return [];
+    const label = dayLabel(daysFrom(now, day), now);
+    return [state === 'post'
+      ? { key: 'post', id: ymd(day), label: `Final \u00b7 ${label}`, games: dayGames }
+      : { key: 'day', id: ymd(day), label, games: dayGames }];
+  });
+  return [...sections, ...byDay('pre', days), ...byDay('post', [...days].reverse())];
 }
 
 // A week view re-reads only the days that can still change: a past day whose
