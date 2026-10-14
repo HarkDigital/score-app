@@ -341,6 +341,8 @@ function render() {
   const { route, data, error } = page;
   if (!route) return;
   app.setTitle(data ? title(route, data) : '');
+  // The header's LineSteam link opens this game's lines on a game page.
+  app.setLineSteam(route.kind === 'game' ? lineSteamUrl(route.league, route.id) : null);
   let html;
   if (!data) html = error ? errorState() : loadingHtml(route.kind);
   else if (route.kind === 'game') html = gameHtml(data, route.league, route.id);
@@ -493,18 +495,6 @@ async function toggleLock() {
   render();
 }
 
-// LineSteam (linesteam.com) charts every FanDuel line move for its five
-// leagues: its mark in a circle, top right of the matchup card. Opens
-// outside the app.
-function lineSteamHtml(league, id) {
-  const url = lineSteamUrl(league, id);
-  if (!url) return '';
-  return `
-    <a class="ls-badge" href="${esc(url)}" target="_blank" rel="noopener" aria-label="Line movement on LineSteam" title="Line movement on LineSteam">
-      <span class="ls-circle"><img src="icons/linesteam-mark.png" alt="" width="24" height="21"></span>
-    </a>`;
-}
-
 // The badge and clock above the score.
 function statusHtml(game) {
   if (TROUBLE.test(game.statusName)) return `<span class="badge badge-warn">${esc(game.statusText)}</span>`;
@@ -530,7 +520,6 @@ function matchupHtml(game, league, id) {
   const meta = [game.venue, game.broadcast, game.attendance && `Attendance ${game.attendance}`].filter(Boolean);
   return `
     <div class="card matchup${live ? ' live' : ''}">
-      ${lineSteamHtml(league, id)}
       <div class="matchup-status">${statusHtml(game)}</div>
       <div class="matchup-teams">${a ? side(a) : ''}${middle}${b ? side(b) : ''}</div>
       ${live ? fieldHtml(game, league) : ''}
