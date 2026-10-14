@@ -265,8 +265,8 @@ function renderNav() {
   const weekly = league.weekly && !league.mine;
   const board = weekly ? view.data : null;
   const key = mode !== 'scores' ? 'none'
-    : `${compact()}|` + (weekly ? `week|${league.id}|${JSON.stringify(view.week)}|${JSON.stringify(board?.week ?? null)}`
-    : `${view.span}|${view.dayOffset}|${new Date().toDateString()}`);
+    : weekly ? `week|${league.id}|${JSON.stringify(view.week)}|${JSON.stringify(board?.week ?? null)}`
+    : `${view.span}|${view.dayOffset}|${new Date().toDateString()}`;
   if (rendered.nav === key) return;
   rendered.nav = key;
   if (mode !== 'scores') {
@@ -292,20 +292,6 @@ function spanToggle() {
     </div>`;
 }
 
-// Detailed or Compact cards, on every score list.
-const VIEW_ICONS = {
-  detailed: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="4" width="16" height="7" rx="1.5"/><rect x="4" y="13" width="16" height="7" rx="1.5"/></g></svg>',
-  compact: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></g></svg>',
-};
-
-function viewToggle() {
-  const shown = compact() ? 'compact' : 'detailed';
-  return `
-    <div class="pills view-pills" role="group" aria-label="Cards">
-      ${[['detailed', 'Detailed'], ['compact', 'Compact']].map(([id, label]) => `<button data-score-view="${id}" aria-pressed="${shown === id}" aria-label="${label}" title="${label}">${VIEW_ICONS[id]}</button>`).join('')}
-    </div>`;
-}
-
 // The week holding the selected day, Monday to Sunday. Arrows move a week.
 function calendarWeekBar() {
   const now = new Date();
@@ -317,7 +303,6 @@ function calendarWeekBar() {
       <span class="nav-actions">
         ${phrase === 'This week' ? '' : '<button class="pill-btn" data-action="today">This week</button>'}
         ${spanToggle()}
-        ${viewToggle()}
       </span>
     </div>
     <div class="strip">
@@ -343,7 +328,6 @@ function dayStrip() {
       <span class="nav-actions">
         ${current ? `<span class="sub">${esc(fullDate(now))}</span>` : '<button class="pill-btn" data-action="today">Today</button>'}
         ${spanToggle()}
-        ${viewToggle()}
       </span>
     </div>
     <div class="strip">
@@ -391,10 +375,7 @@ function weekBar(board) {
   return `
     <div class="nav-head">
       <span class="eyebrow">${esc(info.season || (current ? 'This week' : view.league.label))}</span>
-      <span class="nav-actions">
-        ${current ? '' : '<button class="pill-btn" data-action="today">This week</button>'}
-        ${viewToggle()}
-      </span>
+      ${current ? '' : '<button class="pill-btn" data-action="today">This week</button>'}
     </div>
     <div class="strip">
       <button class="strip-arrow" data-week="-1" aria-label="Previous week"${adjacentWeek(board, -1) ? '' : ' disabled'}>${ICONS.left}</button>
@@ -1106,7 +1087,7 @@ document.addEventListener('click', (event) => {
     scoreView = cleanScoreView(d.scoreView);
     saveScoreView(storage, scoreView);
     accountChanged();
-    renderNav();
+    renderMenu();
     renderContent();
   }
   else if (d.week) {
@@ -1265,6 +1246,12 @@ function renderMenu() {
       </span>${CHEVRON}
     </button></li>` : '';
   els.sheet.querySelector('#menu-list').innerHTML = `${accountRow}
+    <li><div class="menu-row">
+      <span class="menu-text"><span class="menu-title">Score Cards</span><span class="option-meta">Detailed adds the live situation. Compact is teams, score and time.</span></span>
+      <span class="pills" role="group" aria-label="Score cards">
+        ${[['detailed', 'Detailed'], ['compact', 'Compact']].map(([id, label]) => `<button data-score-view="${id}" aria-pressed="${(compact() ? 'compact' : 'detailed') === id}">${label}</button>`).join('')}
+      </span>
+    </div></li>
     <li><button class="menu-row" data-action="open-order">
       <span class="menu-text"><span class="menu-title">Change League Order</span><span class="option-meta">The leagues across the top, and your teams</span></span>${CHEVRON}
     </button></li>
