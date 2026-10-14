@@ -56,7 +56,7 @@ let hooks = null;
 let pushTimer = null;
 let edits = 0; // changes made on this device while signed in
 
-// storage: localStorage (or null). local(): {teams, alertDelay, leagueOrder, gameCards} on this
+// storage: localStorage (or null). local(): {teams, alertDelay, leagueOrder, gameCards, scoreView} on this
 // device. apply(account): replace them. changed(): sign-in state or sync
 // status changed (redraw the sheet and the header button).
 export function initAccount(options) {

@@ -1,11 +1,12 @@
 // Accounts: signing in (Clerk) keeps the followed teams (in the person's
-// order), their alerts, the spoiler delay, the league tabs' order and the
-// game page's cards per sport on the push server under the person's
+// order), their alerts, the spoiler delay, the league tabs' order, the
+// game page's cards per sport and the score lists' view (detailed or
+// compact) on the push server under the person's
 // account, so every device they sign in on gets the same ones. Signed out,
 // everything stays on the device as before. Pure, and shared with server/ (deploy.sh ships it).
 
 import { leagueById } from './espn.js';
-import { ALERT_KINDS, clampDelay, cleanLeagueOrder, cleanGameCards } from './myteams.js';
+import { ALERT_KINDS, clampDelay, cleanLeagueOrder, cleanGameCards, cleanScoreView } from './myteams.js';
 
 // Clerk's publishable key (Clerk dashboard > API keys): pk_test_... for the
 // development instance, pk_live_... for production. Not a secret. Empty
@@ -103,9 +104,10 @@ export function cleanTeams(list) {
 }
 
 // An account's settings, from the server or for it: {teams, alertDelay,
-// leagueOrder, gameCards}. An empty leagueOrder is the app's own order, an
-// empty gameCards the app's game page layout for every sport (and what a
-// server from before them answers).
+// leagueOrder, gameCards, scoreView}. An empty leagueOrder is the app's own
+// order, an empty gameCards the app's game page layout for every sport, an
+// empty scoreView the app's (detailed) (and what a server from before them
+// answers).
 export function parseAccount(body) {
   const teams = cleanTeams(body?.teams);
   if (!teams) return null;
@@ -114,27 +116,30 @@ export function parseAccount(body) {
     alertDelay: clampDelay(body.alertDelay),
     leagueOrder: cleanLeagueOrder(body.leagueOrder),
     gameCards: cleanGameCards(body.gameCards),
+    scoreView: cleanScoreView(body.scoreView),
   };
 }
 
 // The account read back on a later sync: an account with no league order,
-// or no game page layouts (never set, or a server that drops them), leaves
-// this device's alone.
+// no game page layouts or no score view (never set, or a server that drops
+// them), leaves this device's alone.
 export function keepDeviceSettings(account, device) {
   const order = cleanLeagueOrder(device?.leagueOrder);
   const cards = cleanGameCards(device?.gameCards);
   let kept = account;
   if (!account.leagueOrder.length && order.length) kept = { ...kept, leagueOrder: order };
   if (!Object.keys(account.gameCards).length && Object.keys(cards).length) kept = { ...kept, gameCards: cards };
+  const view = cleanScoreView(device?.scoreView);
+  if (!account.scoreView && view) kept = { ...kept, scoreView: view };
   return kept;
 }
 
 // The first sign-in on a device: the account's teams, then this device's
 // that the account doesn't have yet. A team on both keeps every alert either
-// side had on, and the account's delay, league order and each sport's game
-// page layout win unless unset.
+// side had on, and the account's delay, league order, each sport's game
+// page layout and score view win unless unset.
 export function mergeAccounts(account, device) {
-  const empty = { teams: [], alertDelay: 0, leagueOrder: [], gameCards: {} };
+  const empty = { teams: [], alertDelay: 0, leagueOrder: [], gameCards: {}, scoreView: '' };
   const local = parseAccount(device) ?? empty;
   const remote = parseAccount(account) ?? empty;
   const key = (t) => `${t.league}:${t.id}`;
@@ -151,6 +156,7 @@ export function mergeAccounts(account, device) {
     alertDelay: remote.alertDelay || local.alertDelay,
     leagueOrder: remote.leagueOrder.length ? remote.leagueOrder : local.leagueOrder,
     gameCards: { ...local.gameCards, ...remote.gameCards },
+    scoreView: remote.scoreView || local.scoreView,
   });
 }
 

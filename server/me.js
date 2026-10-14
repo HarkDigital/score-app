@@ -5,8 +5,8 @@
 // calls it from another origin (the site on github.io) with an
 // Authorization header, so it answers CORS preflights for ALLOWED origins.
 //
-//   GET    /v1/me   → {teams, alertDelay, leagueOrder, gameCards, updatedAt}  (an empty account until the first PUT)
-//   PUT    /v1/me   {teams, alertDelay, leagueOrder, gameCards} → the same, as saved
+//   GET    /v1/me   → {teams, alertDelay, leagueOrder, gameCards, scoreView, updatedAt}  (an empty account until the first PUT)
+//   PUT    /v1/me   {teams, alertDelay, leagueOrder, gameCards, scoreView} → the same, as saved
 //   DELETE /v1/me   forgets the account (the app's Delete account)
 
 import { parseAccount } from '../account.js';
@@ -31,7 +31,7 @@ export function accountRoute({ method, user, body }, users) {
   if (!user) return { status: 401, body: { error: 'sign in' } };
   if (method === 'GET') {
     const saved = users[user];
-    return { status: 200, body: saved ?? { teams: [], alertDelay: 0, leagueOrder: [], gameCards: {}, updatedAt: null } };
+    return { status: 200, body: saved ?? { teams: [], alertDelay: 0, leagueOrder: [], gameCards: {}, scoreView: '', updatedAt: null } };
   }
   if (method === 'PUT') {
     const account = parseAccount(body);

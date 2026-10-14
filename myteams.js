@@ -234,6 +234,22 @@ export function saveGameCards(storage, layouts) {
   try { storage?.setItem(CARDS_KEY, JSON.stringify(cleanGameCards(layouts))); } catch { /* full or blocked */ }
 }
 
+// How the score lists draw a game (scores.scoreView, synced with the
+// account): 'detailed' (records, lines, notes and the live situation) or
+// 'compact' (teams, score and time). '' is unset: the app's own, detailed.
+const VIEW_KEY = 'scores.scoreView';
+export const SCORE_VIEWS = ['detailed', 'compact'];
+
+export const cleanScoreView = (value) => (SCORE_VIEWS.includes(value) ? value : '');
+
+export function loadScoreView(storage) {
+  try { return cleanScoreView(storage?.getItem(VIEW_KEY)); } catch { return ''; }
+}
+
+export function saveScoreView(storage, value) {
+  try { storage?.setItem(VIEW_KEY, cleanScoreView(value) || 'detailed'); } catch { /* full or blocked */ }
+}
+
 // League ids with at least one followed team, in the app's league order.
 export function followedLeagues(list) {
   return LEAGUES.map((l) => l.id).filter((id) => list.some((t) => t.league === id));

@@ -1,7 +1,7 @@
 import {
   LEAGUES, leagueById, leagueFilter, scoreboardUrl, dayUrls, mergeGames, parseScoreboard, groupGames, refreshDelay,
   statusLabel, dayLabel, addDays, weekLabel, weekInfo, adjacentWeek,
-  weekDays, weekPhrase, weekRange, groupWeek, boardStale,
+  weekDays, weekPhrase, weekRange, groupWeek, boardStale, fieldView,
 } from './espn.js';
 import {
   standingsUrl, filterStandingsGroup, teamListUrls, parseStandings, rankingsUrl, parseRankings, teamsFromStandings,
@@ -11,7 +11,7 @@ import {
   loadFollowed, saveFollowed, isFollowed, toggleFollowed, followedLeagues, countFollowed, gamesForTeams,
   alertsFor, setAlerts, alertTeams, widgetTeams, loadAlertDelay, saveAlertDelay, clampDelay,
   moveTeam, sortByTeams, orderLeagues, loadLeagueOrder, saveLeagueOrder,
-  sportOf, gameCardsFor, setGameCards, loadGameCards, saveGameCards,
+  sportOf, gameCardsFor, setGameCards, loadGameCards, saveGameCards, loadScoreView, saveScoreView, cleanScoreView,
 } from './myteams.js';
 import {
   ICONS, getJson, TROUBLE, oddsHtml, failedLogos, failedImages, logoHtml, fallbackLogo, headshotHtml, emptyState, errorState, fullDate,
@@ -45,6 +45,10 @@ const leagues = () => orderLeagues(leagueOrder);
 // The game page's cards per sport: {football: {order, hidden}} (empty: the
 // app's layout).
 let gameCards = loadGameCards(storage);
+// The score lists' cards: 'detailed' or 'compact' ('' is the app's own,
+// detailed). One setting for every league and My Teams.
+let scoreView = loadScoreView(storage);
+const compact = () => scoreView === 'compact';
 const startLeague = initialLeague();
 
 const view = {
@@ -261,8 +265,8 @@ function renderNav() {
   const weekly = league.weekly && !league.mine;
   const board = weekly ? view.data : null;
   const key = mode !== 'scores' ? 'none'
-    : weekly ? `week|${league.id}|${JSON.stringify(view.week)}|${JSON.stringify(board?.week ?? null)}`
-    : `${view.span}|${view.dayOffset}|${new Date().toDateString()}`;
+    : `${compact()}|` + (weekly ? `week|${league.id}|${JSON.stringify(view.week)}|${JSON.stringify(board?.week ?? null)}`
+    : `${view.span}|${view.dayOffset}|${new Date().toDateString()}`);
   if (rendered.nav === key) return;
   rendered.nav = key;
   if (mode !== 'scores') {
@@ -288,6 +292,20 @@ function spanToggle() {
     </div>`;
 }
 
+// Detailed or Compact cards, on every score list.
+const VIEW_ICONS = {
+  detailed: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="4" width="16" height="7" rx="1.5"/><rect x="4" y="13" width="16" height="7" rx="1.5"/></g></svg>',
+  compact: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></g></svg>',
+};
+
+function viewToggle() {
+  const shown = compact() ? 'compact' : 'detailed';
+  return `
+    <div class="pills view-pills" role="group" aria-label="Cards">
+      ${[['detailed', 'Detailed'], ['compact', 'Compact']].map(([id, label]) => `<button data-score-view="${id}" aria-pressed="${shown === id}" aria-label="${label}" title="${label}">${VIEW_ICONS[id]}</button>`).join('')}
+    </div>`;
+}
+
 // The week holding the selected day, Monday to Sunday. Arrows move a week.
 function calendarWeekBar() {
   const now = new Date();
@@ -299,6 +317,7 @@ function calendarWeekBar() {
       <span class="nav-actions">
         ${phrase === 'This week' ? '' : '<button class="pill-btn" data-action="today">This week</button>'}
         ${spanToggle()}
+        ${viewToggle()}
       </span>
     </div>
     <div class="strip">
@@ -324,6 +343,7 @@ function dayStrip() {
       <span class="nav-actions">
         ${current ? `<span class="sub">${esc(fullDate(now))}</span>` : '<button class="pill-btn" data-action="today">Today</button>'}
         ${spanToggle()}
+        ${viewToggle()}
       </span>
     </div>
     <div class="strip">
@@ -371,7 +391,10 @@ function weekBar(board) {
   return `
     <div class="nav-head">
       <span class="eyebrow">${esc(info.season || (current ? 'This week' : view.league.label))}</span>
-      ${current ? '' : '<button class="pill-btn" data-action="today">This week</button>'}
+      <span class="nav-actions">
+        ${current ? '' : '<button class="pill-btn" data-action="today">This week</button>'}
+        ${viewToggle()}
+      </span>
     </div>
     <div class="strip">
       <button class="strip-arrow" data-week="-1" aria-label="Previous week"${adjacentWeek(board, -1) ? '' : ' disabled'}>${ICONS.left}</button>
@@ -459,7 +482,7 @@ function gamesHtml(games) {
   return groups.map((group) => `
     <section class="group">
       <h2 class="group-title ${group.key}">${group.key === 'in' ? '<span class="live-dot" aria-hidden="true"></span>' : ''}${esc(group.label)}<span class="count">${group.games.length}</span></h2>
-      <div class="grid">${group.games.map((game) => gameCard(game, group.key === 'day' ? game.start : now)).join('')}</div>
+      <div class="grid${compact() ? ' compact' : ''}">${group.games.map((game) => (compact() ? compactCard : gameCard)(game, group.key === 'day' ? game.start : now)).join('')}</div>
     </section>
   `).join('');
 }
@@ -479,7 +502,8 @@ function gameCard(game, now) {
   // No line on a game that won't be played as scheduled.
   const odds = TROUBLE.test(game.statusName) ? null : game.odds;
   const rows = game.teams.map((team) => teamRow(team, league, done, decided, odds?.moneyline[team.id]));
-  const foot = [game.detail, game.note, game.series?.summary].filter(Boolean).join(' · ');
+  // The down and distance, or the outs and runners, are in the live block.
+  const foot = [game.note, game.series?.summary].filter(Boolean).join(' · ');
   return `
     <a class="card game${live ? ' live' : ''}" href="${gameHref(league.id, game.id)}">
       <div class="game-head">
@@ -490,9 +514,101 @@ function gameCard(game, now) {
       <div class="teams">
         ${rows.length === 2 ? `${rows[0]}<div class="divider">${league.homeFirst ? 'vs' : '@'}</div>${rows[1]}` : rows.join('')}
       </div>
+      ${live ? liveHtml(game, league) : ''}
+      ${momentsHtml(game)}
       ${odds ? oddsHtml(odds, league) : ''}
       ${foot ? `<div class="game-foot">${esc(foot)}</div>` : ''}
     </a>`;
+}
+
+// Compact: the teams, the score and the time, inning or period.
+function compactCard(game, now) {
+  const league = game.league ?? view.league;
+  const live = game.state === 'in';
+  const done = game.state === 'post';
+  const decided = done && game.teams.some((t) => t.winner);
+  let status;
+  if (TROUBLE.test(game.statusName)) status = `<span class="warn">${esc(game.statusText || 'Postponed')}</span>`;
+  else if (live) status = `<span class="live-dot" aria-hidden="true"></span>${esc(game.statusText)}`;
+  else if (done) status = esc(game.statusText || 'Final');
+  else status = esc(statusLabel(game, now));
+  const row = (team) => `
+    <div class="compact-team${decided && !team.winner ? ' lost' : ''}">
+      ${logoHtml(team, 20)}
+      <span class="name">${team.rank ? `<span class="rank">${team.rank}</span>` : ''}${esc(team.name)}</span>
+      <span class="score">${esc(team.score)}</span>
+    </div>`;
+  return `
+    <a class="card game compact${live ? ' live' : ''}" href="${gameHref(league.id, game.id)}">
+      <div class="compact-status${live ? ' on' : ''}">${status}</div>
+      ${game.teams.map(row).join('')}
+    </a>`;
+}
+
+// A live game's situation on a detailed card: baseball's runners, count,
+// outs, batter and pitcher; football's field with the ball and the first-down
+// line; and, in every sport that sends one, ESPN's last play.
+function liveHtml(game, league) {
+  let html = '';
+  if (game.diamond && league.path.startsWith('baseball/')) html += cardDiamond(game.diamond);
+  else if (league.path.startsWith('football/')) html += cardField(game, league);
+  if (game.lastPlay) html += `<p class="live-last"><span>Last play</span> ${esc(game.lastPlay)}</p>`;
+  return html ? `<div class="game-live">${html}</div>` : '';
+}
+
+function cardDiamond(d) {
+  const base = (n, x, y) => `<rect class="base${d.bases.includes(n) ? ' on' : ''}" x="${x - 5}" y="${y - 5}" width="10" height="10" rx="1.5" transform="rotate(45 ${x} ${y})"/>`;
+  const ordinal = { 1: 'first', 2: 'second', 3: 'third' };
+  const runners = d.bases.length ? `Runners on ${d.bases.map((b) => ordinal[b]).join(' and ')}` : 'Bases empty';
+  const outs = [0, 1, 2].map((i) => `<i${i < d.outs ? ' class="on"' : ''}></i>`).join('');
+  const who = (role, name, line) => (name ? `<p><span>${role}</span> <b>${esc(name)}</b>${line ? ` ${esc(line)}` : ''}</p>` : '');
+  return `
+    <div class="card-diamond">
+      <div class="card-bases" role="img" aria-label="${esc(`${runners}, ${d.outs} out${d.outs === 1 ? '' : 's'}, count ${d.balls}-${d.strikes}`)}">
+        <svg viewBox="0 0 48 34" aria-hidden="true">${base(2, 24, 8)}${base(3, 11, 21)}${base(1, 37, 21)}</svg>
+        <span class="card-count" aria-hidden="true"><b>${d.balls}-${d.strikes}</b><span class="card-outs">${outs}</span></span>
+      </div>
+      <div class="card-who">${who('P', d.pitcher, d.pitcherLine)}${who('AB', d.batter, d.batterLine)}</div>
+    </div>`;
+}
+
+// The field as on the game page, smaller: each end zone in its team's color
+// on that team's side, the ball and the first-down line; under it who has
+// the ball and the down and distance. Between plays there's no ball.
+function cardField(game, league) {
+  const spot = fieldView(game, league);
+  const holder = game.teams.find((t) => t.possession);
+  if (!spot && !game.detail && !holder) return '';
+  const zone = (team) => `<span class="end-zone" style="background:${esc(team?.color ?? '#374151')}"></span>`;
+  const at = (yards) => `left:${yards}%`;
+  let play = '<i class="yard mid" style="left:50%"></i>';
+  if (spot) {
+    if (spot.firstDown !== null) {
+      play += `<i class="to-go" style="${at(Math.min(spot.ball, spot.firstDown))};width:${Math.abs(spot.firstDown - spot.ball)}%"></i>`
+        + `<i class="first-down" style="${at(spot.firstDown)}"></i>`;
+    }
+    play += `<i class="scrimmage" style="${at(spot.ball)}"></i><span class="ball" style="${at(spot.ball)}">${ICONS.football}</span>`;
+  }
+  const caption = [holder && `<span class="field-ball">${ICONS.football}${esc(holder.abbr)}</span>`, game.detail && esc(game.detail)].filter(Boolean).join(' · ');
+  const [a, b] = game.teams;
+  return `
+    <div class="field card-field" role="img" aria-label="${esc(game.detail ? `${holder ? `${holder.abbr} ball, ` : ''}${game.detail}` : 'The field')}">
+      ${zone(a)}<div class="turf">${play}</div>${zone(b)}
+    </div>
+    ${caption ? `<p class="card-field-detail">${caption}</p>` : ''}`;
+}
+
+// Soccer's goals and red cards on a detailed card, each side's on its own
+// line: "Saka 23', Haaland 45'+2' (pen)".
+function momentsHtml(game) {
+  if (!game.moments?.length) return '';
+  const lines = game.teams.map((team) => {
+    const mine = game.moments.filter((m) => m.teamId === String(team.id));
+    if (!mine.length) return '';
+    const items = mine.map((m) => `<span class="moment">${m.kind === 'red' ? `<span class="play-icon red">${ICONS.redCard}</span>` : `<span class="play-icon">${ICONS.ball}</span>`}${esc(m.name)} ${esc(m.minute)}${m.penalty ? ' (pen)' : m.ownGoal ? ' (OG)' : ''}</span>`);
+    return `<p><b>${esc(team.abbr || team.name)}</b>${items.join('')}</p>`;
+  }).join('');
+  return lines ? `<div class="game-moments">${lines}</div>` : '';
 }
 
 function teamRow(team, league, done, decided, moneyline) {
@@ -986,6 +1102,13 @@ document.addEventListener('click', (event) => {
     writeStorage(SPAN_KEY, d.span);
     changeView({ span: d.span });
   }
+  else if (d.scoreView && d.scoreView !== (scoreView || 'detailed')) {
+    scoreView = cleanScoreView(d.scoreView);
+    saveScoreView(storage, scoreView);
+    accountChanged();
+    renderNav();
+    renderContent();
+  }
   else if (d.week) {
     const week = adjacentWeek(view.data, Number(d.week));
     if (week) changeView({ week });
@@ -1059,7 +1182,7 @@ document.addEventListener('change', (event) => {
 // In the iPhone app every button press taps the haptic engine: a selection
 // tick for tabs, view switches, days and polls, a light tap for the rest.
 // Captured first, so it buzzes even for buttons whose handlers stop the click.
-const SELECTION = '[role="tab"], .day, [data-order-tab], [data-span], [data-poll], [data-standings], [data-team-tab], [data-alert-delay]';
+const SELECTION = '[role="tab"], .day, [data-order-tab], [data-span], [data-score-view], [data-poll], [data-standings], [data-team-tab], [data-alert-delay]';
 document.addEventListener('click', (event) => {
   const button = event.target.closest('button');
   if (button && !button.disabled) haptic(button.matches(SELECTION) ? 'selection' : 'light');
@@ -1613,7 +1736,7 @@ function followsEdited() {
 syncAlerts();
 initAccount({
   storage,
-  local: () => ({ teams: followed, alertDelay, leagueOrder, gameCards }),
+  local: () => ({ teams: followed, alertDelay, leagueOrder, gameCards, scoreView }),
   // The account's teams replaced this device's (another device changed
   // them, or the first sign-in merged them).
   apply(saved) {
@@ -1621,10 +1744,12 @@ initAccount({
     alertDelay = saved.alertDelay;
     if (saved.leagueOrder.length) leagueOrder = saved.leagueOrder;
     if (Object.keys(saved.gameCards).length) gameCards = saved.gameCards;
+    if (saved.scoreView) scoreView = saved.scoreView;
     saveFollowed(storage, followed);
     saveAlertDelay(storage, alertDelay);
     saveLeagueOrder(storage, leagueOrder);
     saveGameCards(storage, gameCards);
+    if (scoreView) saveScoreView(storage, scoreView);
     redrawPage();
     if (order.open) renderOrder();
     syncAlerts();

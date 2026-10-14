@@ -138,6 +138,8 @@ export function parseGame(event, league) {
     detail: situationText(situation),
     ball: ballSpot(situation),
     diamond: diamondOf(situation),
+    lastPlay: lastPlayOf(situation),
+    moments: momentsOf(comp.details, state),
     note: comp.notes?.[0]?.headline ?? '',
     series: seriesOf(comp.series),
     // Once a game is under way ESPN's entry is a stale pre-game line or nothing.
@@ -284,6 +286,35 @@ function diamondOf(s) {
     pitcher: s.pitcher?.athlete?.shortName ?? '',
     pitcherLine: s.pitcher?.summary ?? '',
   };
+}
+
+// The live situation's last play, as ESPN words it ("Tatum makes 26-foot
+// three point jumper", "Judge struck out swinging."). Empty when there's none.
+function lastPlayOf(s) {
+  const text = s?.lastPlay?.text;
+  return typeof text === 'string' ? text.trim().slice(0, 200) : '';
+}
+
+// Soccer's goals and red cards from the scoreboard's `details`, in match
+// order: {teamId, minute ("45'+2'"), name (the scorer's or player's short
+// name), kind ('goal' | 'red'), penalty, ownGoal}. Shoot-out kicks and
+// yellow cards are left out; other sports send no details.
+function momentsOf(details, state) {
+  if (state === 'pre' || !Array.isArray(details)) return [];
+  return details.flatMap((d) => {
+    if (!d || d.shootout) return [];
+    const kind = d.scoringPlay ? 'goal' : d.redCard ? 'red' : null;
+    if (!kind) return [];
+    const who = d.athletesInvolved?.[0] ?? {};
+    return [{
+      teamId: d.team?.id != null ? String(d.team.id) : '',
+      minute: d.clock?.displayValue ?? '',
+      name: who.shortName ?? who.displayName ?? '',
+      kind,
+      penalty: kind === 'goal' && d.penaltyKick === true,
+      ownGoal: kind === 'goal' && d.ownGoal === true,
+    }];
+  });
 }
 
 // The Lock Screen card's football extras, from a parsed home and away team
