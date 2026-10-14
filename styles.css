@@ -148,8 +148,8 @@ img { -webkit-touch-callout: none; }
 }
 
 .page-mode .page-title { display: block; }
-/* Stop the title short of the LineSteam link in the middle. */
-.page-mode .page-title { flex: 0 1 auto; max-width: calc(50% - 76px); margin-right: auto; }
+/* Stop the title short of the LineSteam link in the middle, when it shows. */
+.page-mode .top-inner:has(.ls-top:not([hidden])) .page-title { flex: 0 1 auto; max-width: calc(50% - 90px); margin-right: auto; }
 .page-mode .brand,
 .page-mode #tabs,
 .page-mode #main { display: none; }
@@ -183,7 +183,7 @@ body:not(.page-mode) .page { display: none; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 3px;
   min-width: 44px;
   height: 44px;
   padding: 0 4px;
@@ -192,14 +192,10 @@ body:not(.page-mode) .page { display: none; }
   text-decoration: none;
 }
 
+.ls-top[hidden] { display: none; }
 .ls-top img { display: block; }
 
-.ls-top-name {
-  font-size: 10px;
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: 0.02em;
-}
+.ls-top-name { width: 84px; height: auto; }
 
 @media (hover: hover) {
   .ls-top:hover { background: rgb(255 255 255 / 0.05); color: var(--white); }
