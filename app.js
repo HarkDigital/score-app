@@ -1155,7 +1155,7 @@ function renderMenu() {
 
 // ---- Order ----
 
-// The menu's Order row (and My Teams' Reorder): the league tabs, or the
+// The menu's Change League Order row (and My Teams' Reorder): the league tabs, or the
 // followed teams, dragged into the person's order by the grip on each row
 // (arrow keys on it work too). The teams' order is the followed list's own,
 // so the chips, the games in My Teams and the widgets follow it. The game
@@ -1203,21 +1203,16 @@ function closeOrder(restoreFocus = true) {
   if (restoreFocus) order.opener?.focus?.();
 }
 
-// The cards the sheet lists: the Lock Screen's only in the apps.
-const cardShown = (card) => !card.app || inApp();
 const sportCards = () => gameCardsFor(sportOf(order.league), gameCards);
 
 function orderItems() {
-  if (order.tab === 'cards') return sportCards().filter(cardShown);
+  if (order.tab === 'cards') return sportCards();
   return order.tab === 'teams' ? followed : leagues();
 }
 
-// Saves this sport's cards with the listed ones changed (moved or switched),
-// the Lock Screen's keeping its place where it isn't listed.
+// Saves this sport's cards as listed (moved or switched).
 function saveCards(listed) {
-  const rest = [...listed];
-  const sport = sportOf(order.league);
-  gameCards = setGameCards(gameCards, sport, sportCards().map((card) => (cardShown(card) ? rest.shift() : card)));
+  gameCards = setGameCards(gameCards, sportOf(order.league), listed);
   saveGameCards(storage, gameCards);
   accountChanged();
   redrawPage();
@@ -1245,7 +1240,7 @@ function renderCards() {
   const list = els.sheet.querySelector('#order-list');
   const items = orderItems();
   const sport = sportOf(order.league);
-  const standard = JSON.stringify(gameCardsFor(sport, {}).filter(cardShown)) === JSON.stringify(items);
+  const standard = JSON.stringify(gameCardsFor(sport, {})) === JSON.stringify(items);
   list.innerHTML = `<li class="list-note order-hint">Drag the cards into the order you want and switch off the ones you don't. Every ${esc(sport)} game shows them this way.</li>` + items.map((card, i) => `
       <li class="order-row${card.hidden ? ' off' : ''}" data-order-index="${i}">
         <span class="name">${esc(card.label)}</span>

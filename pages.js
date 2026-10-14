@@ -382,7 +382,6 @@ function gameHtml(game, league, id) {
   const odds = game.odds && !TROUBLE.test(game.statusName) ? `<div class="card page-odds">${oddsHtml(game.odds, league)}${moneylinesHtml(game)}</div>` : '';
   const cards = {
     series: seriesHtml(game, league, id),
-    lock: lockHtml(game, league, id),
     odds,
     lineScore: lineScoreHtml(game),
     scoring: scoringHtml(game, league),
@@ -399,8 +398,8 @@ function gameHtml(game, league, id) {
   return html.join('');
 }
 
-// Top left of the matchup card (LineSteam's mark is top right): arranges
-// this sport's cards.
+// Top left of the matchup card (the Lock Screen toggle is top right):
+// arranges this sport's cards.
 function arrangeHtml(league) {
   return `
     <button class="arrange-btn" data-arrange aria-label="Arrange ${esc(league.label)} game pages" title="Arrange the game page">
@@ -456,6 +455,9 @@ function lockState(league, id) {
   };
 }
 
+// A compact switch, top right of the matchup card: a lock and a small
+// switch. What it does (and when a later game appears) is its label; an
+// error shows under the card's teams.
 function lockHtml(game, league, id) {
   const info = native.info;
   if (!info?.liveActivities) return '';
@@ -463,22 +465,23 @@ function lockHtml(game, league, id) {
   const now = canShowOnLockScreen(game, new Date(), { canSchedule: info.canSchedule });
   if (!showing && !scheduled && (game.state === 'post' || TROUBLE.test(game.statusName) || (!now && !info.canSchedule))) return '';
   const on = showing || scheduled;
-  let sub;
   // Android has no Dynamic Island: the card is a live notification.
-  const where = appPlatform() === 'android'
-    ? 'Live score on your Lock Screen and in your notifications.'
-    : 'Live score on your Lock Screen and in the Dynamic Island.';
-  if (native.lockError) sub = native.lockError;
-  else if (showing) sub = where;
-  else if (scheduled) sub = `Appears on your Lock Screen ${LOCK_LEAD_MINUTES} minutes before the start.`;
-  else if (now) sub = where;
-  else sub = `Turn on and it appears ${LOCK_LEAD_MINUTES} minutes before the start.`;
+  const where = appPlatform() === 'android' ? 'on your Lock Screen and in your notifications' : 'on your Lock Screen and in the Dynamic Island';
+  let label;
+  if (showing || (!scheduled && now)) label = `Show on Lock Screen: the live score ${where}`;
+  else if (scheduled) label = `Show on Lock Screen: appears ${LOCK_LEAD_MINUTES} minutes before the start`;
+  else label = `Show on Lock Screen: turn on and it appears ${LOCK_LEAD_MINUTES} minutes before the start`;
   return `
-    <button class="card ext-link lock-card${on ? ' on' : ''}" role="switch" aria-checked="${on}" data-lock${native.busy ? ' disabled' : ''}>
-      <span class="ext-icon">${on ? ICONS.lockCheck : ICONS.lock}</span>
-      <span class="ext-text"><span class="ext-title">Show on Lock Screen</span><span class="ext-sub${native.lockError ? ' error' : ''}">${esc(sub)}</span></span>
-      <span class="switch" aria-hidden="true"></span>
-    </button>${settingsButton()}`;
+    <button class="lock-toggle${on ? ' on' : ''}" role="switch" aria-checked="${on}" aria-label="${esc(label)}" title="${esc(label)}" data-lock${native.busy ? ' disabled' : ''}>
+      <span class="lock-pill">${on ? ICONS.lockCheck : ICONS.lock}<span class="switch switch-small" aria-hidden="true"></span></span>
+    </button>`;
+}
+
+// Under the matchup's teams: why the Lock Screen toggle didn't work, and on
+// Android the button to the notification settings.
+function lockNoteHtml() {
+  if (!native.lockError) return '';
+  return `<p class="lock-note">${esc(native.lockError)}</p>${settingsButton()}`;
 }
 
 // Android from versionCode 9 says why a card couldn't go up: reason
@@ -541,11 +544,13 @@ function matchupHtml(game, league, id) {
   return `
     <div class="card matchup${live ? ' live' : ''}">
       ${arrangeHtml(league)}
+      ${lockHtml(game, league, id)}
       <div class="matchup-status">${statusHtml(game)}</div>
       <div class="matchup-teams">${a ? side(a) : ''}${middle}${b ? side(b) : ''}</div>
       ${live ? fieldHtml(game, league) : ''}
       ${live ? diamondHtml(league) : ''}
       ${meta.length ? `<div class="matchup-meta">${meta.map(esc).join(' · ')}</div>` : ''}
+      ${lockNoteHtml()}
     </div>`;
 }
 
