@@ -12,7 +12,7 @@
 //   PUT    /v1/devices/:token      {platform, env, teams: [{league, id}]}  (no teams = forget)
 //   DELETE /v1/devices/:token
 //   GET    /v1/widget?teams=nhl:4,nfl:21     (the iPhone widgets: each team's live, last and next game)
-//   GET    /v1/me, PUT /v1/me {teams, alertDelay}, DELETE /v1/me
+//   GET    /v1/me, PUT /v1/me {teams, alertDelay, leagueOrder}, DELETE /v1/me
 //                                            (a signed-in person's teams and alerts; Clerk token, me.js)
 //   GET    /health
 //   GET    /privacy, /support                (the App Store listing's pages, site.js)
