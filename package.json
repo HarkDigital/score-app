@@ -15,6 +15,7 @@
     "android:open": "cap open android",
     "android:icons": "node scripts/android-icons.js",
     "android:apk": "node scripts/android-apk.js",
+    "android:aab": "node scripts/android-apk.js aab",
     "capture:players": "node scripts/capture-players.js"
   },
   "dependencies": {

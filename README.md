@@ -111,7 +111,9 @@ That raises the build number, builds a signed APK and puts it at `dist/PhadeScor
 
 **Get it onto a tester's phone:** send them the APK (for example a Dropbox link to `dist/PhadeScores.apk`). On the phone, open the file, let the browser or Files app "Install unknown apps" when Android asks, and tap Install. Google Play Protect may warn that the developer is unknown: choose "More details", then "Install anyway". For a new version, run `npm run android:apk` again and send the new file; it installs over the old one. Only needed for changes to the Android shell itself; site changes arrive by themselves.
 
-**The signing key:** `android/keystore/phade-scores-release.jks` and `android/keystore.properties` (passwords) are kept out of git. Back them both up (a password manager is good): every update has to be signed with this key, or phones refuse to install it over the old version. The same key works as the upload key if the app goes on Google Play later (Play Console's internal testing gives testers a Play Store link instead of a file).
+**The signing key:** `android/keystore/phade-scores-release.jks` and `android/keystore.properties` (passwords) are kept out of git. Back them both up (a password manager is good): every update has to be signed with this key, or phones refuse to install it over the old version. The same key is the upload key for Google Play.
+
+**Google Play:** `npm run android:aab` builds the app bundle Play takes (`dist/PhadeScores.aab`, versionCode raised as for the APK). Everything Play Console asks for, from the developer account to production, is in `android/PLAY_STORE.md`. A phone with the sideloaded APK can't update to the Play version (Play signs with its own key): uninstall the APK once, then install from Play.
 
 Other commands: `npm run android:open` opens the project in Android Studio, `npm run android:sync` copies the Capacitor config into it, and `npm run android:icons` re-renders the launcher icons from the iPhone icon's design.
 
