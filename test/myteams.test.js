@@ -5,6 +5,7 @@ import { LEAGUES, parseScoreboard } from '../espn.js';
 import {
   loadFollowed, saveFollowed, isFollowed, toggleFollowed, followedLeagues, countFollowed, gamesForTeams,
   hasAlerts, setAlerts, alertTeams, alertsFor, widgetTeams, loadAlertDelay, saveAlertDelay, clampDelay, ALERT_DELAY_MAX,
+  moveTeam, sortByTeams, orderLeagues, cleanLeagueOrder, loadLeagueOrder, saveLeagueOrder,
 } from '../myteams.js';
 
 function memoryStorage(initial = {}) {
@@ -114,4 +115,55 @@ test('the alert delay: whole seconds, off by default, at most 5 minutes, kept on
   assert.deepEqual([clampDelay(-3), clampDelay(''), clampDelay('abc'), clampDelay(null)], [0, 0, 0, 0]);
   assert.equal(loadAlertDelay(memoryStorage({ 'scores.alertDelay': 'junk' })), 0);
   assert.equal(loadAlertDelay(null), 0, 'no storage (private mode)');
+});
+
+test('teams move within the list, which is the order My Teams uses', () => {
+  const list = [{ league: 'nfl', id: '1' }, { league: 'nba', id: '2' }, { league: 'nhl', id: '3' }];
+  assert.deepEqual(moveTeam(list, 2, 0).map((t) => t.id), ['3', '1', '2']);
+  assert.deepEqual(moveTeam(list, 0, 2).map((t) => t.id), ['2', '3', '1']);
+  assert.equal(moveTeam(list, 1, 1), list);
+  assert.equal(moveTeam(list, 0, 5), list);
+  assert.deepEqual(list.map((t) => t.id), ['1', '2', '3']); // not changed in place
+});
+
+test('My Teams lists each group\'s games in the order of the teams', () => {
+  const nfl = LEAGUES.find((l) => l.id === 'nfl');
+  const nba = LEAGUES.find((l) => l.id === 'nba');
+  const game = (id, league, ...teams) => ({ id, league, teams: teams.map((t) => ({ id: t })) });
+  const list = [{ league: 'nba', id: '2' }, { league: 'nfl', id: '12' }, { league: 'nfl', id: '2' }];
+  const groups = [
+    // Already in time order, as groupGames and groupWeek give them.
+    { key: 'pre', games: [game('a', nfl, '2', '9'), game('b', nfl, '12', '7'), game('c', nba, '5', '2'), game('d', nfl, '30', '12')] },
+    { key: 'post', games: [game('e', nfl, '1', '3')] },
+  ];
+  const sorted = sortByTeams(groups, list);
+  // Celtics, then the Chiefs' two in time order, then the Bills. NFL id 2
+  // is the Bills, not the Celtics: the league counts.
+  assert.deepEqual(sorted[0].games.map((g) => g.id), ['c', 'b', 'd', 'a']);
+  assert.deepEqual(sorted[1].games.map((g) => g.id), ['e']);
+  assert.equal(sorted[0].key, 'pre');
+  assert.deepEqual(groups[0].games.map((g) => g.id), ['a', 'b', 'c', 'd']); // not changed in place
+});
+
+test('the league order: the person\'s, new leagues after their neighbor, kept on the device', () => {
+  const ids = (order) => orderLeagues(order).map((l) => l.id);
+  const app = LEAGUES.map((l) => l.id);
+  assert.deepEqual(ids([]), app);
+  assert.deepEqual(ids(null), app);
+  const mine = [...app].reverse();
+  assert.deepEqual(ids(mine), mine);
+  // An order saved before a league existed: it goes after the one before it.
+  const [first, second, ...rest] = app;
+  assert.deepEqual(ids([...rest, second]), [first, ...rest, second]);
+  assert.deepEqual(ids([second, ...rest]), [first, second, ...rest]);
+  assert.deepEqual(ids([...rest.slice().reverse(), first]), [...rest.slice().reverse(), first, second]);
+  assert.deepEqual(cleanLeagueOrder(['nba', 'nope', 'nba', 'nfl']), ['nba', 'nfl']);
+
+  const storage = memoryStorage();
+  assert.deepEqual(loadLeagueOrder(storage), []);
+  saveLeagueOrder(storage, ['nhl', 'nba', 'gone']);
+  assert.deepEqual(loadLeagueOrder(storage), ['nhl', 'nba']);
+  assert.deepEqual(loadLeagueOrder(memoryStorage({ 'scores.leagueOrder': '{bad' })), []);
+  assert.deepEqual(loadLeagueOrder(null), []);
+  saveLeagueOrder(null, ['nba']);
 });

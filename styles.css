@@ -2781,3 +2781,73 @@ button.ext-link:not(:disabled):active { transform: scale(0.99); }
   background: var(--accent);
   box-shadow: 0 0 0 2px var(--bg);
 }
+
+/* ---- Order sheet ---- */
+
+.toolbar-actions {
+  display: flex;
+  flex: none;
+  gap: 8px;
+}
+
+.order-tabs {
+  flex: none;
+  margin: 4px 16px 0;
+}
+
+.order-list {
+  position: relative;
+  flex: 1;
+  margin: 0;
+  padding: 0 8px 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  list-style: none;
+}
+
+.order-list .order-hint { padding: 14px 16px 10px; font-size: 13px; }
+
+.order-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding-left: 10px;
+  border-radius: 10px;
+  background: var(--sheet);
+}
+
+.order-row .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.order-list.sorting .order-row { transition: transform 160ms ease; }
+.order-list.sorting .order-row.dragging {
+  z-index: 1;
+  transition: none;
+  background: var(--gray-800);
+  box-shadow: 0 10px 24px -8px rgb(0 0 0 / 0.7);
+}
+
+.order-grip {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  color: var(--gray-500);
+  cursor: grab;
+  touch-action: none;
+}
+
+.order-row.dragging .order-grip { color: var(--accent); cursor: grabbing; }
+
+.order-list .link-btn {
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .order-list.sorting .order-row { transition: none; }
+}

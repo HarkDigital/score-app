@@ -10,6 +10,7 @@ import {
 import {
   loadFollowed, saveFollowed, isFollowed, toggleFollowed, followedLeagues, countFollowed, gamesForTeams,
   alertsFor, setAlerts, alertTeams, widgetTeams, loadAlertDelay, saveAlertDelay, clampDelay,
+  moveTeam, sortByTeams, orderLeagues, loadLeagueOrder, saveLeagueOrder,
 } from './myteams.js';
 import {
   ICONS, getJson, TROUBLE, oddsHtml, failedLogos, failedImages, logoHtml, fallbackLogo, headshotHtml, emptyState, errorState, fullDate,
@@ -37,6 +38,9 @@ const storage = (() => { try { return window.localStorage; } catch { return null
 let followed = loadFollowed(storage);
 // Seconds the push server holds game alerts (a streaming delay; 0 is off).
 let alertDelay = loadAlertDelay(storage);
+// The league tabs' order (empty: the app's own). leagues() is LEAGUES in it.
+let leagueOrder = loadLeagueOrder(storage);
+const leagues = () => orderLeagues(leagueOrder);
 const startLeague = initialLeague();
 
 const view = {
@@ -187,9 +191,10 @@ function render() {
 const rendered = { tabs: '', modes: '', nav: '' };
 
 function renderTabs() {
-  if (rendered.tabs === view.league.id) return;
-  rendered.tabs = view.league.id;
-  els.tabs.innerHTML = [MINE, ...LEAGUES].map((l) => `
+  const key = `${view.league.id}|${leagueOrder.join(',')}`;
+  if (rendered.tabs === key) return;
+  rendered.tabs = key;
+  els.tabs.innerHTML = [MINE, ...leagues()].map((l) => `
     <button class="tab" role="tab" data-league="${l.id}" aria-selected="${l.id === view.league.id}">${l.mine ? ICONS.star : ''}${esc(l.label)}</button>
   `).join('');
 }
@@ -206,7 +211,10 @@ function renderModes() {
       </div>` + (followed.length ? `
       <div class="toolbar">
         <span class="eyebrow">Following ${followed.length} team${followed.length === 1 ? '' : 's'}</span>
-        <button class="pill-btn" data-action="edit-teams">Edit teams</button>
+        <span class="toolbar-actions">
+          ${followed.length > 1 ? '<button class="pill-btn" data-action="order-teams">Reorder</button>' : ''}
+          <button class="pill-btn" data-action="edit-teams">Edit teams</button>
+        </span>
       </div>
       <nav class="chips" aria-label="Your teams">
         ${followed.map((t) => `<a class="chip" href="${teamHref(t.league, t.id)}">${logoHtml(t, 20)}${esc(t.abbr || t.name)}</a>`).join('')}
@@ -422,7 +430,9 @@ function gamesHtml(games) {
   if (league.mine && !followed.length) return pickTeamsHtml();
   const week = byWeek();
   const now = new Date();
-  const groups = week ? groupWeek(games, addDays(now, view.dayOffset), now) : groupGames(games);
+  const grouped = week ? groupWeek(games, addDays(now, view.dayOffset), now) : groupGames(games);
+  // My Teams: each group's games in the order of your teams.
+  const groups = league.mine ? sortByTeams(grouped, followed) : grouped;
   if (!groups.length) {
     if (league.mine) {
       return emptyState({
@@ -635,7 +645,7 @@ function writeStorage(key, value) {
 function initialLeague() {
   const saved = readStorage(LEAGUE_KEY);
   if (saved === MINE.id) return MINE;
-  return leagueById(saved) ?? (followed.length ? MINE : LEAGUES[0]);
+  return leagueById(saved) ?? (followed.length ? MINE : leagues()[0]);
 }
 
 // The filter last picked for each league that has them: { ncaaf: '8' }.
@@ -687,8 +697,9 @@ function openPicker() {
   closeSearch(false);
   closeAccount(false);
   closeMenu(false);
+  closeOrder(false);
   Object.assign(picker, { open: true, changed: false, query: '', opener: document.activeElement });
-  picker.league = view.league.mine ? leagueById(followed[0]?.league) ?? picker.league ?? LEAGUES[0] : view.league;
+  picker.league = view.league.mine ? leagueById(followed[0]?.league) ?? picker.league ?? leagues()[0] : view.league;
   els.sheet.innerHTML = `
     <div class="sheet-backdrop" data-action="close-picker"></div>
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
@@ -725,7 +736,7 @@ function closePicker() {
 
 function renderPickerTabs() {
   const tabs = els.sheet.querySelector('#picker-tabs');
-  tabs.innerHTML = LEAGUES.map((l) => {
+  tabs.innerHTML = leagues().map((l) => {
     const n = countFollowed(followed, l.id);
     return `<button class="tab" role="tab" data-picker-league="${l.id}" aria-selected="${l.id === picker.league.id}">${esc(l.label)}${n ? `<span class="count">${n}</span>` : ''}</button>`;
   }).join('');
@@ -804,6 +815,7 @@ function openSearch() {
   closePicker();
   closeAccount(false);
   closeMenu(false);
+  closeOrder(false);
   Object.assign(search, { open: true, query: '', opener: document.activeElement });
   els.sheet.innerHTML = `
     <div class="sheet-backdrop" data-action="close-search"></div>
@@ -835,7 +847,7 @@ function openSearch() {
   // Within the tap itself, or iOS won't bring up the keyboard.
   input.focus();
   renderSearch();
-  for (const league of LEAGUES) loadSearchTeams(league);
+  for (const league of leagues()) loadSearchTeams(league);
 }
 
 function closeSearch(restoreFocus = true) {
@@ -890,10 +902,10 @@ function renderSearch() {
       : '<li class="list-note">Search every league by team name, city or abbreviation, or by a player\'s name.</li>';
     return;
   }
-  const loaded = LEAGUES.filter((l) => teamLists.has(l.id)).map((league) => ({ league, teams: teamLists.get(league.id) }));
+  const loaded = leagues().filter((l) => teamLists.has(l.id)).map((league) => ({ league, teams: teamLists.get(league.id) }));
   const results = searchTeams(loaded, query);
-  const loading = LEAGUES.filter((l) => search.pending.has(l.id)).map((l) => l.label);
-  const failed = LEAGUES.filter((l) => search.failed.has(l.id)).map((l) => l.label);
+  const loading = leagues().filter((l) => search.pending.has(l.id)).map((l) => l.label);
+  const failed = leagues().filter((l) => search.failed.has(l.id)).map((l) => l.label);
   const key = playerKey(query);
   const searchesPlayers = key.length >= PLAYER_MIN;
   const players = (searchesPlayers && playerResults.get(key)) || [];
@@ -986,6 +998,14 @@ document.addEventListener('click', (event) => {
   } else if (d.team) toggleTeam(target);
   else if (d.action === 'today') changeView({ dayOffset: 0, week: null });
   else if (d.action === 'edit-teams') openPicker();
+  else if (d.action === 'order-teams') openOrder('teams');
+  else if (d.action === 'open-order') openOrder('leagues');
+  else if (d.action === 'close-order') closeOrder();
+  else if (d.action === 'reset-order') resetLeagueOrder();
+  else if (d.orderTab && d.orderTab !== order.tab) {
+    order.tab = d.orderTab;
+    renderOrder();
+  }
   else if (d.action === 'close-picker') closePicker();
   else if (d.action === 'open-search') openSearch();
   else if (d.action === 'close-search') closeSearch();
@@ -1020,6 +1040,7 @@ document.addEventListener('keydown', (event) => {
   closeSearch();
   closeAccount();
   closeMenu();
+  closeOrder();
 });
 
 document.addEventListener('change', (event) => {
@@ -1031,7 +1052,7 @@ document.addEventListener('change', (event) => {
 // In the iPhone app every button press taps the haptic engine: a selection
 // tick for tabs, view switches, days and polls, a light tap for the rest.
 // Captured first, so it buzzes even for buttons whose handlers stop the click.
-const SELECTION = '[role="tab"], .day, [data-span], [data-poll], [data-standings], [data-team-tab], [data-alert-delay]';
+const SELECTION = '[role="tab"], .day, [data-order-tab], [data-span], [data-poll], [data-standings], [data-team-tab], [data-alert-delay]';
 document.addEventListener('click', (event) => {
   const button = event.target.closest('button');
   if (button && !button.disabled) haptic(button.matches(SELECTION) ? 'selection' : 'light');
@@ -1068,7 +1089,7 @@ document.addEventListener('error', (event) => {
 // push server's, so they open in the browser).
 
 const menu = { open: false, opener: null };
-const sheetOpen = () => picker.open || search.open || account.open || menu.open;
+const sheetOpen = () => picker.open || search.open || account.open || menu.open || order.open;
 
 const CHEVRON = '<svg class="menu-chevron" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
@@ -1077,6 +1098,7 @@ function openMenu() {
   closePicker();
   closeSearch(false);
   closeAccount(false);
+  closeOrder(false);
   Object.assign(menu, { open: true, opener: document.activeElement });
   els.sheet.innerHTML = `
     <div class="sheet-backdrop" data-action="close-menu"></div>
@@ -1113,12 +1135,183 @@ function renderMenu() {
       </span>${CHEVRON}
     </button></li>` : '';
   els.sheet.querySelector('#menu-list').innerHTML = `${accountRow}
+    <li><button class="menu-row" data-action="open-order">
+      <span class="menu-text"><span class="menu-title">Order</span><span class="option-meta">The leagues across the top, and your teams</span></span>${CHEVRON}
+    </button></li>
     <li><a class="menu-row" href="https://scores.phade.app/privacy" target="_blank" rel="noopener">
       <span class="menu-text"><span class="menu-title">Privacy policy</span></span>${CHEVRON}
     </a></li>
     <li><a class="menu-row" href="https://scores.phade.app/support" target="_blank" rel="noopener">
       <span class="menu-text"><span class="menu-title">Support</span><span class="option-meta">Help, and where the scores come from</span></span>${CHEVRON}
     </a></li>`;
+}
+
+// ---- Order ----
+
+// The menu's Order row (and My Teams' Reorder): the league tabs, or the
+// followed teams, dragged into the person's order by the grip on each row
+// (arrow keys on it work too). The teams' order is the followed list's own,
+// so the chips, the games in My Teams and the widgets follow it. Both sync
+// with the account like the teams do.
+
+const order = { open: false, tab: 'leagues', opener: null, drag: null };
+const GRIP = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 8h14M5 12h14M5 16h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+
+function openOrder(tab) {
+  if (order.open) return;
+  const opener = menu.open ? menu.opener : document.activeElement;
+  closePicker();
+  closeSearch(false);
+  closeAccount(false);
+  closeMenu(false);
+  Object.assign(order, { open: true, tab, opener, drag: null });
+  els.sheet.innerHTML = `
+    <div class="sheet-backdrop" data-action="close-order"></div>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+      <div class="sheet-grabber" aria-hidden="true"></div>
+      <div class="sheet-head">
+        <h2 id="sheet-title">Order</h2>
+        <button class="pill-btn" data-action="close-order">Done</button>
+      </div>
+      <div class="segmented order-tabs" role="tablist" aria-label="What to order"></div>
+      <ul class="order-list" id="order-list"></ul>
+    </div>`;
+  document.body.style.overflow = 'hidden';
+  const list = els.sheet.querySelector('#order-list');
+  list.addEventListener('pointerdown', dragStart);
+  list.addEventListener('keydown', orderKey);
+  renderOrder();
+  els.sheet.querySelector('[data-action="close-order"].pill-btn').focus();
+}
+
+function closeOrder(restoreFocus = true) {
+  if (!order.open) return;
+  order.open = false;
+  order.drag = null;
+  els.sheet.innerHTML = '';
+  document.body.style.overflow = '';
+  if (restoreFocus) order.opener?.focus?.();
+}
+
+function orderItems() {
+  return order.tab === 'teams' ? followed : leagues();
+}
+
+function renderOrder() {
+  if (!order.open) return;
+  els.sheet.querySelector('.order-tabs').innerHTML = [['leagues', 'Leagues'], ['teams', 'My Teams']]
+    .map(([id, label]) => `<button role="tab" data-order-tab="${id}" aria-selected="${order.tab === id}">${label}</button>`).join('');
+  const list = els.sheet.querySelector('#order-list');
+  const teams = order.tab === 'teams';
+  if (teams && !followed.length) {
+    list.innerHTML = '<li class="list-note">Follow teams and you can put them in order here.<br><br><button class="pill-btn" data-action="edit-teams">Choose teams</button></li>';
+    return;
+  }
+  const items = orderItems();
+  const hint = teams
+    ? 'Drag your teams into order. My Teams shows their games in it.'
+    : 'Drag the leagues into the order you want across the top.';
+  const custom = leagueOrder.length && leagues().some((l, i) => l.id !== LEAGUES[i].id);
+  list.innerHTML = `<li class="list-note order-hint">${hint}</li>` + items.map((item, i) => {
+    const name = teams ? item.name || item.abbr : item.label;
+    return `
+      <li class="order-row" data-order-index="${i}">
+        ${teams ? logoHtml(item) : ''}
+        <span class="name">${esc(name)}</span>
+        ${teams ? `<span class="league-chip">${esc(leagueById(item.league)?.label ?? '')}</span>` : ''}
+        <button class="order-grip" data-order-grip="${i}" aria-label="Move ${esc(name)}, ${i + 1} of ${items.length}. Use the arrow keys.">${GRIP}</button>
+      </li>`;
+  }).join('') + (!teams && custom ? '<li class="list-note"><button class="link-btn" data-action="reset-order">Back to the standard order</button></li>' : '');
+}
+
+function moveOrder(from, to) {
+  if (from === to) return;
+  if (order.tab === 'teams') {
+    followed = moveTeam(followed, from, to);
+    saveFollowed(storage, followed);
+    followsEdited();
+  } else {
+    leagueOrder = moveTeam(leagues(), from, to).map((l) => l.id);
+    saveLeagueOrder(storage, leagueOrder);
+    accountChanged();
+  }
+  render();
+}
+
+function resetLeagueOrder() {
+  // Saved in full, so the reset reaches the account's other devices too.
+  leagueOrder = LEAGUES.map((l) => l.id);
+  saveLeagueOrder(storage, leagueOrder);
+  accountChanged();
+  render();
+  renderOrder();
+}
+
+function orderKey(event) {
+  const grip = event.target.closest('[data-order-grip]');
+  const step = { ArrowUp: -1, ArrowDown: 1 }[event.key];
+  if (!grip || !step) return;
+  event.preventDefault();
+  const from = Number(grip.dataset.orderGrip);
+  const to = from + step;
+  if (to < 0 || to >= orderItems().length) return;
+  moveOrder(from, to);
+  renderOrder();
+  els.sheet.querySelector(`[data-order-grip="${to}"]`)?.focus();
+}
+
+// The row follows the finger; the rows it passes slide out of its way.
+// Nothing is saved until it's let go.
+function dragStart(event) {
+  const grip = event.target.closest('[data-order-grip]');
+  if (!grip || order.drag || event.button > 0) return;
+  event.preventDefault();
+  const list = els.sheet.querySelector('#order-list');
+  const rows = [...list.querySelectorAll('.order-row')];
+  const from = Number(grip.dataset.orderGrip);
+  const row = rows[from];
+  const step = rows.length > 1 ? rows[1].getBoundingClientRect().top - rows[0].getBoundingClientRect().top : row.offsetHeight;
+  order.drag = { id: event.pointerId, list, rows, row, from, to: from, step, startY: event.clientY, startScroll: list.scrollTop };
+  grip.setPointerCapture?.(event.pointerId);
+  row.classList.add('dragging');
+  list.classList.add('sorting');
+  grip.addEventListener('pointermove', dragMove);
+  grip.addEventListener('pointerup', dragEnd);
+  grip.addEventListener('pointercancel', dragEnd);
+}
+
+function dragMove(event) {
+  const d = order.drag;
+  if (!d || event.pointerId !== d.id) return;
+  // Near the list's top or bottom edge, scroll it.
+  const box = d.list.getBoundingClientRect();
+  if (event.clientY < box.top + 48) d.list.scrollTop -= 10;
+  else if (event.clientY > box.bottom - 48) d.list.scrollTop += 10;
+  const dy = event.clientY - d.startY + d.list.scrollTop - d.startScroll;
+  d.row.style.transform = `translateY(${dy}px)`;
+  const to = Math.max(0, Math.min(d.rows.length - 1, d.from + Math.round(dy / d.step)));
+  if (to === d.to) return;
+  d.to = to;
+  haptic('selection');
+  d.rows.forEach((r, i) => {
+    if (r === d.row) return;
+    const shift = d.from < i && i <= to ? -d.step : to <= i && i < d.from ? d.step : 0;
+    r.style.transform = shift ? `translateY(${shift}px)` : '';
+  });
+}
+
+function dragEnd(event) {
+  const d = order.drag;
+  if (!d || event.pointerId !== d.id) return;
+  order.drag = null;
+  event.currentTarget.removeEventListener('pointermove', dragMove);
+  event.currentTarget.removeEventListener('pointerup', dragEnd);
+  event.currentTarget.removeEventListener('pointercancel', dragEnd);
+  const scroll = d.list.scrollTop;
+  d.list.classList.remove('sorting');
+  if (event.type !== 'pointercancel') moveOrder(d.from, d.to);
+  renderOrder();
+  d.list.scrollTop = scroll;
 }
 
 // ---- Account ----
@@ -1135,6 +1328,7 @@ function openAccount() {
   closePicker();
   closeSearch(false);
   closeMenu(false);
+  closeOrder(false);
   Object.assign(account, { open: true, opener, shown: null });
   els.sheet.innerHTML = `
     <div class="sheet-backdrop" data-action="close-account"></div>
@@ -1350,14 +1544,17 @@ function followsEdited() {
 syncAlerts();
 initAccount({
   storage,
-  local: () => ({ teams: followed, alertDelay }),
+  local: () => ({ teams: followed, alertDelay, leagueOrder }),
   // The account's teams replaced this device's (another device changed
   // them, or the first sign-in merged them).
   apply(saved) {
     followed = saved.teams;
     alertDelay = saved.alertDelay;
+    if (saved.leagueOrder.length) leagueOrder = saved.leagueOrder;
     saveFollowed(storage, followed);
     saveAlertDelay(storage, alertDelay);
+    saveLeagueOrder(storage, leagueOrder);
+    if (order.open) renderOrder();
     syncAlerts();
     if (pageOpen()) followsChanged = true;
     else if (view.league.mine) changeView({});
@@ -1371,4 +1568,4 @@ load();
 applyRoute();
 // Pick up a new deploy when the app comes back to the front (not while the
 // team picker is open).
-initAutoUpdate({ canReload: () => !picker.open && !account.open });
+initAutoUpdate({ canReload: () => !picker.open && !account.open && !order.open });

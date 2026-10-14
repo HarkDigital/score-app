@@ -1,10 +1,11 @@
-// Accounts: signing in (Clerk) keeps the followed teams, their alerts and the
-// spoiler delay on the push server under the person's account, so every
+// Accounts: signing in (Clerk) keeps the followed teams (in the person's
+// order), their alerts, the spoiler delay and the league tabs' order on the
+// push server under the person's account, so every
 // device they sign in on gets the same ones. Signed out, everything stays on
 // the device as before. Pure, and shared with server/ (deploy.sh ships it).
 
 import { leagueById } from './espn.js';
-import { ALERT_KINDS, clampDelay } from './myteams.js';
+import { ALERT_KINDS, clampDelay, cleanLeagueOrder } from './myteams.js';
 
 // Clerk's publishable key (Clerk dashboard > API keys): pk_test_... for the
 // development instance, pk_live_... for production. Not a secret. Empty
@@ -100,19 +101,28 @@ export function cleanTeams(list) {
   return teams;
 }
 
-// An account's settings, from the server or for it: {teams, alertDelay}.
+// An account's settings, from the server or for it: {teams, alertDelay,
+// leagueOrder}. An empty leagueOrder is the app's own order (and what a
+// server from before the order existed answers).
 export function parseAccount(body) {
   const teams = cleanTeams(body?.teams);
   if (!teams) return null;
-  return { teams, alertDelay: clampDelay(body.alertDelay) };
+  return { teams, alertDelay: clampDelay(body.alertDelay), leagueOrder: cleanLeagueOrder(body.leagueOrder) };
+}
+
+// The account read back on a later sync: an account with no league order
+// (never set, or a server that drops it) leaves this device's alone.
+export function keepLeagueOrder(account, device) {
+  const order = cleanLeagueOrder(device?.leagueOrder);
+  return account.leagueOrder.length || !order.length ? account : { ...account, leagueOrder: order };
 }
 
 // The first sign-in on a device: the account's teams, then this device's
 // that the account doesn't have yet. A team on both keeps every alert either
-// side had on, and the account's delay wins unless it's off.
+// side had on, and the account's delay and league order win unless unset.
 export function mergeAccounts(account, device) {
-  const local = parseAccount(device) ?? { teams: [], alertDelay: 0 };
-  const remote = parseAccount(account) ?? { teams: [], alertDelay: 0 };
+  const local = parseAccount(device) ?? { teams: [], alertDelay: 0, leagueOrder: [] };
+  const remote = parseAccount(account) ?? { teams: [], alertDelay: 0, leagueOrder: [] };
   const key = (t) => `${t.league}:${t.id}`;
   const fromDevice = new Map(local.teams.map((t) => [key(t), t]));
   const teams = remote.teams.map((t) => {
@@ -125,6 +135,7 @@ export function mergeAccounts(account, device) {
   return parseAccount({
     teams: [...teams, ...fromDevice.values()],
     alertDelay: remote.alertDelay || local.alertDelay,
+    leagueOrder: remote.leagueOrder.length ? remote.leagueOrder : local.leagueOrder,
   });
 }
 

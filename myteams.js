@@ -69,7 +69,7 @@ export function alertTeams(list) {
 }
 
 // The followed teams as the iPhone app's widgets need them: who they are and
-// how to draw them, in the order they were followed.
+// how to draw them, in the person's order.
 export function widgetTeams(list) {
   return list.map(({ league, id, name = '', abbr = '', logo = '', color = null }) => ({ league, id, name, abbr, logo, color }));
 }
@@ -98,6 +98,59 @@ export function loadAlertDelay(storage) {
 
 export function saveAlertDelay(storage, seconds) {
   try { storage?.setItem(DELAY_KEY, String(clampDelay(seconds))); } catch { /* full or blocked */ }
+}
+
+// The followed list's order is the person's order (new follows go last):
+// My Teams shows its games in it. Moving a team is a plain move in the list.
+export function moveTeam(list, from, to) {
+  if (from === to || !list[from] || to < 0 || to >= list.length) return list;
+  const next = [...list];
+  next.splice(to, 0, ...next.splice(from, 1));
+  return next;
+}
+
+// My Teams' groups (Live, Upcoming, Final; or a week's days) with each
+// group's games in the order of their teams: a game goes where its highest
+// followed team is, and games of the same team keep their time order.
+export function sortByTeams(groups, list) {
+  const rank = new Map(list.map((t, i) => [`${t.league}:${t.id}`, i]));
+  const of = (game) => Math.min(...game.teams.map((t) => rank.get(`${game.league?.id}:${t.id}`) ?? Infinity));
+  return groups.map((group) => ({ ...group, games: [...group.games].sort((a, b) => of(a) - of(b)) }));
+}
+
+// The league tabs' order: the person's (scores.leagueOrder, synced with the
+// account), or the app's own (LEAGUES) when they never changed it. A league
+// the order doesn't name (one added since) goes after the league before it
+// in LEAGUES.
+const ORDER_KEY = 'scores.leagueOrder';
+
+export function cleanLeagueOrder(order) {
+  if (!Array.isArray(order)) return [];
+  const known = new Set(LEAGUES.map((l) => l.id));
+  return [...new Set(order.filter((id) => known.has(id)))];
+}
+
+export function orderLeagues(order) {
+  const ids = cleanLeagueOrder(order);
+  if (!ids.length) return LEAGUES;
+  LEAGUES.forEach((league, i) => {
+    if (ids.includes(league.id)) return;
+    const before = i ? ids.indexOf(LEAGUES[i - 1].id) : -1;
+    ids.splice(before + 1, 0, league.id);
+  });
+  return ids.map((id) => LEAGUES.find((l) => l.id === id));
+}
+
+export function loadLeagueOrder(storage) {
+  try {
+    return cleanLeagueOrder(JSON.parse(storage?.getItem(ORDER_KEY) ?? '[]'));
+  } catch {
+    return [];
+  }
+}
+
+export function saveLeagueOrder(storage, order) {
+  try { storage?.setItem(ORDER_KEY, JSON.stringify(cleanLeagueOrder(order))); } catch { /* full or blocked */ }
 }
 
 // League ids with at least one followed team, in the app's league order.

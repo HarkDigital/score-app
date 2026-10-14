@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  clerkFrontendApi, clerkScriptUrl, signInAllowed, cleanTeams, parseAccount, mergeAccounts, sameAccount,
+  clerkFrontendApi, clerkScriptUrl, signInAllowed, cleanTeams, parseAccount, mergeAccounts, sameAccount, keepLeagueOrder,
   loadAccountMark, saveAccountMark, MAX_ACCOUNT_TEAMS,
 } from '../account.js';
 
@@ -59,9 +59,12 @@ test('teams are checked and trimmed before they reach an account', () => {
   assert.equal(cleanTeams(many).length, MAX_ACCOUNT_TEAMS);
 });
 
-test('an account is its teams and a clamped delay', () => {
-  assert.deepEqual(parseAccount({ teams: [celtics], alertDelay: 9000 }), { teams: [celtics], alertDelay: 300 });
-  assert.deepEqual(parseAccount({ teams: [] }), { teams: [], alertDelay: 0 });
+test('an account is its teams, a clamped delay and a league order', () => {
+  assert.deepEqual(parseAccount({ teams: [celtics], alertDelay: 9000 }), { teams: [celtics], alertDelay: 300, leagueOrder: [] });
+  assert.deepEqual(parseAccount({ teams: [] }), { teams: [], alertDelay: 0, leagueOrder: [] });
+  // Known leagues only, each once.
+  assert.deepEqual(parseAccount({ teams: [], leagueOrder: ['epl', 'nba', 'curling', 'epl', 7] }).leagueOrder, ['epl', 'nba']);
+  assert.deepEqual(parseAccount({ teams: [], leagueOrder: 'nba' }).leagueOrder, []);
   assert.equal(parseAccount({ alertDelay: 30 }), null);
   assert.equal(parseAccount(null), null);
 });
@@ -76,6 +79,7 @@ test('the first sign-in adds the device\'s teams after the account\'s', () => {
       celtics,
     ],
     alertDelay: 30,
+    leagueOrder: [],
   });
   // The account's delay wins when it has one.
   assert.equal(mergeAccounts({ teams: [], alertDelay: 15 }, { teams: [], alertDelay: 60 }).alertDelay, 15);
@@ -84,6 +88,18 @@ test('the first sign-in adds the device\'s teams after the account\'s', () => {
   assert.deepEqual(mergeAccounts(account, { teams: [] }), parseAccount(account));
   assert.ok(sameAccount(mergeAccounts(account, { teams: [] }), account));
   assert.ok(!sameAccount(account, device));
+  // So does its league order; a device's goes up to an account without one.
+  assert.deepEqual(mergeAccounts({ teams: [], leagueOrder: ['nhl'] }, { teams: [], leagueOrder: ['epl'] }).leagueOrder, ['nhl']);
+  assert.deepEqual(mergeAccounts({ teams: [] }, { teams: [], leagueOrder: ['epl'] }).leagueOrder, ['epl']);
+});
+
+test('a later sync keeps the device\'s league order when the account has none', () => {
+  const remote = parseAccount({ teams: [celtics] });
+  // A server from before the league order answers without one.
+  assert.deepEqual(keepLeagueOrder(remote, { teams: [], leagueOrder: ['nba', 'nfl'] }), { ...remote, leagueOrder: ['nba', 'nfl'] });
+  assert.equal(keepLeagueOrder(remote, { teams: [] }), remote);
+  const ordered = parseAccount({ teams: [], leagueOrder: ['mls'] });
+  assert.equal(keepLeagueOrder(ordered, { teams: [], leagueOrder: ['nba'] }), ordered);
 });
 
 test('the account mark survives storage and its absence', () => {
