@@ -76,6 +76,7 @@ const els = {
   sheet: document.getElementById('sheet-root'),
   back: document.getElementById('back'),
   pageTitle: document.getElementById('page-title'),
+  lineSteam: document.getElementById('linesteam'),
   menu: document.getElementById('menu'),
 };
 
@@ -1506,6 +1507,7 @@ function applyRoute() {
   document.body.classList.remove('page-mode');
   els.back.hidden = true;
   els.pageTitle.textContent = '';
+  setLineSteam(null);
   if (followsChanged) {
     followsChanged = false;
     if (view.league.mine) changeView({});
@@ -1586,8 +1588,17 @@ initPages({
   gameCards: (league) => gameCardsFor(sportOf(league), gameCards),
   arrangeCards: (league) => openOrder('cards', league),
   setTitle: (text) => { els.pageTitle.textContent = text; },
+  setLineSteam,
   setLoading: (on) => els.refresh.classList.toggle('spinning', on),
 });
+
+// The header's LineSteam link (linesteam.com charts every FanDuel line move):
+// a game's own chart on a game page in one of its leagues, else its home page.
+// Opens outside the app.
+function setLineSteam(url) {
+  els.lineSteam.href = url || 'https://linesteam.com';
+  els.lineSteam.setAttribute('aria-label', url ? "This game's line movement on LineSteam" : 'Line movement on LineSteam');
+}
 
 // iPhone app: hand the teams that want alerts to the app, which registers
 // them with the push server. Also at every launch, since the device's push

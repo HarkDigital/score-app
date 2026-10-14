@@ -91,6 +91,7 @@ img { -webkit-touch-callout: none; }
 }
 
 .top-inner {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -147,6 +148,8 @@ img { -webkit-touch-callout: none; }
 }
 
 .page-mode .page-title { display: block; }
+/* Stop the title short of the LineSteam link in the middle. */
+.page-mode .page-title { flex: 0 1 auto; max-width: calc(50% - 76px); margin-right: auto; }
 .page-mode .brand,
 .page-mode #tabs,
 .page-mode #main { display: none; }
@@ -168,6 +171,40 @@ body:not(.page-mode) .page { display: none; }
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* LineSteam's mark over its name, in the middle of the header on every
+   screen. */
+.ls-top {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 2px);
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 4px;
+  border-radius: 10px;
+  color: var(--gray-400);
+  text-decoration: none;
+}
+
+.ls-top img { display: block; }
+
+.ls-top-name {
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+@media (hover: hover) {
+  .ls-top:hover { background: rgb(255 255 255 / 0.05); color: var(--white); }
+}
+.ls-top:active { transform: translate(-50%, -50%) scale(0.95); }
 
 /* Find a team, then refresh, at the header's right. */
 .top-actions {
@@ -1578,32 +1615,6 @@ a.team-cell:hover .team-name { color: var(--accent); }
   text-align: center;
 }
 
-/* LineSteam's mark, top right of the matchup card: a 36px circle in a 44px
-   tap target. */
-.ls-badge {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-}
-
-.ls-circle {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border: 1px solid var(--gray-800);
-  border-radius: 50%;
-  background: var(--bg);
-  transition: border-color 150ms ease, transform 150ms ease;
-}
-
-.ls-circle img { display: block; }
-
 /* The gear, top left of the matchup card: arranges the sport's cards. */
 .arrange-btn {
   position: absolute;
@@ -1637,8 +1648,6 @@ a.team-cell:hover .team-name { color: var(--accent); }
 @media (hover: hover) {
   .arrange-btn:hover .arrange-circle { border-color: rgb(70 187 147 / 0.45); color: var(--fg); }
 }
-.ls-badge:hover .ls-circle { border-color: rgb(70 187 147 / 0.45); }
-.ls-badge:active .ls-circle { transform: scale(0.94); }
 
 .matchup.live { border-color: rgb(239 107 107 / 0.3); }
 
