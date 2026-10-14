@@ -5,6 +5,7 @@ import { LEAGUES, parseScoreboard } from '../espn.js';
 import {
   loadFollowed, saveFollowed, isFollowed, toggleFollowed, followedLeagues, countFollowed, gamesForTeams,
   hasAlerts, setAlerts, alertTeams, alertsFor, widgetTeams, loadAlertDelay, saveAlertDelay, clampDelay, ALERT_DELAY_MAX,
+  ALERT_DELAY_MENU, delayOptions, delayLabel,
   moveTeam, sortByTeams, orderLeagues, cleanLeagueOrder, loadLeagueOrder, saveLeagueOrder,
   SPORTS, sportOf, cleanScoreView, loadScoreView, saveScoreView, gameCardsFor, setGameCards, cleanGameCards, loadGameCards, saveGameCards,
 } from '../myteams.js';
@@ -116,6 +117,16 @@ test('the alert delay: whole seconds, off by default, at most 5 minutes, kept on
   assert.deepEqual([clampDelay(-3), clampDelay(''), clampDelay('abc'), clampDelay(null)], [0, 0, 0, 0]);
   assert.equal(loadAlertDelay(memoryStorage({ 'scores.alertDelay': 'junk' })), 0);
   assert.equal(loadAlertDelay(null), 0, 'no storage (private mode)');
+});
+
+test("the menu's delay list: off to five minutes, a custom delay in its place", () => {
+  assert.equal(ALERT_DELAY_MENU[0], 0);
+  assert.equal(ALERT_DELAY_MENU.at(-1), ALERT_DELAY_MAX);
+  assert.equal(delayOptions(30), ALERT_DELAY_MENU, 'a listed delay adds nothing');
+  assert.deepEqual(delayOptions(42).slice(5, 8), [30, 42, 45], 'a custom one goes in order');
+  assert.equal(delayOptions(9999).at(-1), 300, 'clamped, so nothing past the maximum');
+  assert.deepEqual([0, 1, 45, 60, 90, 300, 'junk'].map(delayLabel),
+    ['Off', '1 second', '45 seconds', '1 minute', '1 minute 30 seconds', '5 minutes', 'Off']);
 });
 
 test('teams move within the list, which is the order My Teams uses', () => {
