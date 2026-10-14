@@ -70,15 +70,22 @@ watcher.tick();
 const widgets = createWidgetSource({ fetchJson, log });
 
 // Accounts (sign-in with Clerk): off until CLERK_ISSUER is set in .env.
+// A bad setting turns accounts off rather than stopping the server (alerts
+// and cards keep going).
 let verifyUser = null;
 if (env.CLERK_ISSUER) {
-  verifyUser = createClerkAuth({
-    issuer: env.CLERK_ISSUER,
-    jwtKey: env.CLERK_JWT_KEY || null,
-    parties: (env.CLERK_AUTHORIZED_PARTIES ?? '').split(',').map((s) => s.trim()).filter(Boolean),
-    fetchJson,
-  });
-  log(`accounts on, tokens from ${env.CLERK_ISSUER}`);
+  try {
+    verifyUser = createClerkAuth({
+      issuer: env.CLERK_ISSUER,
+      jwtKey: env.CLERK_JWT_KEY || null,
+      parties: (env.CLERK_AUTHORIZED_PARTIES ?? '').split(',').map((s) => s.trim()).filter(Boolean),
+      fetchJson,
+      log,
+    });
+    log(`accounts on, tokens from ${env.CLERK_ISSUER}${env.CLERK_JWT_KEY ? ' (checked with CLERK_JWT_KEY)' : ''}`);
+  } catch (err) {
+    log(`accounts off: ${err.message}`);
+  }
 } else {
   log('no CLERK_ISSUER: accounts are off');
 }

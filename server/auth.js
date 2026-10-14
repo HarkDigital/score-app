@@ -13,10 +13,17 @@ const JWKS_RETRY = 60_000; // an unknown kid refetches at most this often
 
 const b64json = (part) => JSON.parse(Buffer.from(part, 'base64url').toString('utf8'));
 
-export function createClerkAuth({ issuer, jwtKey = null, parties = [], fetchJson, now = () => Date.now() }) {
+export function createClerkAuth({ issuer, jwtKey = null, parties = [], fetchJson, now = () => Date.now(), log = () => {} }) {
   const iss = String(issuer ?? '').replace(/\/+$/, '');
   if (!/^https:\/\/[^/]+$/.test(iss)) throw new Error('CLERK_ISSUER must be the instance\'s https Frontend API URL');
-  const pem = jwtKey ? crypto.createPublicKey(jwtKey.replace(/\\n/g, '\n')) : null;
+  let pem = null;
+  if (jwtKey) {
+    try {
+      pem = crypto.createPublicKey(jwtKey.replace(/\\n/g, '\n'));
+    } catch {
+      throw new Error('CLERK_JWT_KEY isn\'t a PEM public key');
+    }
+  }
   let keys = new Map();
   let fetchedAt = 0;
 
@@ -28,8 +35,9 @@ export function createClerkAuth({ issuer, jwtKey = null, parties = [], fetchJson
         const jwks = await fetchJson(`${iss}/.well-known/jwks.json`);
         keys = new Map((jwks?.keys ?? []).filter((k) => k.kty === 'RSA').map((k) => [k.kid, crypto.createPublicKey({ key: k, format: 'jwk' })]));
         fetchedAt = now();
-      } catch {
+      } catch (err) {
         // Keep the keys we had.
+        log(`Clerk keys not fetched: ${err.cause?.code ?? err.message}`);
       }
     }
     return keys.get(kid) ?? null;
