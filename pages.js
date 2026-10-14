@@ -152,6 +152,11 @@ function loadTab() {
   if (page.tab === 'stats' && !page.stats) loadStats();
 }
 
+// Redraw what's showing (the game page's cards were rearranged).
+export function redrawPage() {
+  if (page.route) render();
+}
+
 export function hidePage() {
   leave();
   page.route = null;
@@ -368,22 +373,37 @@ function loadingHtml(kind) {
 
 // ---- Game page ----
 
+// The matchup on top, then the cards in the order the person gave this
+// sport (the matchup's gear, myteams.js gameCardsFor), leaving out the ones
+// they hid.
 function gameHtml(game, league, id) {
   const odds = game.odds && !TROUBLE.test(game.statusName) ? `<div class="card page-odds">${oddsHtml(game.odds, league)}${moneylinesHtml(game)}</div>` : '';
-  const sections = [
-    matchupHtml(game, league, id),
+  const cards = {
+    series: seriesHtml(game, league, id),
+    lock: lockHtml(game, league, id),
     odds,
-    lineScoreHtml(game),
-    scoringHtml(game, league),
-    playersHtml(game, league),
-    lineupsHtml(game, league),
-    teamStatsHtml(game),
-  ].filter(Boolean);
-  if (game.state === 'pre' && sections.length <= 2) {
-    sections.push(emptyState({ icon: ICONS.clipboard, title: 'Box score at kickoff', text: 'Player and team stats show up here once the game starts.' }));
+    lineScore: lineScoreHtml(game),
+    scoring: scoringHtml(game, league),
+    boxScore: playersHtml(game, league),
+    lineups: lineupsHtml(game, league),
+    teamStats: teamStatsHtml(game),
+  };
+  const stats = ['lineScore', 'scoring', 'boxScore', 'lineups', 'teamStats'].some((c) => cards[c]);
+  const html = [matchupHtml(game, league, id)];
+  for (const card of app.gameCards(league)) if (!card.hidden) html.push(cards[card.id] ?? '');
+  if (game.state === 'pre' && !stats) {
+    html.push(emptyState({ icon: ICONS.clipboard, title: 'Box score at kickoff', text: 'Player and team stats show up here once the game starts.' }));
   }
-  sections.splice(1, 0, seriesHtml(game, league, id), lockHtml(game, league, id));
-  return sections.join('');
+  return html.join('');
+}
+
+// Top left of the matchup card (LineSteam's mark is top right): arranges
+// this sport's cards.
+function arrangeHtml(league) {
+  return `
+    <button class="arrange-btn" data-arrange aria-label="Arrange ${esc(league.label)} game pages" title="Arrange the game page">
+      <span class="arrange-circle">${ICONS.gear}</span>
+    </button>`;
 }
 
 // A playoff series: the round and game ("NLDS - Game 3"), best of N, each
@@ -530,6 +550,7 @@ function matchupHtml(game, league, id) {
   const meta = [game.venue, game.broadcast, game.attendance && `Attendance ${game.attendance}`].filter(Boolean);
   return `
     <div class="card matchup${live ? ' live' : ''}">
+      ${arrangeHtml(league)}
       ${lineSteamHtml(league, id)}
       <div class="matchup-status">${statusHtml(game)}</div>
       <div class="matchup-teams">${a ? side(a) : ''}${middle}${b ? side(b) : ''}</div>
@@ -1079,9 +1100,10 @@ document.addEventListener('change', (event) => {
 
 document.addEventListener('click', (event) => {
   if (!page.route) return;
-  const target = event.target.closest('[data-side], [data-follow], [data-lock], [data-alerts], [data-alert-kind], [data-alert-delay], [data-team-tab], [data-open-settings]');
+  const target = event.target.closest('[data-side], [data-follow], [data-lock], [data-alerts], [data-alert-kind], [data-alert-delay], [data-team-tab], [data-open-settings], [data-arrange]');
   if (!target || !root().contains(target) || target.disabled) return;
   if (target.hasAttribute('data-lock')) toggleLock();
+  else if (target.hasAttribute('data-arrange')) app.arrangeCards(page.route.league);
   else if (target.hasAttribute('data-open-settings')) openNotificationSettings();
   else if (target.dataset.alertKind) toggleAlertKind(target.dataset.alertKind);
   else if (target.dataset.alertDelay !== undefined) {

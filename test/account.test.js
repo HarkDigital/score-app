@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  clerkFrontendApi, clerkScriptUrl, signInAllowed, cleanTeams, parseAccount, mergeAccounts, sameAccount, keepLeagueOrder,
+  clerkFrontendApi, clerkScriptUrl, signInAllowed, cleanTeams, parseAccount, mergeAccounts, sameAccount, keepDeviceSettings,
   loadAccountMark, saveAccountMark, MAX_ACCOUNT_TEAMS,
 } from '../account.js';
 
@@ -59,9 +59,12 @@ test('teams are checked and trimmed before they reach an account', () => {
   assert.equal(cleanTeams(many).length, MAX_ACCOUNT_TEAMS);
 });
 
-test('an account is its teams, a clamped delay and a league order', () => {
-  assert.deepEqual(parseAccount({ teams: [celtics], alertDelay: 9000 }), { teams: [celtics], alertDelay: 300, leagueOrder: [] });
-  assert.deepEqual(parseAccount({ teams: [] }), { teams: [], alertDelay: 0, leagueOrder: [] });
+test('an account is its teams, a clamped delay, a league order and game page layouts', () => {
+  assert.deepEqual(parseAccount({ teams: [celtics], alertDelay: 9000 }), { teams: [celtics], alertDelay: 300, leagueOrder: [], gameCards: {} });
+  assert.deepEqual(parseAccount({ teams: [] }), { teams: [], alertDelay: 0, leagueOrder: [], gameCards: {} });
+  // Known sports and their own cards only.
+  assert.deepEqual(parseAccount({ teams: [], gameCards: { soccer: { order: ['lineups', 'boxScore', 'odds'], hidden: ['odds'] }, curling: { order: ['odds'] } } }).gameCards,
+    { soccer: { order: ['lineups', 'odds'], hidden: ['odds'] } });
   // Known leagues only, each once.
   assert.deepEqual(parseAccount({ teams: [], leagueOrder: ['epl', 'nba', 'curling', 'epl', 7] }).leagueOrder, ['epl', 'nba']);
   assert.deepEqual(parseAccount({ teams: [], leagueOrder: 'nba' }).leagueOrder, []);
@@ -80,6 +83,7 @@ test('the first sign-in adds the device\'s teams after the account\'s', () => {
     ],
     alertDelay: 30,
     leagueOrder: [],
+    gameCards: {},
   });
   // The account's delay wins when it has one.
   assert.equal(mergeAccounts({ teams: [], alertDelay: 15 }, { teams: [], alertDelay: 60 }).alertDelay, 15);
@@ -91,15 +95,27 @@ test('the first sign-in adds the device\'s teams after the account\'s', () => {
   // So does its league order; a device's goes up to an account without one.
   assert.deepEqual(mergeAccounts({ teams: [], leagueOrder: ['nhl'] }, { teams: [], leagueOrder: ['epl'] }).leagueOrder, ['nhl']);
   assert.deepEqual(mergeAccounts({ teams: [] }, { teams: [], leagueOrder: ['epl'] }).leagueOrder, ['epl']);
+  // Game page layouts: the account's sport wins, the device fills the rest.
+  const football = { order: ['boxScore', 'odds'], hidden: [] };
+  const hockey = { order: ['scoring'], hidden: ['scoring'] };
+  assert.deepEqual(mergeAccounts(
+    { teams: [], gameCards: { football } },
+    { teams: [], gameCards: { football: { order: ['odds'], hidden: ['odds'] }, hockey } },
+  ).gameCards, { football, hockey });
 });
 
 test('a later sync keeps the device\'s league order when the account has none', () => {
   const remote = parseAccount({ teams: [celtics] });
   // A server from before the league order answers without one.
-  assert.deepEqual(keepLeagueOrder(remote, { teams: [], leagueOrder: ['nba', 'nfl'] }), { ...remote, leagueOrder: ['nba', 'nfl'] });
-  assert.equal(keepLeagueOrder(remote, { teams: [] }), remote);
+  assert.deepEqual(keepDeviceSettings(remote, { teams: [], leagueOrder: ['nba', 'nfl'] }), { ...remote, leagueOrder: ['nba', 'nfl'] });
+  assert.equal(keepDeviceSettings(remote, { teams: [] }), remote);
   const ordered = parseAccount({ teams: [], leagueOrder: ['mls'] });
-  assert.equal(keepLeagueOrder(ordered, { teams: [], leagueOrder: ['nba'] }), ordered);
+  assert.equal(keepDeviceSettings(ordered, { teams: [], leagueOrder: ['nba'] }), ordered);
+  // The same for the game page's layouts.
+  const cards = { hockey: { order: ['scoring'], hidden: [] } };
+  assert.deepEqual(keepDeviceSettings(remote, { teams: [], gameCards: cards }), { ...remote, gameCards: cards });
+  const laidOut = parseAccount({ teams: [], gameCards: { soccer: { order: ['lineups'], hidden: [] } } });
+  assert.equal(keepDeviceSettings(laidOut, { teams: [], gameCards: cards }), laidOut);
 });
 
 test('the account mark survives storage and its absence', () => {

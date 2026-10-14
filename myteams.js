@@ -153,6 +153,88 @@ export function saveLeagueOrder(storage, order) {
   try { storage?.setItem(ORDER_KEY, JSON.stringify(cleanLeagueOrder(order))); } catch { /* full or blocked */ }
 }
 
+// The game page's cards under the matchup (which stays on top: it has the
+// gear that arranges them). The person picks their order and hides any of
+// them per sport, so every football game (NFL and college) looks the same.
+// scores.gameCards: {football: {order: ['boxScore', ...], hidden: ['odds']}},
+// synced with the account. A sport it doesn't name is the app's layout.
+const CARDS_KEY = 'scores.gameCards';
+
+export const SPORTS = ['football', 'basketball', 'baseball', 'hockey', 'soccer'];
+
+// sports: the only sports a card can have content in (the feeds give
+// baseball and basketball no scoring list, baseball no team stats, soccer
+// lineups instead of a box score).
+export const GAME_CARDS = [
+  { id: 'series', label: 'Playoff series', sports: ['basketball', 'baseball', 'hockey'] },
+  { id: 'lock', label: 'Show on Lock Screen', app: true },
+  { id: 'odds', label: 'Lines' },
+  { id: 'lineScore', label: 'Line score' },
+  { id: 'scoring', label: 'Scoring', soccer: 'Goals and red cards', sports: ['football', 'hockey', 'soccer'] },
+  { id: 'boxScore', label: 'Box score', sports: ['football', 'basketball', 'baseball', 'hockey'] },
+  { id: 'lineups', label: 'Lineups', sports: ['soccer'] },
+  { id: 'teamStats', label: 'Team stats', sports: ['football', 'basketball', 'hockey', 'soccer'] },
+];
+
+// A league's sport: the first part of its ESPN path.
+export const sportOf = (league) => String(league?.path ?? '').split('/')[0];
+
+const cardsOf = (sport) => GAME_CARDS.filter((c) => !c.sports || c.sports.includes(sport));
+
+export function cleanGameCards(layouts) {
+  if (!layouts || typeof layouts !== 'object' || Array.isArray(layouts)) return {};
+  const clean = {};
+  for (const sport of SPORTS) {
+    const saved = layouts[sport];
+    if (!saved || typeof saved !== 'object') continue;
+    const known = new Set(cardsOf(sport).map((c) => c.id));
+    const ids = (list) => (Array.isArray(list) ? [...new Set(list.filter((id) => known.has(id)))] : []);
+    const order = ids(saved.order);
+    if (order.length) clean[sport] = { order, hidden: ids(saved.hidden) };
+  }
+  return clean;
+}
+
+// A sport's cards in the person's order, each {id, label, hidden}. A card
+// the saved order doesn't name (one added since) goes after the card before
+// it in GAME_CARDS, like the leagues.
+export function gameCardsFor(sport, layouts) {
+  const cards = cardsOf(sport);
+  const saved = cleanGameCards(layouts)[sport];
+  const ids = saved ? [...saved.order] : [];
+  cards.forEach((card, i) => {
+    if (ids.includes(card.id)) return;
+    const before = i ? ids.indexOf(cards[i - 1].id) : -1;
+    ids.splice(before + 1, 0, card.id);
+  });
+  const hidden = new Set(saved?.hidden ?? []);
+  return ids.map((id) => {
+    const card = cards.find((c) => c.id === id);
+    return { id, label: (sport === 'soccer' && card.soccer) || card.label, hidden: hidden.has(id), app: Boolean(card.app) };
+  });
+}
+
+// The layouts with one sport's cards as given ([{id, hidden}], in order),
+// saved in full so the change reaches the account's other devices.
+export function setGameCards(layouts, sport, cards) {
+  return cleanGameCards({
+    ...cleanGameCards(layouts),
+    [sport]: { order: cards.map((c) => c.id), hidden: cards.filter((c) => c.hidden).map((c) => c.id) },
+  });
+}
+
+export function loadGameCards(storage) {
+  try {
+    return cleanGameCards(JSON.parse(storage?.getItem(CARDS_KEY) ?? '{}'));
+  } catch {
+    return {};
+  }
+}
+
+export function saveGameCards(storage, layouts) {
+  try { storage?.setItem(CARDS_KEY, JSON.stringify(cleanGameCards(layouts))); } catch { /* full or blocked */ }
+}
+
 // League ids with at least one followed team, in the app's league order.
 export function followedLeagues(list) {
   return LEAGUES.map((l) => l.id).filter((id) => list.some((t) => t.league === id));
