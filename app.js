@@ -1711,11 +1711,11 @@ initPages({
 });
 
 // The header's LineSteam link (linesteam.com charts every FanDuel line move):
-// a game's own chart on a game page in one of its leagues, else its home page.
+// only on a game page in one of its leagues, opening that game's chart.
 // Opens outside the app.
 function setLineSteam(url) {
-  els.lineSteam.href = url || 'https://linesteam.com';
-  els.lineSteam.setAttribute('aria-label', url ? "This game's line movement on LineSteam" : 'Line movement on LineSteam');
+  els.lineSteam.hidden = !url;
+  if (url) els.lineSteam.href = url;
 }
 
 // iPhone app: hand the teams that want alerts to the app, which registers

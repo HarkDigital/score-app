@@ -19,7 +19,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="styles.css">
-  <script type="module" src="app.js"></script>
+  <link rel="modulepreload" href="app.js">
+  <script type="module" src="start.js"></script>
 </head>
 <body>
   <header class="top">
@@ -32,9 +33,9 @@
         <img src="icons/icon.svg" alt="" width="30" height="30">
         <span class="brand-name">Scores</span>
       </div>
-      <a id="linesteam" class="ls-top" href="https://linesteam.com" target="_blank" rel="noopener" aria-label="Line movement on LineSteam">
-        <img src="icons/linesteam-mark.png" alt="" width="22" height="19">
-        <span class="ls-top-name">linesteam</span>
+      <a id="linesteam" class="ls-top" href="https://linesteam.com" hidden target="_blank" rel="noopener" aria-label="Line movement on LineSteam">
+        <img src="icons/linesteam-mark.png" alt="" width="28" height="24">
+        <img class="ls-top-name" src="icons/linesteam-wordmark.png" alt="" width="84" height="9">
       </a>
       <div class="top-actions">
         <button id="search" class="icon-btn" aria-label="Search teams and players" data-action="open-search">

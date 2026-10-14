@@ -13,8 +13,9 @@ import { ALERT_KINDS, clampDelay, cleanLeagueOrder, cleanGameCards, cleanScoreVi
 // turns sign-in off: no account button, nothing loaded. This is the
 // production instance on scores.phade.app (Frontend API
 // clerk.scores.phade.app), so sign-in shows only on that site
-// (signInAllowed): not on harkdigital.github.io, nor in the apps while they
-// load github.io.
+// (signInAllowed): not on harkdigital.github.io. The apps load
+// scores.phade.app (capacitor.config.json; builds before that load github.io
+// and show no Sign in).
 export const CLERK_PUBLISHABLE_KEY = 'pk_live_Y2xlcmsuc2NvcmVzLnBoYWRlLmFwcCQ';
 
 // Where the account lives: the push server's /v1/me.
