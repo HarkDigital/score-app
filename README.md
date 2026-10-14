@@ -181,6 +181,6 @@ The Clerk production instance is set up for **scores.phade.app** (Frontend API `
    ```
    Optionally also `CLERK_JWT_KEY` with the **JWT public key** (PEM, under **API keys > Show JWT public key**, newlines written as `\n`) so tokens are checked without asking Clerk for its keys. `curl https://scores.phade.app/health` then shows `"accounts": 0` instead of `"off"`.
 3. **The site on scores.phade.app**: PR #45's nginx config on the box.
-4. **The apps**: to sign in inside them, `capacitor.config.json`'s `server.url` must be `https://scores.phade.app/` (and `allowNavigation` include it), then a new iPhone build and APK. Each app's localStorage belongs to the site it loads, so the switch needs a one-time copy of the followed teams from the github.io storage first, or people lose their teams and their alerts stop.
+4. **The apps**: they load `https://scores.phade.app/` (`capacitor.config.json`), so sign-in shows in them from the next iPhone build and APK. Their saved teams and settings live under the old github.io address; the first launch on the new one fetches them from github.io's `move.html` once (a blink of the screen), so nobody loses their teams or alerts.
 
 For testing anywhere else (github.io, localhost), a Clerk **development** instance's `pk_test_` key works on any site, with `CLERK_ISSUER` set to its `*.clerk.accounts.dev` host.
