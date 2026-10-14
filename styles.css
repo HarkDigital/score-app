@@ -148,8 +148,8 @@ img { -webkit-touch-callout: none; }
 }
 
 .page-mode .page-title { display: block; }
-/* Stop the title short of the LineSteam link in the middle. */
-.page-mode .page-title { flex: 0 1 auto; max-width: calc(50% - 90px); margin-right: auto; }
+/* Stop the title short of the LineSteam link in the middle, when it shows. */
+.page-mode .top-inner:has(.ls-top:not([hidden])) .page-title { flex: 0 1 auto; max-width: calc(50% - 90px); margin-right: auto; }
 .page-mode .brand,
 .page-mode #tabs,
 .page-mode #main { display: none; }
@@ -192,6 +192,7 @@ body:not(.page-mode) .page { display: none; }
   text-decoration: none;
 }
 
+.ls-top[hidden] { display: none; }
 .ls-top img { display: block; }
 
 .ls-top-name { width: 84px; height: auto; }
