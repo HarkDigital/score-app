@@ -400,7 +400,7 @@ test('a week view runs Monday to Sunday around the selected day', () => {
   assert.match(weekRange(new Date(2026, 9, 1)), / \u2013 \D+ 4$/); // Sep 28 to Oct 4 names both months
 });
 
-test('a week groups live games first, then each day in start order', () => {
+test('a week groups live games first, then what is to come by day, then finals', () => {
   const now = new Date(2026, 9, 14, 20);
   const g = (id, start, state = 'pre') => ({ id, start, state });
   const games = [
@@ -408,13 +408,15 @@ test('a week groups live games first, then each day in start order', () => {
     g('early', new Date(2026, 9, 14, 13), 'post'),
     g('live', new Date(2026, 9, 14, 19), 'in'),
     g('mon', new Date(2026, 9, 12, 19), 'post'),
+    g('mon2', new Date(2026, 9, 12, 16), 'post'),
     g('sat', new Date(2026, 9, 17, 15)),
     g('next', new Date(2026, 9, 19, 0, 30)), // already next week locally
   ];
   const sections = groupWeek(games, now, now);
-  assert.deepEqual(sections.map((s) => s.label), ['Live', dayLabel(-2, now), 'Today', dayLabel(3, now)]);
-  assert.deepEqual(sections.map((s) => s.games.map((x) => x.id)), [['live'], ['mon'], ['early', 'late'], ['sat']]);
-  assert.equal(sections[1].id, '20261012');
+  assert.deepEqual(sections.map((s) => s.label), ['Live', 'Today', dayLabel(3, now), 'Final \u00b7 Today', `Final \u00b7 ${dayLabel(-2, now)}`]);
+  assert.deepEqual(sections.map((s) => s.key), ['in', 'day', 'day', 'post', 'post']);
+  assert.deepEqual(sections.map((s) => s.games.map((x) => x.id)), [['live'], ['late'], ['sat'], ['early'], ['mon2', 'mon']]);
+  assert.equal(sections[4].id, '20261012');
   assert.deepEqual(groupWeek([], now, now), []);
 });
 
