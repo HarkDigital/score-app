@@ -238,21 +238,82 @@ function renderModes() {
     ${view.filter && (mode === 'scores' || mode === 'standings') ? filterHtml(league, view.filter) : ''}`;
 }
 
-// College football's conference picker: a native select, so the phone shows
-// its own wheel. Sections are FBS and FCS.
+// College football's conference picker: the app's own dropdown, not the
+// phone's select wheel. A button shows the current filter; it opens a list
+// under it in sections (FBS and FCS conferences) with a check on the current one.
 function filterHtml(league, current) {
-  const option = (o) => `<option value="${esc(o.id)}"${o.id === current.id ? ' selected' : ''}>${esc(o.label)}</option>`;
+  const option = (o) => `
+    <button class="dropdown-option" role="option" data-filter-option="${esc(o.id)}" aria-selected="${o.id === current.id}" tabindex="-1">
+      <span>${esc(o.label)}</span>${o.id === current.id ? ICONS.check : ''}
+    </button>`;
   return `
-    <label class="filter">
-      <span class="filter-label">Showing</span>
-      <select data-filter aria-label="Conference">
+    <div class="filter">
+      <button class="filter-btn" data-action="toggle-filter" aria-haspopup="listbox" aria-expanded="false" aria-controls="filter-list">
+        <span class="filter-label">Showing</span>
+        <span class="filter-value">${esc(current.label)}</span>
+        <span class="filter-chevron" aria-hidden="true">${ICONS.down}</span>
+      </button>
+      <div id="filter-list" class="dropdown" role="listbox" aria-label="Conference" hidden>
         ${league.filters.map((s) => (s.label
-          ? `<optgroup label="${esc(s.label)}">${s.options.map(option).join('')}</optgroup>`
+          ? `<div class="dropdown-section" role="group" aria-label="${esc(s.label)}"><div class="dropdown-heading" aria-hidden="true">${esc(s.label)}</div>${s.options.map(option).join('')}</div>`
           : s.options.map(option).join(''))).join('')}
-      </select>
-      <span class="filter-chevron" aria-hidden="true">${ICONS.down}</span>
-    </label>`;
+      </div>
+    </div>`;
 }
+
+function filterOpen() {
+  return els.modes.querySelector('.filter.open') !== null;
+}
+
+function openFilter() {
+  const filter = els.modes.querySelector('.filter');
+  if (!filter) return;
+  filter.classList.add('open');
+  filter.querySelector('.filter-btn').setAttribute('aria-expanded', 'true');
+  const list = filter.querySelector('.dropdown');
+  list.hidden = false;
+  const current = list.querySelector('[aria-selected="true"]');
+  if (current) {
+    list.scrollTop = current.offsetTop - list.clientHeight / 2 + current.offsetHeight / 2;
+    current.focus({ preventScroll: true });
+  }
+}
+
+function closeFilter(restoreFocus = false) {
+  const filter = els.modes.querySelector('.filter.open');
+  if (!filter) return;
+  filter.classList.remove('open');
+  const button = filter.querySelector('.filter-btn');
+  button.setAttribute('aria-expanded', 'false');
+  filter.querySelector('.dropdown').hidden = true;
+  if (restoreFocus) button.focus();
+}
+
+// Arrow keys walk the options, Home and End jump, Escape closes.
+document.addEventListener('keydown', (event) => {
+  if (!filterOpen()) return;
+  const options = [...els.modes.querySelectorAll('.dropdown-option')];
+  const at = options.indexOf(document.activeElement);
+  const to = { ArrowDown: at + 1, ArrowUp: at - 1, Home: 0, End: options.length - 1 }[event.key];
+  if (to === undefined) return;
+  event.preventDefault();
+  options[Math.max(0, Math.min(options.length - 1, to))]?.focus();
+});
+
+// A tap outside the open list only closes it: the click that follows is
+// swallowed, so it doesn't also open the game card under the finger.
+let filterClosedAt = 0;
+document.addEventListener('pointerdown', (event) => {
+  if (!filterOpen() || event.target.closest('.filter')) return;
+  closeFilter();
+  filterClosedAt = Date.now();
+}, true);
+document.addEventListener('click', (event) => {
+  if (Date.now() - filterClosedAt > 600) return;
+  filterClosedAt = 0;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}, true);
 
 const HALF = 3;               // days either side of the selected one
 const BUFFER = 7;             // off-screen days each side, for the slide
@@ -1105,6 +1166,13 @@ document.addEventListener('click', (event) => {
     renderPickerList();
     loadTeams(picker.league);
   } else if (d.team) toggleTeam(target);
+  else if (d.action === 'toggle-filter') {
+    if (filterOpen()) closeFilter();
+    else openFilter();
+  } else if (d.filterOption !== undefined) {
+    closeFilter();
+    selectFilter(d.filterOption);
+  }
   else if (d.action === 'today') changeView({ dayOffset: 0, week: null });
   else if (d.action === 'edit-teams') openPicker();
   else if (d.action === 'order-teams') openOrder('teams');
@@ -1147,6 +1215,10 @@ initSwipeNav({
 
 document.addEventListener('keydown', (event) => {
   if (event.key !== 'Escape') return;
+  if (filterOpen()) {
+    closeFilter(true);
+    return;
+  }
   closePicker();
   closeSearch();
   closeAccount();
@@ -1154,16 +1226,11 @@ document.addEventListener('keydown', (event) => {
   closeOrder();
 });
 
-document.addEventListener('change', (event) => {
-  if (!event.target.matches('select[data-filter]')) return;
-  haptic('selection');
-  selectFilter(event.target.value);
-});
 
 // In the iPhone app every button press taps the haptic engine: a selection
 // tick for tabs, view switches, days and polls, a light tap for the rest.
 // Captured first, so it buzzes even for buttons whose handlers stop the click.
-const SELECTION = '[role="tab"], .day, [data-order-tab], [data-span], [data-score-view], [data-poll], [data-standings], [data-team-tab], [data-alert-delay]';
+const SELECTION = '[role="tab"], [role="option"], .day, [data-order-tab], [data-span], [data-score-view], [data-poll], [data-standings], [data-team-tab], [data-alert-delay]';
 document.addEventListener('click', (event) => {
   const button = event.target.closest('button');
   if (button && !button.disabled) haptic(button.matches(SELECTION) ? 'selection' : 'light');
