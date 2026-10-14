@@ -93,3 +93,10 @@ test('/v1/me answers CORS only for the app\'s own sites', () => {
   assert.deepEqual(corsHeaders('https://evil.example', allowed), {});
   assert.deepEqual(corsHeaders(undefined, allowed), {});
 });
+
+test('a CLERK_JWT_KEY that isn\'t a PEM key is refused with a clear error', () => {
+  assert.throws(() => createClerkAuth({ issuer: ISS, jwtKey: 'not a key' }), /CLERK_JWT_KEY/);
+  // Written on one line with \n, as .env needs.
+  const oneLine = pem.trim().replace(/\n/g, '\\n');
+  assert.doesNotThrow(() => createClerkAuth({ issuer: ISS, jwtKey: oneLine }));
+});

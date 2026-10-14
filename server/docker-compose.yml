@@ -26,6 +26,11 @@ services:
       driver: json-file
       options: { max-size: "10m", max-file: "3" }
     networks: [phade]
+    # Public resolvers for the outside world (Docker still answers its own
+    # names, like phade-nginx): the box's resolver held on to a stale "no
+    # such host" for clerk.scores.phade.app after phade.app moved to
+    # Cloudflare, so Clerk's keys couldn't be fetched.
+    dns: [1.1.1.1, 8.8.8.8]
 
 networks:
   phade:
