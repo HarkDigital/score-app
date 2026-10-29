@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
+import http2 from 'node:http2';
 import { readFileSync } from 'node:fs';
 import { leagueById, parseScoreboard } from '../../espn.js';
 import {
@@ -8,7 +9,7 @@ import {
   parseScheduled, startDue, startPayload, newsPlan, newsPayload, newsTeams, alertDelay,
 } from '../live.js';
 import { parseNews } from '../../news.js';
-import { providerToken, tokenIsDead } from '../apns.js';
+import { createApns, providerToken, tokenIsDead } from '../apns.js';
 import { createWatcher, pollDelay } from '../watcher.js';
 
 const fixture = (name) => JSON.parse(readFileSync(new URL(`../../test/fixtures/${name}.json`, import.meta.url)));
@@ -146,6 +147,69 @@ test('dead tokens are recognized', () => {
   assert.ok(!tokenIsDead(429, 'TooManyRequests'));
 });
 
+// A real HTTP/2 server on localhost in Apple's place. answer(stream, n): n is
+// which connection the request came on (1 = the first); reset(n) drops that
+// connection the way a stale one fails (the client reads ECONNRESET).
+async function fakeApple(t, answer) {
+  const server = http2.createServer();
+  const sockets = [];
+  const connections = [];
+  server.on('connection', (socket) => sockets.push(socket));
+  server.on('session', (s) => connections.push(s));
+  const reset = (n) => sockets[n - 1].resetAndDestroy();
+  server.on('stream', (stream) => answer(stream, connections.indexOf(stream.session) + 1, reset));
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  t.after(() => new Promise((resolve) => {
+    for (const s of connections) s.destroy();
+    server.close(resolve);
+  }));
+  return {
+    connections,
+    apns: (options = {}) => createApns({
+      keyPem: crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' }).privateKey.export({ type: 'pkcs8', format: 'pem' }),
+      keyId: 'KEY', teamId: 'TEAM', bundleId: 'digital.hark.scores', log: () => {},
+      hosts: { production: `http://127.0.0.1:${server.address().port}` },
+      ...options,
+    }),
+  };
+}
+const ok = (stream) => { stream.respond({ ':status': 200 }); stream.end(); };
+const banner = { aps: { alert: { title: 'Bills', body: 'Kickoff' } } };
+
+test('apns: a push on a connection that died goes again on a fresh one', async (t) => {
+  // Oct 2026: after hours idle, the first push failed with read ECONNRESET.
+  const apple = await fakeApple(t, (stream, n, reset) => (n === 1 ? reset(n) : ok(stream)));
+  const result = await apple.apns().alert(TOKEN, 'production', banner);
+  assert.equal(result.status, 200);
+  assert.equal(apple.connections.length, 2);
+});
+
+test('apns: an idle connection is closed, so the next push starts on a fresh one', async (t) => {
+  const apple = await fakeApple(t, ok);
+  const apns = apple.apns({ idleClose: 100 });
+  assert.equal((await apns.alert(TOKEN, 'production', banner)).status, 200);
+  assert.equal((await apns.alert(TOKEN, 'production', banner)).status, 200);
+  assert.equal(apple.connections.length, 1, 'busy: the same connection');
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  assert.equal((await apns.alert(TOKEN, 'production', banner)).status, 200);
+  assert.equal(apple.connections.length, 2);
+});
+
+test('apns: Apple\'s answer is final, and no answer at all is status 0 after two tries', async (t) => {
+  const gone = await fakeApple(t, (stream) => {
+    stream.respond({ ':status': 410, 'content-type': 'application/json' });
+    stream.end(JSON.stringify({ reason: 'Unregistered' }));
+  });
+  assert.deepEqual(await gone.apns().alert(TOKEN, 'production', banner), { status: 410, reason: 'Unregistered', dead: true });
+  assert.equal(gone.connections.length, 1, 'not sent twice');
+
+  const down = await fakeApple(t, (stream, n, reset) => reset(n));
+  const result = await down.apns().alert(TOKEN, 'production', banner);
+  assert.equal(result.status, 0);
+  assert.equal(result.dead, false);
+  assert.equal(down.connections.length, 2);
+});
+
 test('a live game polls every 5s, one about to start every 15s, a quiet day every 15 minutes', () => {
   const now = Date.parse('2026-10-04T16:00:00Z');
   assert.equal(pollDelay([{ state: 'in' }], now), 5_000);
@@ -155,13 +219,15 @@ test('a live game polls every 5s, one about to start every 15s, a quiet day ever
 });
 
 // The whole loop against the real NFL scoreboard, with ESPN and Apple faked.
-function harness(data) {
+// answers: what Apple says to each push in turn (then 200s).
+function harness(data, answers = []) {
   const sent = [];
   const store = { data: { activities: {}, scheduled: {}, devices: {}, games: {}, sent: {}, ...data }, save() {} };
   let board = structuredClone(fixture('nfl-scoreboard'));
+  const answer = () => answers.shift() ?? { status: 200, reason: '', dead: false };
   const apns = {
-    activity: async (token, env, payload, priority) => { sent.push({ kind: 'activity', token, payload, priority }); return { status: 200, reason: '', dead: false }; },
-    alert: async (token, env, payload) => { sent.push({ kind: 'alert', token, payload }); return { status: 200, reason: '', dead: false }; },
+    activity: async (token, env, payload, priority) => { sent.push({ kind: 'activity', token, payload, priority }); return answer(); },
+    alert: async (token, env, payload) => { sent.push({ kind: 'alert', token, payload }); return answer(); },
   };
   let clock = Date.parse('2026-10-04T18:00:00Z');
   const watcher = createWatcher({ store, apns, fetchJson: async () => board, log: () => {}, now: () => clock });
@@ -346,6 +412,42 @@ test('every game on the Lock Screen: the iPhone gets a push-to-start, once, when
   h.later(60_000);
   await h.watcher.tick();
   assert.equal(h.sent.filter((s) => s.payload.aps.event === 'start').length, 1, 'once: a card swiped away stays away');
+});
+
+test('every game on the Lock Screen: a start Apple never answered goes again on the next poll', async () => {
+  // Oct 2026: a stale connection's ECONNRESET (status 0) lost the card for good.
+  const START = 'cd'.repeat(32);
+  const device = parseDevice({ env: 'production', startToken: START, teams: [{ league: 'nfl', id: '14', lock: true }] });
+  const h = harness({ devices: { [TOKEN]: device } }, [{ status: 0, reason: 'read ECONNRESET', dead: false }]);
+  h.later(2 * 3600_000 + 10 * 60_000 + 1_000);
+  await h.watcher.tick();
+  const starts = () => h.sent.filter((s) => s.payload.aps.event === 'start').length;
+  assert.equal(starts(), 1);
+  assert.equal(h.store.data.sent[`${TOKEN}|nfl:404|lock`], undefined, 'not marked: Apple never had it');
+  h.later(15_000);
+  await h.watcher.tick();
+  assert.equal(starts(), 2, 'sent again');
+  assert.ok(h.store.data.sent[`${TOKEN}|nfl:404|lock`], 'marked once Apple took it');
+  h.later(15_000);
+  await h.watcher.tick();
+  assert.equal(starts(), 2, 'and only then left alone');
+});
+
+test('every game on the Lock Screen: an answer from Apple is final, and a dead start token is dropped', async () => {
+  const START = 'cd'.repeat(32);
+  const lockDevice = () => parseDevice({ env: 'production', startToken: START, teams: [{ league: 'nfl', id: '14', lock: true }] });
+  const h = harness({ devices: { [TOKEN]: lockDevice() } }, [{ status: 429, reason: 'TooManyRequests', dead: false }]);
+  h.later(2 * 3600_000 + 10 * 60_000 + 1_000);
+  await h.watcher.tick();
+  h.later(15_000);
+  await h.watcher.tick();
+  assert.equal(h.sent.length, 1, 'not hammered after Apple said no');
+
+  const h2 = harness({ devices: { [TOKEN]: lockDevice() } }, [{ status: 410, reason: 'Unregistered', dead: true }]);
+  h2.later(2 * 3600_000 + 10 * 60_000 + 1_000);
+  await h2.watcher.tick();
+  assert.equal(h2.store.data.devices[TOKEN].startToken, undefined, 'the phone sends a new one when it has it');
+  assert.ok(h2.store.data.devices[TOKEN], 'the device and its alerts stay');
 });
 
 test('every game on the Lock Screen: nothing for an iPhone without a push-to-start token, or one scheduled by hand', async () => {
