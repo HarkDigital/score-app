@@ -64,15 +64,16 @@ export function createWatcher({ store, apns, fcm = null, fetchJson: getJson = fe
       || Object.values(devices).some((d) => followsGame(d, leagueId, game));
   };
 
-  // Without a key the server runs dry: it logs what it would send.
+  // Without a key the server runs dry: it logs what it would send. status 0:
+  // Apple never answered (apns.js has already tried a fresh connection).
   async function push(kind, token, env, payload, priority) {
     if (!apns) {
       log(`dry run ${kind} ${token.slice(0, 8)}… ${JSON.stringify(payload)}`);
-      return { ok: true, dead: false };
+      return { ok: true, dead: false, status: 200 };
     }
     const result = kind === 'activity' ? await apns.activity(token, env, payload, priority) : await apns.alert(token, env, payload);
     if (result.status !== 200) log(`apns ${kind} ${token.slice(0, 8)}… ${result.status} ${result.reason}`);
-    return { ok: result.status === 200, dead: result.dead };
+    return { ok: result.status === 200, dead: result.dead, status: result.status };
   }
 
   // A team alert to one device, by its platform.
@@ -154,9 +155,17 @@ export function createWatcher({ store, apns, fcm = null, fetchJson: getJson = fe
         // Before iOS 17.2 (or before its token arrives) an iPhone can't be
         // started remotely; it's tried again on later polls.
         if (!device.startToken) continue;
-        data.sent[mark] = now();
-        if (data.scheduled[`${device.startToken}|${key}`]) continue;
-        await push('activity', device.startToken, device.env, startPayload(card, game, league, nowSec), 10);
+        if (data.scheduled[`${device.startToken}|${key}`]) {
+          data.sent[mark] = now();
+          continue;
+        }
+        // Marked once Apple has answered: one that never reached Apple goes
+        // again on the next poll (it was marked first until Oct 2026, so a
+        // stale connection lost the game's card for good).
+        const result = await push('activity', device.startToken, device.env, startPayload(card, game, league, nowSec), 10);
+        log(`lock ${key} ${device.startToken.slice(0, 8)}… ${result.status || 'no answer, again next poll'}`);
+        if (result.status) data.sent[mark] = now();
+        if (result.dead) delete device.startToken;
       }
     }
 
