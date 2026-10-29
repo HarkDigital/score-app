@@ -2997,6 +2997,11 @@ a.team-cell:hover .team-name { color: var(--accent); }
 
 .account-error { color: var(--warn); }
 
+.account-done {
+  color: var(--accent);
+  font-weight: 600;
+}
+
 .account-actions {
   display: flex;
   flex-wrap: wrap;
@@ -3010,6 +3015,8 @@ a.team-cell:hover .team-name { color: var(--accent); }
   color: var(--live);
   font-size: 14px;
 }
+
+.account-delete:disabled { opacity: 0.6; }
 
 /* ---- Menu sheet ---- */
 

@@ -247,11 +247,57 @@ export async function signOut() {
   await state.clerk?.signOut();
 }
 
-// Forgets the teams on the server, then the Clerk user (Clerk's "Allow users
-// to delete their accounts" must be on). Throws if either fails.
+// Clerk treats deleting an account as a sensitive action: unless the person
+// signed in (or re-entered their password or code) within the last 10
+// minutes, it answers session_reverification_required. Its own modal asks
+// again; the promise settles when that's done, or rejects (`cancelled`) when
+// it's closed. The modal is Clerk's internal API (no vanilla JS one yet), so
+// without it the person is told to sign in again.
+const recentlyVerified = () => {
+  const check = state.clerk.session?.checkAuthorization;
+  return typeof check !== 'function' || check({ reverification: 'strict' }) === true;
+};
+const needsReverification = (e) => Array.isArray(e?.errors) && e.errors.some(({ code }) => code === 'session_reverification_required');
+
+function reverify() {
+  return new Promise((resolve, reject) => {
+    if (typeof state.clerk.__internal_openReverification !== 'function') {
+      reject(Object.assign(new Error('reverification unavailable'), { signInAgain: true }));
+      return;
+    }
+    state.clerk.__internal_openReverification({
+      afterVerification: () => resolve(),
+      afterVerificationCancelled: () => reject(Object.assign(new Error('cancelled'), { cancelled: true })),
+    });
+  });
+}
+
+async function deleteUser() {
+  try {
+    await state.clerk.user.delete();
+  } catch (e) {
+    if (!needsReverification(e)) throw e;
+    await reverify();
+    await state.clerk.user.delete();
+  }
+}
+
+// Asks again first if Clerk will want it, then forgets the teams on the
+// server (while the session can still prove who it is), then the Clerk user
+// (Clerk's "Allow users to delete their accounts" must be on). If the Clerk
+// user can't be deleted, the device's copy goes back to the account. Throws
+// if anything fails; `cancelled` when the person closed Clerk's modal.
 export async function deleteAccount() {
+  const user = state.clerk.user.id;
+  if (!recentlyVerified()) await reverify();
   await api('DELETE');
-  await state.clerk.user.delete();
+  try {
+    await deleteUser();
+  } catch (e) {
+    saveAccountMark(hooks.storage, { user, dirty: true });
+    sync();
+    throw e;
+  }
   signedOut();
   hooks.changed();
 }

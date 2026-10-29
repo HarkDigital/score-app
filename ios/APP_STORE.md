@@ -150,7 +150,7 @@ The scores, game and Lock Screen shots are current (menu button, LineSteam logo,
 
 > Phade Scores is a free sports scores app for the NFL, NBA, MLB, NHL, college football and basketball, the WNBA, MLS, the Premier League and the Champions League. No account is needed: everything works at launch.
 >
-> Sign-in is optional and only keeps a person's followed teams, alert settings and layout the same across their devices. It's in the menu (top right) under Sign in, with a one-time code sent to any email address, so you can try it with your own address; no password or demo account is needed. Once signed in, the same menu shows Account, which has Sign out and Delete account. Delete account removes the account and its data at once (guideline 5.1.1(v)).
+> Sign-in is optional and only keeps a person's followed teams, alert settings and layout the same across their devices. To create an account: open the menu (top right), tap Sign in, enter any email address you can read, then the 6-digit code emailed to it. No password or demo account is needed. To delete it (guideline 5.1.1(v)): open the menu, tap Account, tap Delete account (red, at the bottom of the sheet), then OK. If the sign-in is more than 10 minutes old, the app first asks for a new emailed code. The account and its data are deleted at once and the sheet says "Your account is deleted." The attached screen recording, captured on an iPhone, shows the whole flow.
 >
 > Beyond scores, standings, box scores, team pages and player pages, the app is built around these iOS features:
 >
@@ -163,11 +163,23 @@ The scores, game and Lock Screen shots are current (menu button, LineSteam logo,
 >
 > If no game is live during review, any upcoming game still shows the Lock Screen switch (it schedules the card), and a team's alerts can be set up at any time.
 
-- **Attachment**: none needed.
+- **Attachment**: the account deletion screen recording (see "Rejected under 5.1.1(v)" below). App Review asked for it to be kept here for every future submission.
 
 ## 9. Version Release
 
 Pick **Manually release this version**, so it doesn't go live the moment it's approved. Then **Add for Review** and **Submit to App Review**.
+
+## Rejected under 5.1.1(v): account deletion (Oct 29 2026, 1.0 build 24)
+
+App Review said the app "supports account creation but does not include an option to initiate account deletion" (reviewed on an iPad Air 11-inch). Delete account was there, but the production Clerk instance asked new accounts for a 15+ character password and an email LINK (which opens Safari, not the app), not the email code the notes describe, so the reviewer most likely never got signed in. Delete account also failed for anyone signed in over 10 minutes (Clerk wants a fresh check first), fixed in the web app. No new build is needed: the web fix is live once merged, and build 24 can go back as it is.
+
+1. **Clerk** (dashboard, **Production** instance): set it up as README "Turning on sign-in (Clerk)" step 1 says (email verification code for sign-in and sign-up, password off). Check: `curl -s https://clerk.scores.phade.app/v1/environment | grep -o '"first_factors":[^]]*]'` should list `email_code`.
+2. **Record it on your iPhone** (Control Center > Screen Recording), with the latest web app live: open Phade Scores, menu (top right) > **Sign in**, enter an email you haven't used with it before, enter the emailed code, show the menu now says **Account**, tap it, tap **Delete account**, **OK**, and end on "Your account is deleted." Trim it in Photos and AirDrop it to the Mac.
+3. **Reply in App Store Connect** (the rejection's Messages, Reply), attach the recording and paste:
+
+   > Hello, and thank you for the review. Phade Scores does offer account deletion in the app. Creating an account is optional: everything works without one. After signing in, open the menu at the top right, tap Account, then Delete account, then OK. The account and the data kept with it are deleted at once, and the app confirms "Your account is deleted." The attached screen recording, captured on an iPhone, shows creating a new account, navigating to Delete account, and the full deletion through to the confirmation. To try it yourself, sign in with any email address you can read: the app emails a 6-digit code, and no password is needed. We have added the recording and these steps to the App Review Information notes.
+
+4. **App Review Information**: paste the updated Notes from section 8 above and add the recording as the Attachment, then **Resubmit to App Review**.
 
 ## Risks to know before submitting
 
