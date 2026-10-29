@@ -22,7 +22,8 @@ import {
 const KEY = CLERK_PUBLISHABLE_KEY;
 export const accountsOn = () => signInAllowed(KEY, location.hostname);
 
-// Phade's colors for Clerk's own sign-in form.
+// Phade's colors for Clerk's own modals (sign-in, and asking again before a
+// delete).
 const APPEARANCE = {
   variables: {
     colorPrimary: '#46bb93',
@@ -36,11 +37,6 @@ const APPEARANCE = {
     fontFamily: 'Poppins, system-ui, sans-serif',
     borderRadius: '10px',
   },
-  elements: {
-    rootBox: { width: '100%' },
-    cardBox: { width: '100%', boxShadow: 'none', border: '0' },
-    card: { boxShadow: 'none', background: 'transparent' },
-  },
 };
 
 const state = {
@@ -49,8 +45,6 @@ const state = {
   failed: false,   // Clerk itself didn't load
   error: false,    // the last sync failed
   syncedAt: 0,
-  mountedIn: null, // the element showing Clerk's sign-in form
-  signUp: false,
 };
 let hooks = null;
 let pushTimer = null;
@@ -83,16 +77,17 @@ export function loadClerk() {
     document.head.append(script);
   }).then(async () => {
     const clerk = window.Clerk;
-    // Clerk navigates after signing in and between sign-in and sign-up; the
-    // app has its own hash routes, so those navigations go nowhere (Clerk's
-    // default would reload the site at "/") and the form switches in place.
+    // Clerk navigates after signing in and signing out; the app has its own
+    // hash routes, so those navigations go nowhere (Clerk's default would
+    // reload the site at "/"). The sign-in and sign-up URLs are this page, so
+    // Clerk never sends anyone to its hosted pages on another site.
     const here = `${location.pathname}?`;
     await clerk.load({
       appearance: APPEARANCE,
       signInUrl: `${here}sign-in`,
       signUpUrl: `${here}sign-up`,
-      routerPush: navigated,
-      routerReplace: navigated,
+      routerPush: () => {},
+      routerReplace: () => {},
     });
     state.clerk = clerk;
     let last = clerk.user?.id ?? null;
@@ -117,15 +112,6 @@ export function loadClerk() {
   return state.loading;
 }
 
-function navigated(to) {
-  const signUp = /sign-up/.test(String(to));
-  if (signUp === state.signUp || !state.mountedIn) return;
-  const el = state.mountedIn;
-  hideSignIn();
-  state.signUp = signUp;
-  showSignIn(el);
-}
-
 // 'off' | 'loading' | 'failed' | 'signedOut' | 'signedIn'
 export function accountState() {
   if (!accountsOn()) return { status: 'off' };
@@ -141,21 +127,17 @@ export function accountState() {
   };
 }
 
-export function showSignIn(el) {
-  if (!state.clerk || state.mountedIn === el) return;
-  hideSignIn();
-  state.mountedIn = el;
-  const props = { appearance: APPEARANCE, routing: 'virtual' };
-  if (state.signUp) state.clerk.mountSignUp(el, props);
-  else state.clerk.mountSignIn(el, { ...props, withSignUp: true });
-}
-
-export function hideSignIn() {
-  if (!state.mountedIn) return;
-  if (state.signUp) state.clerk.unmountSignUp(state.mountedIn);
-  else state.clerk.unmountSignIn(state.mountedIn);
-  state.mountedIn = null;
-  state.signUp = false;
+// Clerk's sign-in modal, which also creates the account for a new email
+// (withSignUp). Not a form mounted in the sheet: Clerk mounts components with
+// a hash router whatever `routing` says (5.128), so a mounted form keeps its
+// step in location.hash, where the app's own #/game, #/team and #/player
+// routes live. Opened from one of those pages it read the route as its own
+// step and came up blank; a finished sign-up left #/create/verify-email-address
+// behind, so after signing out the next form was blank too (a reload fixed
+// both); and each step it wrote closed the page underneath. The modal keeps its
+// steps in memory and closes itself once signed in.
+export function openSignIn() {
+  state.clerk?.openSignIn({ withSignUp: true });
 }
 
 async function api(method, body) {

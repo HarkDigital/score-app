@@ -27,7 +27,7 @@ import { initPullToRefresh } from './pull.js';
 import { initSwipeNav } from './swipe.js';
 import { inApp, nativeInfo, setAlertTeams, setFollowedTeams, haptic } from './native.js';
 import {
-  accountsOn, initAccount, loadClerk, accountState, showSignIn, hideSignIn, accountChanged, signOut, deleteAccount, sync,
+  accountsOn, initAccount, loadClerk, accountState, openSignIn, accountChanged, signOut, deleteAccount, sync,
 } from './signin.js';
 
 const MINE = { id: 'mine', label: 'My Teams', mine: true };
@@ -1194,6 +1194,7 @@ document.addEventListener('click', (event) => {
   else if (d.action === 'close-menu') closeMenu();
   else if (d.action === 'open-account') openAccount();
   else if (d.action === 'close-account') closeAccount();
+  else if (d.action === 'sign-in') openSignIn();
   else if (d.action === 'sign-out') signOut();
   else if (d.action === 'delete-account') confirmDelete();
   else if (d.action === 'retry-account') retryAccount();
@@ -1653,7 +1654,6 @@ function openAccount() {
 function closeAccount(restoreFocus = true) {
   if (!account.open) return;
   account.open = false;
-  hideSignIn();
   els.sheet.innerHTML = '';
   document.body.style.overflow = '';
   if (restoreFocus) account.opener?.focus?.();
@@ -1672,12 +1672,12 @@ function renderAccount() {
   renderMenu();
   if (!account.open) return;
   const body = els.sheet.querySelector('#account-body');
-  // Clerk's form lives in #clerk-sign-in: leave it alone while signed out.
+  // Drawn once while signed out, so a redraw never takes the button's focus
+  // (the deleted note is drawn while deleting).
   if (s.status === 'signedOut' && account.shown === 'signedOut') return;
   account.shown = s.status;
   const busy = account.deleting || account.deleted;
   if (s.status === 'signedIn') {
-    hideSignIn();
     body.innerHTML = `
       <div class="account-user">
         <span class="account-avatar" aria-hidden="true">${esc((s.email[0] ?? '?').toUpperCase())}</span>
@@ -1696,8 +1696,8 @@ function renderAccount() {
     body.innerHTML = `
       ${busy ? '<p class="account-note account-done" role="status">Your account is deleted. Your teams and alerts stay on this device.</p>' : ''}
       <p class="account-intro">Sign in to keep your teams, alerts and alert delay on all your devices. The teams on this device are added to your account.</p>
-      <div id="clerk-sign-in" class="clerk-mount"></div>`;
-    showSignIn(body.querySelector('#clerk-sign-in'));
+      <div class="account-actions"><button class="btn-primary" data-action="sign-in">Continue with email</button></div>
+      <p class="account-note">We email you a 6-digit code. There's no password.</p>`;
     return;
   }
   body.innerHTML = s.status === 'failed'
