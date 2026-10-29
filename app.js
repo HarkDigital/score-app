@@ -1322,7 +1322,7 @@ function renderMenu() {
     <li><button class="menu-row" data-action="open-account">
       <span class="menu-text">
         <span class="menu-title">${signedIn ? 'Account' : 'Sign in'}</span>
-        <span class="option-meta">${signedIn ? esc(s.email) : 'Optional. Keeps your teams and alerts on all your devices.'}</span>
+        <span class="option-meta">${signedIn ? `${esc(s.email)}. Sign out or delete your account.` : 'Optional. Keeps your teams and alerts on all your devices.'}</span>
       </span>${CHEVRON}
     </button></li>` : '';
   els.sheet.querySelector('#menu-list').innerHTML = `${accountRow}
@@ -1625,7 +1625,7 @@ function dragEnd(event) {
 // to keep the followed teams and their alerts on every device. Clerk draws
 // the sign-in form itself; signin.js does the syncing.
 
-const account = { open: false, opener: null, shown: null };
+const account = { open: false, opener: null, shown: null, deleting: false, deleted: false };
 
 function openAccount() {
   if (account.open) return;
@@ -1634,7 +1634,7 @@ function openAccount() {
   closeSearch(false);
   closeMenu(false);
   closeOrder(false);
-  Object.assign(account, { open: true, opener, shown: null });
+  Object.assign(account, { open: true, opener, shown: null, deleted: false });
   els.sheet.innerHTML = `
     <div class="sheet-backdrop" data-action="close-account"></div>
     <div class="sheet sheet-short" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
@@ -1675,6 +1675,7 @@ function renderAccount() {
   // Clerk's form lives in #clerk-sign-in: leave it alone while signed out.
   if (s.status === 'signedOut' && account.shown === 'signedOut') return;
   account.shown = s.status;
+  const busy = account.deleting || account.deleted;
   if (s.status === 'signedIn') {
     hideSignIn();
     body.innerHTML = `
@@ -1688,11 +1689,12 @@ function renderAccount() {
         <button class="pill-btn" data-action="sign-out">Sign out</button>
       </div>
       <p class="account-note">Signing out keeps your teams on this device.</p>
-      <button class="link-btn account-delete" data-action="delete-account">Delete account</button>`;
+      <button class="link-btn account-delete" data-action="delete-account"${busy ? ' disabled' : ''}>${busy ? 'Deleting account' : 'Delete account'}</button>`;
     return;
   }
   if (s.status === 'signedOut') {
     body.innerHTML = `
+      ${busy ? '<p class="account-note account-done" role="status">Your account is deleted. Your teams and alerts stay on this device.</p>' : ''}
       <p class="account-intro">Sign in to keep your teams, alerts and alert delay on all your devices. The teams on this device are added to your account.</p>
       <div id="clerk-sign-in" class="clerk-mount"></div>`;
     showSignIn(body.querySelector('#clerk-sign-in'));
@@ -1711,13 +1713,24 @@ function retryAccount() {
   }
 }
 
+// Clerk may ask for the password or an emailed code again first (signin.js).
+// Once the account is gone the sheet turns to sign-in with a note saying so;
+// Clerk's sign-out can land before or after deleteAccount() returns, so both
+// flags draw the same thing.
 async function confirmDelete() {
+  if (account.deleting) return;
   if (!window.confirm('Delete your account? Your teams stay on this device, but are removed from your account and your other devices stop syncing.')) return;
+  account.deleting = true;
+  renderAccount();
   try {
     await deleteAccount();
-  } catch {
-    window.alert('Couldn\'t delete your account. Try again.');
+    account.deleted = true;
+  } catch (e) {
+    if (e?.signInAgain) window.alert('To delete your account, sign out, sign in again, then tap Delete account.');
+    else if (!e?.cancelled) window.alert('Couldn\'t delete your account. Try again.');
   }
+  account.deleting = false;
+  renderAccount();
 }
 
 // ---- Game and team pages ----
