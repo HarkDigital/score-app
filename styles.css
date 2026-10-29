@@ -2947,12 +2947,6 @@ a.team-cell:hover .team-name { color: var(--accent); }
   line-height: 1.5;
 }
 
-.clerk-mount {
-  display: flex;
-  justify-content: center;
-  min-height: 120px;
-}
-
 .account-user {
   display: flex;
   align-items: center;
