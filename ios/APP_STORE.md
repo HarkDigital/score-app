@@ -180,6 +180,13 @@ App Review said the app "supports account creation but does not include an optio
    > Hello, and thank you for the review. Phade Scores does offer account deletion in the app. Creating an account is optional: everything works without one. After signing in, open the menu at the top right, tap Account, then Delete account, then OK. The account and the data kept with it are deleted at once, and the app confirms "Your account is deleted." The attached screen recording, captured on an iPhone, shows creating a new account, navigating to Delete account, and the full deletion through to the confirmation. To try it yourself, open the menu, tap Sign in, then Continue with email, and use any email address you can read: the app emails a 6-digit code, and no password is needed. We have added the recording and these steps to the App Review Information notes.
 
 4. **App Review Information**: paste the updated Notes from section 8 above and add the recording as the Attachment, then **Resubmit to App Review**.
+5. **Nov 10 2026**: App Review answered that the app was still in "Prepare for Submission" and asked for a new build. A reply in Messages resubmits nothing: the rejected submission (id 22c0fc6b-c32d-41ab-8d97-d1d445b4d8c4) sat in Unresolved Issues with version 1.0 Ready for Review and build 24 still attached, and nothing native changed since build 24, so no new build is needed. Resubmit it: App Store Connect > Phade Scores > the **iOS App 1.0** submission (left column, Unresolved Issues) > **Resubmit to App Review**, with the recording and the notes already in place. Or through the App Store Connect API from `ios/App` (the TestFlight release skill's helper), where `/v1/reviewSubmissions?filter[app]=6818811244` shows the submission's state:
+
+   ```
+   swift ~/.claude/skills/testflight-release/scripts/asc.swift PATCH /v1/reviewSubmissions/22c0fc6b-c32d-41ab-8d97-d1d445b4d8c4 '{"data":{"type":"reviewSubmissions","id":"22c0fc6b-c32d-41ab-8d97-d1d445b4d8c4","attributes":{"submitted":true}}}'
+   ```
+
+   Done that way on Nov 10 2026 (20:35 UTC): App Store Connect took build 24 back without complaint and the submission went to Waiting for Review. If it ever refuses a rejected build, upload the next build with the TestFlight release skill (`npm run ios:bump` first), swap it into the submission, and resubmit.
 
 ## Risks to know before submitting
 
